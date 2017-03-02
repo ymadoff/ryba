@@ -97,7 +97,7 @@ Log files are stored inside "/var/log/druid" by default.
 Create a service principal for this NameNode. The principal is named after
 "nn/#{@config.host}@#{realm}".
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos Admin Principal'
         principal: "#{druid.krb5_admin.principal}"
         password: "#{druid.krb5_admin.password}"
@@ -105,7 +105,7 @@ Create a service principal for this NameNode. The principal is named after
         uid: 'druid'
         gid: 'druid'
         mode: 0o0600
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos Service Principal'
         principal: "#{druid.krb5_service.principal}"
         keytab: "#{druid.krb5_service.keytab}"

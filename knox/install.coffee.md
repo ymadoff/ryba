@@ -98,7 +98,7 @@ in the gateway.sh service script.
 ## Kerberos
 
       @call header: 'Kerberos', handler: ->
-        @krb5_addprinc krb5,
+        @krb5.addprinc krb5,
           principal: knox.krb5_user.principal
           randkey: true
           keytab: knox.krb5_user.keytab

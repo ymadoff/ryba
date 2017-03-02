@@ -229,7 +229,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
 
 ## Kerberos
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: hive.hcatalog.site['hive.metastore.kerberos.principal'].replace '_HOST', @config.host
         randkey: true

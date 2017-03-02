@@ -164,12 +164,12 @@ Describe where to get the user authentication information from.
           krb_node.ele 'property', name: 'Default Realm', nifi.config.login_providers.krb5_provider.realm
           krb_node.ele 'property', name: 'Kerberos Config File', nifi.config.properties['nifi.kerberos.krb5.file']
           krb_node.ele 'property', name: 'Authentication Expiration', '10 hours'
-          @krb5_addprinc krb5,
+          @krb5.addprinc krb5,
             header: 'Kerberos SPNEGO'
             principal: nifi.config.properties['nifi.kerberos.service.principal']
             keytab: nifi.config.properties['nifi.kerberos.keytab.location']
             randkey: true
-          @krb5_addprinc krb5,
+          @krb5.addprinc krb5,
             header: 'Kerberos Admin'
             principal: nifi.admin.krb5_principal
             password: nifi.admin.krb5_password
@@ -261,7 +261,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 ## JAAS
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Zookeeper Kerberos'
         principal: nifi.krb5_principal
         randkey: true

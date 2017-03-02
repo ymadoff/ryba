@@ -126,7 +126,7 @@ Environment passed to the HBase Rest Server before it starts.
 
 Create the Kerberos keytab for the service principal.
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: hbase.rest.site['hbase.rest.kerberos.principal'].replace '_HOST', @config.host
         randkey: true

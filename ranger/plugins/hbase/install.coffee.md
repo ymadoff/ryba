@@ -123,7 +123,7 @@ we execute this task using the rest api.
 
 ## HBase  Plugin Principal
 
-        @krb5_addprinc krb5,
+        @krb5.addprinc krb5,
           if: ranger.hbase_plugin.principal
           header: 'Ranger HBase Principal'
           principal: ranger.hbase_plugin.principal

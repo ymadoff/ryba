@@ -145,7 +145,7 @@ with pem file. So we append to the file the private key and certficate.
 ## Kerberos
 
       @call header: 'Kerberos Admin', handler: ->
-        @krb5_addprinc krb5,
+        @krb5.addprinc krb5,
           principal: "#{mongodb.shard.config.security.sasl.serviceName}"#/#{@config.host}@#{realm}"
           password: mongodb.shard.sasl_password
 

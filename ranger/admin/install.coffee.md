@@ -180,13 +180,13 @@ to allow user to create none-determisitic functions.
 
 ## Ranger Admin Principal
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         if: ranger.plugins.principal
         header: 'Ranger Repositories principal'
         principal: ranger.plugins.principal
         randkey: true
         password: ranger.plugins.password
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Ranger Web UI'
         principal: ranger.admin.install['admin_principal']
         randkey: true
@@ -194,7 +194,7 @@ to allow user to create none-determisitic functions.
         uid: ranger.user.name
         gid: ranger.user.name
         mode: 0o600
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Ranger Web UI'
         principal: ranger.admin.install['lookup_principal']
         randkey: true

@@ -42,7 +42,7 @@ later usage. It is placed inside the flume configuration directory, by default
 "/etc/flume/conf/flume.service.keytab" with restrictive permissions set to
 "0600".
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: "#{flume.user.name}/#{@config.host}@#{realm}"
         randkey: true

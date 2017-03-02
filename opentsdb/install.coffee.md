@@ -61,7 +61,7 @@ OpenTSDB archive comes with an RPM
         header: 'Kerberos'
         if: opentsdb.config['hbase.security.authentication'] is 'kerberos'
         handler: ->
-          @krb5_addprinc krb5,
+          @krb5.addprinc krb5,
             principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
             randkey: true
             keytab: '/etc/security/keytabs/opentsdb.service.keytab'

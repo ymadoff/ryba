@@ -94,7 +94,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 ## Kerberos
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: startup['*.falcon.service.authentication.kerberos.principal']#.replace '_HOST', @config.host
         randkey: true

@@ -54,7 +54,7 @@ hbase:x:492:
     #  module.exports.push header: 'Kerberos', handler: ->
     #    {hadoop_group, hbase, realm} = @config.ryba
     #    krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-    #    @krb5_addprinc krb5,
+    #    @krb5.addprinc krb5,
     #      principal: hbase.site['hbase.thrift.kerberos.principal'].replace '_HOST', @config.host
     #      randkey: true
     #      keytab: hbase.site['hbase.thrift.keytab.file']

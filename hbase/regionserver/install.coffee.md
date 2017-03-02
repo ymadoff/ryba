@@ -112,7 +112,7 @@ RegionServer, and HBase client host machines.
         if: @has_service 'ryba/hbase/master'
         source: hbase.master.site['hbase.master.keytab.file']
         target: hbase.rs.site['hbase.regionserver.keytab.file']
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         unless: @has_service 'ryba/hbase/master'
         principal: hbase.rs.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host

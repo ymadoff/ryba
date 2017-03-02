@@ -285,7 +285,7 @@ Create the DataNode service principal in the form of "dn/{host}@{realm}" and pla
 keytab inside "/etc/security/keytabs/dn.service.keytab" with ownerships set to "hdfs:hadoop"
 and permissions set to "0600".
 
-        @krb5_addprinc krb5,
+        @krb5.addprinc krb5,
           header: 'Kerberos'
           principal: hdfs.site['dfs.datanode.kerberos.principal'].replace '_HOST', @config.host
           randkey: true

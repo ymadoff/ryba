@@ -76,7 +76,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos JAAS for ZooKeeper
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: rexster.krb5_user.principal
         randkey: true

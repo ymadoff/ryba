@@ -172,7 +172,7 @@ Create HDFS solr user and its home directory
 
 ## Kerberos
 
-      @krb5_addprinc
+      @krb5.addprinc
         header: 'Solr Server User'
         principal: solr.single.principal
         keytab: solr.single.keytab

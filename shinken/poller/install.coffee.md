@@ -77,13 +77,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Executor
 
       @call header: 'Executor', handler: ->
-        @krb5_addprinc krb5,
+        @krb5.addprinc krb5,
           header: 'Kerberos'
           principal: shinken.poller.executor.krb5.unprivileged.principal
           randkey: true
           keytab: shinken.poller.executor.krb5.unprivileged.keytab
           mode: 0o644
-        # @krb5_addprinc krb5,
+        # @krb5.addprinc krb5,
         #   principal: shinken.poller.executor.krb5.privileged.principal
         #   randkey: true
         #   keytab: shinken.poller.executor.krb5.privileged.keytab

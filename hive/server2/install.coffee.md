@@ -188,7 +188,7 @@ Create the directories to store the logs and pid information. The properties
 
 ## Kerberos
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: hive.server2.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', @config.host
         randkey: true

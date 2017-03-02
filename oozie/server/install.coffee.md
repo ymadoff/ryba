@@ -367,7 +367,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
 
 ## Kerberos
 
-      @krb5_addprinc
+      @krb5.addprinc
         header: 'Kerberos'
         principal: oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', @config.host
         randkey: true

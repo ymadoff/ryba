@@ -222,7 +222,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
 ## Kerberos
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: yarn.rm.site['yarn.resourcemanager.principal'].replace '_HOST', @config.host
         randkey: true

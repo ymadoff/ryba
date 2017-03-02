@@ -220,7 +220,7 @@ Create the Kerberos service principal by default in the form of
 "/etc/security/keytabs/jhs.service.keytab" with ownerships set to
 "mapred:hadoop" and permissions set to "0600".
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: "jhs/#{@config.host}@#{realm}"
         randkey: true

@@ -210,7 +210,7 @@ Create the Kerberos service principal by default in the form of
 "/etc/security/keytabs/ats.service.keytab" with ownerships set to
 "mapred:hadoop" and permissions set to "0600".
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: yarn.site['yarn.timeline-service.principal'].replace '_HOST', @config.host
         randkey: true

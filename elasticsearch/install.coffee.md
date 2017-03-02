@@ -24,7 +24,7 @@ elasticsearch:x:493:
 
 ## Kerberos
 
-      # @krb5_addprinc krb5,
+      # @krb5.addprinc krb5,
       #   skip: true
       #   header: 'Kerberos'
       #   principal: elasticsearch.principal

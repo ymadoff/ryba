@@ -114,7 +114,7 @@ Write startup script to /etc/init.d/service-hue-docker
 
 ## kerberos
   
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         if: spark.livy.conf['livy.server.auth.kerberos.principal']
         header: 'Livy Server principal'
         principal: spark.livy.conf['livy.server.auth.kerberos.principal']

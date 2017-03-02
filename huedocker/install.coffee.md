@@ -183,7 +183,7 @@ The principal for the Hue service is created and named after "hue/{host}@{realm}
 the "/etc/hue/conf/hue_docker.ini" configuration file, all the composants myst be tagged with
 the "security_enabled" property set to "true".
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: hue_docker.ini.desktop.kerberos.hue_principal
         randkey: true

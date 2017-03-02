@@ -134,7 +134,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: spark.history.conf['spark.history.kerberos.principal']
         keytab: spark.history.conf['spark.history.kerberos.keytab']

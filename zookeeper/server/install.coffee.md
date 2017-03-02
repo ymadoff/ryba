@@ -88,7 +88,7 @@ which has no dependency.
 
       @call once: true, 'masson/core/krb5_client/wait'
       @call header: 'Kerberos', handler: ->
-        @krb5_addprinc krb5,
+        @krb5.addprinc krb5,
           principal: "zookeeper/#{@config.host}@#{realm}"
           randkey: true
           keytab: '/etc/security/keytabs/zookeeper.service.keytab'

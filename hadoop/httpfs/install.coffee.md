@@ -79,7 +79,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0600
-        @krb5_addprinc krb5, # Service Keytab
+        @krb5.addprinc krb5, # Service Keytab
           principal: httpfs.site['httpfs.hadoop.authentication.kerberos.principal']
           randkey: true
           keytab: httpfs.site['httpfs.hadoop.authentication.kerberos.keytab']

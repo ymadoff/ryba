@@ -172,7 +172,7 @@ Environment file is enriched by "ryba/hbase" # HBase # Env".
 https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos Master User'
         principal: hbase.master.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
@@ -180,7 +180,7 @@ https://hbase.apache.org/book/security.html
         uid: hbase.user.name
         gid: hadoop_group.name
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos Admin User'
         principal: hbase.admin.principal
         password: hbase.admin.password

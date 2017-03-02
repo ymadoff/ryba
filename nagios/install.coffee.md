@@ -11,7 +11,7 @@
 
 ## Kerberos
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: nagios.principal
         randkey: true

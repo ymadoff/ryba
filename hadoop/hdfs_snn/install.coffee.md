@@ -79,7 +79,7 @@ script inside "/etc/init.d" and activate it on startup.
           gid: hdfs.group.name
           parent: true
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: "nn/#{host}@#{realm}"
         randkey: true

@@ -38,7 +38,7 @@ Create user and groups for solr user.
 
 ## Kerberos
 
-      @krb5_addprinc
+      @krb5.addprinc
         unless_exists: solr.cloud_docker.spnego.keytab
         header: 'Kerberos SPNEGO'
         principal: solr.cloud_docker.spnego.principal
@@ -52,7 +52,7 @@ Create user and groups for solr user.
       @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{solr.user.name} -c 'test -r #{solr.cloud_docker.spnego.keytab}'"
-      @krb5_addprinc
+      @krb5.addprinc
         header: 'Solr Super User'
         principal: solr.cloud_docker.admin_principal
         password: solr.cloud_docker.admin_password
@@ -74,7 +74,7 @@ Create user and groups for solr user.
             useTicketCache: true
         uid: solr.user.name
         gid: solr.group.name
-      @krb5_addprinc
+      @krb5.addprinc
         header: 'Solr Server User'
         principal: solr.cloud_docker.principal
         keytab: solr.cloud_docker.keytab

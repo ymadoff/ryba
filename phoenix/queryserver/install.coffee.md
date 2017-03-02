@@ -33,7 +33,7 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
 
 We use the SPNEGO keytab, so we let hadoop/core handle principal & keytab
 
-      # @krb5_addprinc krb5,
+      # @krb5.addprinc krb5,
       #     header: 'Kerberos'
       #     if: phoenix.queryserver.site['hbase.security.authentication'] is 'kerberos'
       #     principal: phoenix.queryserver.site['phoenix.queryserver.kerberos.principal'].replace '_HOST', @config.host

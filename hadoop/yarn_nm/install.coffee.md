@@ -278,7 +278,7 @@ but is owned by 2401"
 Create the Kerberos user to the Node Manager service. By default, it takes the
 form of "rm/{fqdn}@{realm}"
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: yarn.site['yarn.nodemanager.principal'].replace '_HOST', @config.host
         randkey: true

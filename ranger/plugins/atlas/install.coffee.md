@@ -112,7 +112,7 @@ we execute this task using the rest api.
               curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.atlas_plugin.service_repo}' \
               -u admin:#{password} \"#{ranger.atlas_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
             """
-          @krb5_addprinc krb5,
+          @krb5.addprinc krb5,
             if: ranger.atlas_plugin.principal
             header: 'Ranger Atlas Principal'
             principal: ranger.atlas_plugin.principal

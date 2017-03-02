@@ -212,7 +212,7 @@ Install Atlas packages
 Add THe Kerberos Principal for atlas service and setup a JAAS configuration file
 for atlas to able to open client connection to solr for its indexing backend.
 
-      @krb5_addprinc
+      @krb5.addprinc
         header: 'Kerberos Atlas Service'
         randkey: true
         principal: atlas.application.properties['atlas.authentication.principal'].replace '_HOST', @config.host
@@ -226,7 +226,7 @@ for atlas to able to open client connection to solr for its indexing backend.
       @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{atlas.user.name} -c \'test -r #{atlas.application.properties['atlas.http.authentication.kerberos.keytab']}\'"
-      @krb5_addprinc
+      @krb5.addprinc
         header: 'Kerberos Atlas Service'
         principal: atlas.application.properties['atlas.http.authentication.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
@@ -260,7 +260,7 @@ for atlas to able to open client connection to solr for its indexing backend.
             doNotPrompt: false
             keyTab: atlas.application.properties['atlas.authentication.keytab']
             principal: atlas.application.properties['atlas.authentication.principal'].replace '_HOST', @config.host
-      @krb5_addprinc
+      @krb5.addprinc
         header: 'Kerberos Atlas Service Admin Users'
         principal: atlas.admin_principal
         randkey: true

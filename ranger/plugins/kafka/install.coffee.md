@@ -58,7 +58,7 @@ we execute this task using the rest api.
               curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.kafka_plugin.service_repo}' \
               -u admin:#{password} \"#{ranger.kafka_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
             """
-          @krb5_addprinc krb5,
+          @krb5.addprinc krb5,
             if: ranger.kafka_plugin.principal
             header: 'Ranger Kafka Principal'
             principal: ranger.kafka_plugin.principal

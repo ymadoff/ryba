@@ -200,7 +200,7 @@ Broker Server principal, keytab and JAAS
         header: 'Kerberos'
         if: kafka.broker.config['zookeeper.set.acl'] is 'true'
         handler: ->
-          @krb5_addprinc krb5,
+          @krb5.addprinc krb5,
             header: 'Broker Server Kerberos'
             principal: kafka.broker.kerberos['principal']
             randkey: true
@@ -226,7 +226,7 @@ Broker Server principal, keytab and JAAS
 
 Kafka Superuser principal generation
 
-          @krb5_addprinc krb5,
+          @krb5.addprinc krb5,
             header: 'Kafka Superuser kerberos'
             principal: kafka.admin.principal
             password: kafka.admin.password

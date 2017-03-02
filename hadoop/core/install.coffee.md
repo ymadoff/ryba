@@ -70,7 +70,7 @@ Create the HDFS user principal. This will be the super administrator for the HDF
 filesystem. Note, we do not create a principal with a keytab to allow HDFS login
 from multiple sessions with braking an active session.
 
-      @krb5_addprinc krb5, hdfs.krb5_user,
+      @krb5.addprinc krb5, hdfs.krb5_user,
         header: 'HDFS Kerberos User'
 
 ## Test User
@@ -83,7 +83,7 @@ will be created by one of the datanode.
         {group, user, krb5_user} = @config.ryba
         @system.group group
         @system.user user
-        @krb5_addprinc krb5, krb5_user
+        @krb5.addprinc krb5, krb5_user
 
       @system.mkdir
         header: 'Keytabs'
@@ -100,7 +100,7 @@ and permissions set to "0660". We had to give read/write permission to the group
 same keytab file is for now shared between hdfs and yarn services.
 
       @call header: 'SPNEGO', handler: ->
-        @krb5_addprinc krb5,
+        @krb5.addprinc krb5,
           principal: "HTTP/#{@config.host}@#{realm}"
           randkey: true
           keytab: '/etc/security/keytabs/spnego.service.keytab'

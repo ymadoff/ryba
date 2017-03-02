@@ -222,7 +222,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 Create a service principal for this NameNode. The principal is named after
 "nn/#{@config.host}@#{realm}".
 
-      @krb5_addprinc krb5,
+      @krb5.addprinc krb5,
         header: 'Kerberos'
         principal: hdfs.nn.site['dfs.namenode.kerberos.principal'].replace '_HOST', @config.host
         keytab: hdfs.nn.site['dfs.namenode.keytab.file']

@@ -102,14 +102,14 @@ stored as "/etc/hadoop/conf/zkfc.jaas"
       @call header: 'Kerberos', handler: ->
         zkfc_principal = zkfc.principal.replace '_HOST', @config.host
         nn_principal = hdfs.nn.site['dfs.namenode.kerberos.principal'].replace '_HOST', @config.host
-        @krb5_addprinc krb5,
+        @krb5.addprinc krb5,
           principal: zkfc_principal
           keytab: zkfc.keytab
           randkey: true
           uid: hdfs.user.name
           gid: hadoop_group.name
           if: zkfc_principal isnt nn_principal
-        @krb5_addprinc krb5,
+        @krb5.addprinc krb5,
           principal: nn_principal
           keytab: hdfs.nn.site['dfs.namenode.keytab.file']
           randkey: true
