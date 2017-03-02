@@ -5,7 +5,8 @@ Use the `ryba.swarm_primary` for setting which host should be the primary swarm 
 This host will be used when rendering default DOCKER_HOST ENV variable on swarm nodes.
 
     module.exports = ->
-      zoo_ctxs = @contexts 'ryba/zookeeper/server'
+      zoo_ctxs = @contexts('ryba/zookeeper/server').filter (ctx) ->
+        ctx.config.ryba.zookeeper.config['peerType'] is 'participant'
       docker = @config.docker ?= {}
       ryba = @config.ryba ?= {}
       ryba.swarm_primary ?= @contexts('ryba/swarm/manager')[0].config.host is @config.host

@@ -106,7 +106,6 @@ on the local engine daemon (before configuring swarm).
         @docker.service
           header: 'Run Container'
           force: -> @status -1
-          label_true: 'RUNNED'
           name: swarm.agent.name
           image: swarm.image
           docker: @config.docker
@@ -115,6 +114,7 @@ on the local engine daemon (before configuring swarm).
           ]
           cmd: "join #{args.join ' '}"
           args: args
+          net: if swarm.host_mode then 'host' else null
 
 ## Configure Environment
 Write file in profile.d to be able to communicate with swarm master. 
@@ -139,6 +139,7 @@ Write file in profile.d to be able to communicate with swarm master.
           ]
           backup: true
           mode: 0o750
+          eof: true
 
 ## Dependencies
     

@@ -128,6 +128,7 @@ on the local engine daemon (before configuring swarm).
           label_true: 'RUNNED'
           docker: @config.docker
           name: swarm.manager.name
+          net: if swarm.host_mode then 'host' else null
           image: swarm.image
           volume: [
             "#{@config.docker.conf_dir}/certs.d/:/certs:ro"
@@ -161,6 +162,7 @@ on the swarm cluster level
             append: true
           ]
           backup: true
+          eof: true
           mode: 0o750
 
 ## Dependencies
