@@ -323,31 +323,31 @@ hard coded.
 
 ### Atlas Hive Properties action
 
-        if @contexts('ryba/atlas')[0].config.host is @config.host#Only bind once
-          hive_ctx
-          .before
-            type: ['service','start']
-            name: 'hive-server2'
-            handler: -> 
-              @registry.register 'hdp_select', 'ryba/lib/hdp_select'
-              @service 'atlas-metadata*hive-plugin*'
-              @hdp_select 'atlas-client' #needed by hive server2 aux jars
-          .after
-            type: ['hconfigure']
-            target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/hive-site.xml"
-            handler: ->
-              @file.properties
-                header: 'Atlas Hiveserver2 Client Properties'
-                target: '/etc/hive/conf/client.properties'
-                content: server2.atlas.client.properties
-              @file.properties
-                header: 'Atlas Client Properties'
-                target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/client.properties"
-                content: server2.atlas.client.properties
-              @file.properties
-                header: 'Atlas Hiveserver2 Application Properties'
-                target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/atlas-application.properties"
-                content: server2.atlas.application.properties
+          if @contexts('ryba/atlas')[0].config.host is @config.host#Only bind once
+            hive_ctx
+            .before
+              type: ['service','start']
+              name: 'hive-server2'
+              handler: ->
+                @registry.register 'hdp_select', 'ryba/lib/hdp_select'
+                @service 'atlas-metadata*hive-plugin*'
+                @hdp_select 'atlas-client' #needed by hive server2 aux jars
+            .after
+              type: ['hconfigure']
+              target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/hive-site.xml"
+              handler: ->
+                @file.properties
+                  header: 'Atlas Hiveserver2 Client Properties'
+                  target: '/etc/hive/conf/client.properties'
+                  content: server2.atlas.client.properties
+                @file.properties
+                  header: 'Atlas Client Properties'
+                  target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/client.properties"
+                  content: server2.atlas.client.properties
+                @file.properties
+                  header: 'Atlas Hiveserver2 Application Properties'
+                  target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/atlas-application.properties"
+                  content: server2.atlas.application.properties
 
 ## Ranger Tag Base Policies configuration
 
