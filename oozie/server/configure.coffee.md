@@ -22,6 +22,7 @@ Example
 
     module.exports = ->
       # Internal properties
+      zk_ctxs = @contexts 'ryba/zookeeper/server'
       {ryba} = @config
       ryba.force_war ?= false
       # User
@@ -138,3 +139,26 @@ Example
 ## Oozie Environment
 
       ryba.oozie.heap_size ?= '256m'
+
+## High Availability
+Config [High Availability][oozie-ha]. They should be configured against
+the same database. It uses zookeeper for enabling HA.
+
+      oozie.ha = if zk_ctxs.length > 1 then true else false
+      if oozie.ha
+        quorum = for zk_ctx in zk_ctxs.filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
+          "#{zk_ctx.config.host}:#{zk_ctx.config.ryba.zookeeper.config['clientPort']}"
+        oozie.site['oozie.zookeeper.connection.string'] ?= quorum.join ','
+        oozie.site['oozie.zookeeper.namespace'] ?= 'oozie-ha'
+        oozie.site['oozie.services.ext'] ?= [
+          'org.apache.oozie.service.ZKLocksService'
+          'org.apache.oozie.service.ZKXLogStreamingService'
+          'org.apache.oozie.service.ZKJobsConcurrencyService'
+          'org.apache.oozie.service.ZKUUIDService'
+        ]
+      oozie.site['oozie.instance.id'] ?= @config.host
+      #ACL On zookeeper
+      oozie.site['oozie.zookeeper.secure'] ?= 'true'
+      oozie.site['oozie.service.ZKUUIDService.jobid.sequence.max'] ?= '99999999990'
+
+[oozie-ha]:(https://oozie.apache.org/docs/4.2.0/AG_Install.html#High_Availability_HA)

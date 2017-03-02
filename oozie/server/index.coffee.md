@@ -13,6 +13,7 @@ Please check Oozie page
         krb5_client: implicit: true, module: 'masson/core/krb5_client'
         krb5_user: implicit: true, module: 'ryba/commons/krb5_user'
         mysql_server: 'masson/commons/mysql/server'
+        zookeeper: 'ryba/zookeeper/server'
         hadoop_core: implicit: true, module: 'ryba/hadoop/core'
         db_admin: implicit: true, module: 'ryba/commons/db_admin'
         yarn_client: implicit: true, module: 'ryba/hadoop/yarn_client'
