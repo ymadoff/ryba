@@ -6,6 +6,8 @@
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm, hadoop_group} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_dir  = solr.cloud_docker.tmp_dir ?= "/var/tmp/ryba/solr"
+      ranger_admin_ctxs = @contexts('ryba/ranger/admin')
+      admin = ranger_admin_ctxs[0].config.ryba.ranger.admin
       hosts = @contexts('ryba/solr/cloud_docker').map (ctx) -> ctx.config.host
       solr.cloud_docker.build.dir = '/tmp/solr/build'
 
@@ -187,17 +189,7 @@ configuration like solr.in.sh or solr.xml.
         name = options.key
         config = solr.cloud_docker.clusters[name] # get cluster config
         config_host = config.config_hosts["#{@config.host}"] # get host config for the cluster
-        dockerfile = null
         return callback() unless config_host?
-        switch config.docker_compose_version
-          when '1' 
-            dockerfile = config.service_def
-            break;
-          when '2' 
-            dockerfile =
-              version:'2'
-              services: config.service_def
-            break;
         config_host.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
         config_host.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of config_host.auth_opts
         writes = for k,v of config_host.env
@@ -323,14 +315,26 @@ configuration like solr.in.sh or solr.xml.
               source: "#{__dirname}/../resources/log4j.properties.j2"
               target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/log4j.properties"
               local: true
-        @file.yaml
-          if: @config.host is config['master'] or not @config.docker.swarm?
-          header: 'Generation docker-compose'
-          target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
-          content: dockerfile
-          uid: solr.user.name
-          gid: solr.group.name
-          mode: 0o0750
+            @call
+              header: "Dockerfile"
+              handler: ->
+                dockerfile = null
+                switch config.docker_compose_version
+                  when '1'
+                    dockerfile = @config.ryba.solr.cloud_docker.clusters[name].service_def
+                    break;
+                  when '2'
+                    dockerfile =
+                      version:'2'
+                      services: @config.ryba.solr.cloud_docker.clusters[name].service_def
+                    break;
+                @file.yaml
+                  if: @config.host is config['master'] or not @config.docker.swarm?
+                  target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
+                  content: dockerfile
+                  uid: solr.user.name
+                  gid: solr.group.name
+                  mode: 0o0750
         @docker.compose.up
           header: 'Compose up through swarm'
           if: @config.host is config['master'] and (@has_service('ryba/swarm/agent') or @has_service('ryba/swarm/master'))

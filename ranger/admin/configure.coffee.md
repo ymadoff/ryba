@@ -4,19 +4,9 @@ This modules configures every hadoop plugin needed to enable Ranger. It configur
 variables but also inject some function to be executed.
 
     module.exports = ->
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
-      dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
-      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm'
-      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
-      hm_ctxs = @contexts 'ryba/hbase/master'
-      rs_ctxs = @contexts 'ryba/hbase/regionserver'
-      hbcli_ctxs = @contexts 'ryba/hbase/client'
-      kb_ctxs = @contexts 'ryba/kafka/broker'
       sc_ctxs = @contexts 'ryba/solr/cloud'
       st_ctxs = @contexts 'ryba/solr/standalone'
       scd_ctxs = @contexts 'ryba/solr/cloud_docker'
-      hive_ctxs = @contexts 'ryba/hive/server2'
-      knox_ctxs = @contexts 'ryba/knox'
       {ryba} = @config
       {realm, db_admin, ssl, core_site, hdfs, hadoop_group, hadoop_conf_dir} = ryba
       ranger = @config.ryba.ranger ?= {}
@@ -222,16 +212,18 @@ on the same host than `ryba/ranger/admin` module.
           solr_clusterize = require '../../solr/cloud_docker/clusterize'
           # {solr} = scd_ctxs[0].config.ryba
           # solr.cloud_docker.clusters ?= {}
-          {solr} = @config.ryba
+          {solr} = @config.ryba ?= {}
           solr.cloud_docker ?= {}
           solr.cloud_docker.clusters ?= {}
           cluster_config = ranger.admin.cluster_config = solr.cloud_docker.clusters[cluster_name] ?= {}
+          cluster_config.rangerEnabled = false
           for solr_ctx in scd_ctxs
             solr = solr_ctx.config.ryba.solr ?= {}
             #By default Ryba search for a solr cloud cluster named ranger_cluster in config
             # Configures one cluster if not in config
             solr.cloud_docker.clusters ?= {}
             cluster_config  = solr.cloud_docker.clusters[cluster_name] ?= {}
+            cluster_config.rangerEnabled = false
             cluster_config.volumes ?= []
             cluster_config.volumes.push '/tmp/ranger_audits:/ranger_audits'
             cluster_config['containers'] ?= scd_ctxs.length
@@ -386,7 +378,7 @@ For now Ranger support policy management for:
 Plugins should be configured before the service is started and/or configured.
 Ryba injects function to the different contexts.
 
-      ranger.plugins ?= {}      
+      ranger.plugins ?= {}
       ranger.plugins.principal ?= "#{ranger.user.name}@#{realm}"
       ranger.plugins.password ?= 'ranger123'
 

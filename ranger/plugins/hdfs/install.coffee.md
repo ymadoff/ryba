@@ -14,7 +14,7 @@
 
 ## Packages
 
-      @call header: 'Packages', handler: ->        
+      @call header: 'Packages', handler: ->
         @system.execute
           header: 'Setup Execution'
           shy:true

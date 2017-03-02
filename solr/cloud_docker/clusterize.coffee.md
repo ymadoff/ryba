@@ -54,21 +54,31 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
         config.zk_node ?= "solr_#{name}"
         config.zk_connect ?= "#{solr.cloud_docker.zk_connect}"
         config.zk_urls ?= "#{solr.cloud_docker.zk_connect}/#{config.zk_node}"
+        config.admin_principal ?= solr.cloud_docker.admin_principal
+        config.admin_password ?= solr.cloud_docker.admin_password
+        config.conf_dir ?= "#{solr.cloud_docker.conf_dir}/clusters/#{name}"
+        config.rangerEnabled ?= false
+        config.authentication_class ?= if context.config.ryba.security is 'kerberos'
+        then 'org.apache.solr.security.KerberosPlugin'
+        else 'solr.BasicAuthPlugin'
+        config.authorization_class ?= if config.rangerEnabled
+        then 'org.apache.ranger.authorization.solr.authorizer.RangerSolrAuthorizer'
+        else 'solr.RuleBasedAuthorizationPlugin'
         config.service_def ?= {}
         config['env'] ?= {}
         ## allow administrators to disable ssl on solr cloud docker clusters.
         config['env']['SSL_ENABLED'] = "#{config.is_ssl_enabled}"
         volumes = [
-            "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker_entrypoint.sh:/docker_entrypoint.sh",
+            "#{config.conf_dir}/docker_entrypoint.sh:/docker_entrypoint.sh",
             "#{solr.cloud_docker.conf_dir}/keystore:#{solr.cloud_docker.conf_dir}/keystore",
             "#{solr.cloud_docker.conf_dir}/truststore:#{solr.cloud_docker.conf_dir}/truststore",
             "#{solr.cloud_docker.conf_dir}/solr-server.jaas:#{solr.cloud_docker.conf_dir}/solr-server.jaas",
-            "#{solr.cloud_docker.conf_dir}/clusters/#{name}/solr.in.sh:#{solr.cloud_docker.conf_dir}/solr.in.sh",
-            "#{solr.cloud_docker.conf_dir}/clusters/#{name}/solr.xml:#{solr.cloud_docker.conf_dir}/solr.xml",
+            "#{config.conf_dir}/solr.in.sh:#{solr.cloud_docker.conf_dir}/solr.in.sh",
+            "#{config.conf_dir}/solr.xml:#{solr.cloud_docker.conf_dir}/solr.xml",
             "#{config.data_dir}:/var/solr/data",
             "#{config.log_dir}:#{solr.cloud_docker.latest_dir}/server/logs",
             "/etc/security/keytabs:/etc/security/keytabs",
-            "#{solr.cloud_docker.conf_dir}/clusters/#{name}/zkCli.sh:/usr/solr-cloud/current/server/scripts/cloud-scripts/zkcli.sh",
+            "#{config.conf_dir}/zkCli.sh:/usr/solr-cloud/current/server/scripts/cloud-scripts/zkcli.sh",
             "/etc/krb5.conf:/etc/krb5.conf" ] 
         volumes.push config.volumes...
         config.master_configured = false
@@ -151,13 +161,11 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             # Authentication & Authorization
             config_host.security = config.security ?= {}
             config_host.security["authentication"] ?= {}
-            config_host.security["authentication"]['class'] ?= if  context.config.ryba.security is 'kerberos'
-            then 'org.apache.solr.security.KerberosPlugin'
-            else 'solr.BasicAuthPlugin'
+            config_host.security["authentication"]['class'] ?= config.authentication_class
             config_host.security['authentication']['blockUnknown'] ?= true 
             # ACLs
             config_host.security["authorization"] ?= {}
-            config_host.security["authorization"]['class'] ?= 'solr.RuleBasedAuthorizationPlugin'
+            config_host.security["authorization"]['class'] ?= config.authorization_class
             config_host.security["authorization"]['permissions'] ?= []
             config_host.security["authorization"]['permissions'].push name: 'security-edit' , role: 'admin' unless config_host.security["authorization"]['permissions'].filter( (perm) -> return perm if perm['name']?).length > 0 #define new role 
             # config_host.security["authorization"]['permissions'].push name: 'read' , role: 'reader' unless config_host.security["authorization"]['permissions'].indexOf({name: 'read' , role: 'reader' }) > -1  #define new role
@@ -172,7 +180,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
               # Control ACL with  SASL Authentication
               # config_host.zk_opts['zkCredentialsProvider'] ?= 'org.apache.solr.common.cloud.VMParamsSingleSetCredentialsDigestZkCredentialsProvider'
               # config_host.zk_opts['zkACLProvider'] ?= 'org.apache.solr.common.cloud.SaslZkACLProvider'
-              config_host.security["authorization"]['user-role']["#{solr.cloud_docker.admin_principal}"] ?= 'manager'
+              config_host.security["authorization"]['user-role']["#{config.admin_principal}"] ?= 'manager'
               config_host.zk_opts['solr.authorization.superuser'] ?= solr.user.name #default to solr
               for host in config.hosts
                 config_host.security["authorization"]['user-role']["#{solr.user.name}/#{host}@#{context.config.ryba.realm}"] ?= 'manager'
@@ -195,3 +203,13 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             config_host.auth_opts['solr.kerberos.principal'] ?= "HTTP/#{context.config.host}@#{context.config.ryba.realm}"
             config_host.auth_opts['solr.kerberos.keytab'] ?= solr.cloud_docker.spnego.keytab
             config_host.auth_opts['solr.kerberos.name.rules'] ?= "RULE:[1:\\$1]RULE:[2:\\$1]"
+
+            # Rangerize
+            context.config.rangerized ?= []
+            nodePluginName = "#{name}-#{context.config.host}"
+            rangerize(context, name, config, config_host) if config.rangerEnabled and context.config.rangerized.indexOf(nodePluginName) is -1
+            context.config.rangerized.push nodePluginName
+
+## Dependencies
+
+      rangerize = require "#{__dirname}/../../ranger/plugins/solr_cloud_docker/rangerize"

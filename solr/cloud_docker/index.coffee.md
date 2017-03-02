@@ -15,8 +15,7 @@ but does not start the clusters.
         hadoop_core: 'ryba/hadoop/core'
         zoo_server: module: 'ryba/zookeeper/server'
         zoo_client: implicit: true, module: 'ryba/zookeeper/client'
-      configure:
-        'ryba/solr/cloud_docker/configure'
+      configure: ['ryba/solr/cloud_docker/configure']
       commands:
         'prepare': 'ryba/solr/cloud_docker/prepare'
         'install': 'ryba/solr/cloud_docker/install'
