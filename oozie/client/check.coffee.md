@@ -440,9 +440,6 @@
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{@config.shortname}-oozie-pig/output"
 
 ## Check Spark Workflow
-## https://oozie.apache.org/docs/4.2.0/DG_SparkActionExtension.html
-## https://gist.github.com/NitinKumar94/4757268d9884ad79ce54
-## http://www.learn4master.com/big-data/pyspark/run-pyspark-on-oozie
 
       @call header: 'Check Spark', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
@@ -481,15 +478,16 @@
                 <job-tracker>${jobTracker}</job-tracker>
                 <name-node>${nameNode}</name-node>
                 <prepare>
-                  <delete path="/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/output"/>
+                  <delete path="${nameNode}/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/output"/>
                 </prepare>
                 <master>${master}</master>
                 <mode>cluster</mode>
                 <name>Spark-FileCopy</name>
                 <class>org.apache.oozie.example.SparkFileCopy</class>
-                <jar>/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/lib/oozie-examples.jar</jar>
-                <arg>/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/input/data.txt</arg>
-                <arg>/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/output</arg>
+                <jar>${nameNode}/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/lib/oozie-examples.jar</jar>
+                <spark-opts>--conf spark.ui.view.acls=* --executor-memory 512m --num-executors 1 --executor-cores 1 --driver-memory 512m</spark-opts>
+                <arg>${nameNode}/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/input/data.txt</arg>
+                <arg>${nameNode}/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/output</arg>
               </spark>
               <ok to="end" />
               <error to="fail" />
@@ -509,7 +507,6 @@
           # Prepare HDFS
           hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-spark 2>/dev/null
           hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-spark/input
-          hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-spark/output
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{@config.shortname}-oozie-spark/input/data.txt
           hdfs dfs -put -f #{user.home}/check_oozie_spark/workflow.xml check-#{@config.shortname}-oozie-spark
           # Extract Examples

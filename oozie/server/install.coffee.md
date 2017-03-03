@@ -457,47 +457,49 @@ the ShareLib contents without having to go into HDFS.
 
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'
       @call header: 'Share lib', timeout: 600000, handler: ->
-        @system.execute
-          cmd:"""
-          cd /usr/hdp/current/oozie-server
-          tar -xzf oozie-sharelib.tar.gz
-          chmod -R 0755 /usr/hdp/current/oozie-server/share/lib/
-          """
-          unless_exec: "test -d /usr/hdp/current/oozie-server/share"
-        # https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_command-line-upgrade/content/start-oozie-23.html
-        # AMBARI-18383
-        @system.execute
-          cmd:"""
-          echo 'Add Spark libs to the sharelib'
-          cd /usr/hdp/current/oozie-server
-          cp -P -f /usr/hdp/current/spark-client/lib/datanucleus-*.jar /usr/hdp/current/oozie-server/share/lib/spark
-          cp -P -f /usr/hdp/current/spark-client/lib/spark-assembly*.jar /usr/hdp/current/oozie-server/share/lib/spark
-          cp -P -f /usr/hdp/current/spark-client/python/lib/*.jar /usr/hdp/current/oozie-server/share/lib/spark
-          cp -P -f /usr/hdp/current/spark-client/python/lib/*.zip /usr/hdp/current/oozie-server/share/lib/spark
-          chmod -R 0755 /usr/hdp/current/oozie-server/share/lib/spark
-          """
-          unless_exec: "find /usr/hdp/current/oozie-server/share/lib/spark/spark-assembly*.jar"
         @hdfs_mkdir
           target: "/user/#{oozie.user.name}/share/lib"
           user: "#{oozie.user.name}"
           group:  "#{oozie.group.name}"
           mode: 0o0755
           krb5_user: @config.ryba.hdfs.krb5_user
+        # Extract the released sharelib locally
+        @call
+          unless_exec:"""
+            version=`ls /usr/hdp/current/oozie-server/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
+            cat /usr/hdp/current/oozie-server/share/lib/sharelib.properties | grep build.version | grep $version
+          """
+          handler: ->
+            @system.execute
+              header: 'Remove old local version'
+              cmd:"rm -Rf /usr/hdp/current/oozie-server/share"
+            @tools.extract
+              header: 'Extract released version'
+              source: "/usr/hdp/current/oozie-server/oozie-sharelib.tar.gz"
+              target: "/usr/hdp/current/oozie-server"
+              unless_exec: "test -d /usr/hdp/current/oozie-server/share"
+            @system.execute
+               cmd:"chmod -R 0755 /usr/hdp/current/oozie-server/share/"
+        # Copy additions to the local sharelib
+        @call ->
+          for sublib of oozie.sharelib
+            for addition in oozie.sharelib[sublib]
+              @system.copy
+                header: "Add dependency for #{sublib}"
+                source: "#{addition}"
+                target: "/usr/hdp/current/oozie-server/share/lib/#{sublib}"
+                mode: 0o0755
+        # Deploy a versionned sharelib
         @system.execute
+          if: -> @status -1 or @status -2 or @status -3
+          header: 'Deploy to HDFS'
           cmd: mkcmd.hdfs @, """
-          if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
-            echo 'Upgrade sharelib'
-          else
-            echo 'Create sharelib'
-          fi
           su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-server/share"
           hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
           """
-          #trap: true
-          #unless_exec: mkcmd.hdfs @, """
-          #version=`ls /usr/hdp/current/oozie-server/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
-          #hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
-          #"""
+          trap: true
+
+
 ## Hive Site
 
       @hconfigure

@@ -30,7 +30,7 @@
   </property>
 
   <property>
-    <name>oozie.service.AuthorizationService.security.enabled</name>
+    <name>oozie.service.AuthorizationService.authorization.enabled</name>
     <value>true</value>
     <description>
       Specifies whether security (user name/admin role) is enabled or not.

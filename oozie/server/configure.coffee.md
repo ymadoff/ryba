@@ -74,14 +74,11 @@ Example
       oozie.site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
       oozie.site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
       oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
-      # oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
       # Path to hadoop configuration is required when running 'sharelib upgrade'
       # or an error will complain that the hdfs url is invalid
       oozie.site['oozie.service.HadoopAccessorService.hadoop.configurations'] ?= '*=/etc/hadoop/conf'
-      # configuration for Spark
       oozie.site['oozie.service.SparkConfigurationService.spark.configurations'] ?= '*=/etc/spark/conf/'
-      oozie.site['oozie.service.SparkConfigurationService.spark.configurations.ignore.spark.yarn.jar'] ?= 'true'
-      # oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= 'true'
+      #oozie.site['oozie.service.SparkConfigurationService.spark.configurations.ignore.spark.yarn.jar'] ?= 'true'
       oozie.site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
       oozie.site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
       oozie.site['local.realm'] ?= "#{ryba.realm}"
@@ -90,7 +87,6 @@ Example
       oozie.site['oozie.authentication.type'] ?= 'kerberos'
       oozie.site['oozie.authentication.kerberos.principal'] ?= "HTTP/#{@config.host}@#{ryba.realm}"
       oozie.site['oozie.authentication.kerberos.keytab'] ?= '/etc/oozie/conf/spnego.service.keytab'
-      # oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
       oozie.site['oozie.authentication.kerberos.name.rules'] ?= ryba.core_site['hadoop.security.auth_to_local']
       oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
       oozie.site['oozie.credentials.credentialclasses'] ?= [
@@ -106,6 +102,26 @@ Example
       log4j.appender.console.layout=org.apache.log4j.PatternLayout
       log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n
       '''
+      # Sharelib add-ons
+      oozie.sharelib ?= {}
+      oozie.sharelib.distcp ?= []
+      oozie.sharelib.hcatalog ?= []
+      oozie.sharelib.hive ?= []
+      oozie.sharelib.hive2 ?= []
+      oozie.sharelib.mrstreaming ?= []
+      oozie.sharelib.oozie ?= []
+      oozie.sharelib.pig ?= []
+      oozie.sharelib.spark ?= []
+      oozie.sharelib.sqoop ?= []
+      # https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_command-line-upgrade/content/start-oozie-23.html
+      # AMBARI-18383
+      oozie.sharelib.spark.push '/usr/hdp/current/spark-client/lib/datanucleus-api-jdo-3.2.6.jar'
+      oozie.sharelib.spark.push '/usr/hdp/current/spark-client/lib/datanucleus-core-3.2.10.jar'
+      oozie.sharelib.spark.push '/usr/hdp/current/spark-client/lib/datanucleus-rdbms-3.2.9.jar'
+      oozie.sharelib.spark.push '/usr/hdp/current/spark-client/lib/spark-assembly-1.6.2.2.5.3.0-37-hadoop2.7.3.2.5.3.0-37.jar'
+      oozie.sharelib.spark.push '/usr/hdp/current/spark-client/python/lib/pyspark.zip'
+      oozie.sharelib.spark.push '/usr/hdp/current/spark-client/python/lib/py4j-0.9-src.zip'
+
 
 ## Configuration for Proxy Users
 
