@@ -86,7 +86,7 @@ We do not edit knox-env.sh because environnement variables are directly set
 in the gateway.sh service script.
 
       @call header: 'Env', handler: ->
-        knox.env.app_log_opts += "-D#{k}=#{v}" for k,v of knox.log4jopts
+        knox.env.app_log_opts += " -D#{k}=#{v}" for k,v of knox.log4jopts
         @file
           header: 'Env'
           target: "#{knox.conf_dir}/gateway.sh"
