@@ -20,15 +20,15 @@
       @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 # Create Solr user for Ranger WEBui
-      
+
       @system.execute
         cmd: """
-          curl --fail -H "Content-Type: application/json"   -k -X POST \ 
+          curl --fail -H "Content-Type: application/json"   -k -X POST \
           -d '#{JSON.stringify solr_plugin.ranger_user}' -u admin:#{admin.password} \
           \"#{admin.install['policymgr_external_url']}/service/xusers/secure/users\"
         """
         unless_exec: """
-          curl --fail -H "Content-Type: application/json"   -k -X GET \ 
+          curl --fail -H "Content-Type: application/json"   -k -X GET \
           -u admin:#{admin.password} \
           \"#{admin.install['policymgr_external_url']}/service/xusers/users\" | grep '#{solr_plugin.ranger_user.name}'
         """
