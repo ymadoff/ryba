@@ -43,7 +43,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
            replace: "export HBASE_HOME=${HBASE_HOME:-/usr/hdp/current/hbase-client} # RYBA for HDP"
          ,
            match: /^export HIVE_HOME=.*$/m # Sqoop default is "/usr/lib/hive"
-           replace: "export HIVE_HOME=${HIVE_HOME:-/usr/hdp/current/hive-server} # RYBA for HDP"
+           replace: "export HIVE_HOME=${HIVE_HOME:-/usr/hdp/current/hive-client} # RYBA for HDP"
          ,
            match: /^export ZOOCFGDIR=.*$/m # Sqoop default is "/etc/zookeeper/conf"
            replace: "export ZOOCFGDIR=${ZOOCFGDIR:-/etc/zookeeper/conf} # RYBA for HDP"

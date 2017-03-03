@@ -9,8 +9,9 @@ Apache Hadoop and structured datastores such as relational databases.
           java: implicit: true, module: 'masson/commons/java'
           mysql_client: 'masson/commons/mysql/client'
           hadoop_core: 'ryba/hadoop/core'
-          hdfs_client: 'ryba/hadoop/hdfs_client'
-          yarn_client: 'ryba/hadoop/yarn_client'
+          hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
+          hive_client: implicit: true, module: 'ryba/hive/client'
+          yarn_client: implicit: true, module: 'ryba/hadoop/yarn_client'
         configure:
           'ryba/sqoop/configure'
         commands:
