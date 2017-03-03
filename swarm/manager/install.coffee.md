@@ -168,4 +168,3 @@ on the swarm cluster level
 ## Dependencies
     
     path = require 'path'
-    discover = require 'mecano/lib/misc/discover'
