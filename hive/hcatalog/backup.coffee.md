@@ -40,4 +40,4 @@ Backup the active Hive configuration.
 
 ## Dependencies
 
-    db = require 'mecano/lib/misc/db'
+    db = require 'nikita/lib/misc/db'

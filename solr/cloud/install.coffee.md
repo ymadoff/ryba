@@ -101,7 +101,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
           local: true
           context: @config
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: solr.cloud.pid_dir
           uid: solr.user.name
           gid: solr.group.name

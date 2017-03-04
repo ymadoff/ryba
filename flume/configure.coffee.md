@@ -2,10 +2,10 @@
 ## Configure
 
 *   `user` (object|string)
-    The Unix Flume login name or a user object (see Mecano User
+    The Unix Flume login name or a user object (see Nikita User
     documentation).
 *   `group` (object|string)
-    The Unix Flume group name or a group object (see Mecano Group
+    The Unix Flume group name or a group object (see Nikita Group
     documentation).
 
 Example:

@@ -2,9 +2,9 @@
 # Shinken Configure
 
 *   `shinken.user` (object|string)
-    The Unix Shinken login name or a user object (see Mecano User documentation).
+    The Unix Shinken login name or a user object (see Nikita User documentation).
 *   `shinken.group` (object|string)
-    The Unix Shinken group name or a group object (see Mecano Group documentation).
+    The Unix Shinken group name or a group object (see Nikita Group documentation).
 
 Example
 

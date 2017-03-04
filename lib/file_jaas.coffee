@@ -29,7 +29,7 @@ file.jaas
 
 module.exports = (options) ->
   # Quick fix
-  # waiting for context registration of mecano actions as well as
+  # waiting for context registration of nikita actions as well as
   # waiting for uid_gid moved from wrap to their expected location
   options.mode ?= 0o600
   options.backup ?= true

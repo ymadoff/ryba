@@ -65,7 +65,7 @@ inside "/etc/init.d" and activate it on startup.
         @hdp_select
           name: 'hadoop-client'
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: "#{yarn.nm.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
@@ -322,7 +322,7 @@ on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (ma
             name: 'cgconfig'
             if: -> @status -1
           @call (options) ->
-            yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] = options.store['mecano:cgroups:mount']
+            yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] = options.store['nikita:cgroups:mount']
             @hconfigure
               header: 'YARN Site'
               target: "#{yarn.nm.conf_dir}/yarn-site.xml"

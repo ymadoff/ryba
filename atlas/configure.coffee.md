@@ -496,6 +496,6 @@ in or out of docker.
 ## Dependencies
   
     configure_solr_cluster = require '../solr/cloud_docker/clusterize'
-    {merge} = 'mecano/lib/misc'
+    {merge} = 'nikita/lib/misc'
 
 [titan]:(http://titan.thinkaurelius.com)

@@ -151,4 +151,4 @@ The repository name should match the reposity name in web ui.
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

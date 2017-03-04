@@ -17,8 +17,8 @@ solutions available. The most popular are:
 
 ## Install the sources
 
-Because Ryba rely heavily on Masson and Mecano, chances are that while
-developing/modifying Ryba you also wish to improve Masson and Mecano as well.
+Because Ryba rely heavily on Masson and Nikita, chances are that while
+developing/modifying Ryba you also wish to improve Masson and Nikita as well.
 For this reason, this procedure explains you how to setup a full development
 environment with those modules as well.
 
@@ -31,12 +31,12 @@ specifically the `npm link` command.
 PROJECTS_HOME='~/projects'
 ```
 
-### Setup mecano
+### Setup nikita
 
 ```
 cd $PROJECTS_HOME
-git clone https://github.com/wdavidw/node-mecano mecano
-cd mecano
+git clone https://github.com/wdavidw/node-nikita nikita
+cd nikita
 npm install
 npm link
 ```
@@ -48,7 +48,7 @@ cd $PROJECTS_HOME
 git clone https://github.com/wdavidw/node-masson masson
 cd masson
 npm install
-npm link mecano
+npm link nikita
 npm link
 ```
 
@@ -59,7 +59,7 @@ cd $PROJECTS_HOME
 git clone https://github.com/ryba-io/ryba ryba
 cd ryba
 npm install
-npm link mecano
+npm link nikita
 npm link masson
 npm link
 ```

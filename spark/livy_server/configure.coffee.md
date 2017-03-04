@@ -39,7 +39,7 @@ Configure Spark Livy Server and integrates it with the other components deployed
       livy.build.name ?= 'ryba/livy'
       livy.build.version ?= 'latest'
       livy.build.dockerfile ?= "#{__dirname}/../resources/Dockerfile"
-      livy.build.directory ?= "#{@config.mecano.cache_dir}/spark_livy_server/cache/build" # was '/tmp/ryba/hue-build'
+      livy.build.directory ?= "#{@config.nikita.cache_dir}/spark_livy_server/cache/build" # was '/tmp/ryba/hue-build'
       livy.build.tar ?= 'spark_livy_server.tar'
       livy.image_dir ?= '/tmp'
 

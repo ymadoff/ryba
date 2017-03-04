@@ -84,4 +84,4 @@ Options include:
 
 ## Dependecies
 
-    {mode} = require 'mecano/src/misc'
+    {mode} = require 'nikita/src/misc'

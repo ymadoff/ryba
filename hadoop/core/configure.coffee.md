@@ -2,23 +2,23 @@
 # Hadoop Core Configuration
 
 *   `hdfs.user` (object|string)
-    The Unix HDFS login name or a user object (see Mecano User documentation).
+    The Unix HDFS login name or a user object (see Nikita User documentation).
 *   `yarn.user` (object|string)
-    The Unix YARN login name or a user object (see Mecano User documentation).
+    The Unix YARN login name or a user object (see Nikita User documentation).
 *   `mapred.user` (object|string)
-    The Unix MapReduce login name or a user object (see Mecano User documentation).
+    The Unix MapReduce login name or a user object (see Nikita User documentation).
 *   `user` (object|string)
-    The Unix Test user name or a user object (see Mecano User documentation).
+    The Unix Test user name or a user object (see Nikita User documentation).
 *   `hadoop_group` (object|string)
-    The Unix Hadoop group name or a group object (see Mecano Group documentation).
+    The Unix Hadoop group name or a group object (see Nikita Group documentation).
 *   `hdfs.group` (object|string)
-    The Unix HDFS group name or a group object (see Mecano Group documentation).
+    The Unix HDFS group name or a group object (see Nikita Group documentation).
 *   `yarn.group` (object|string)
-    The Unix YARN group name or a group object (see Mecano Group documentation).
+    The Unix YARN group name or a group object (see Nikita Group documentation).
 *   `mapred.group` (object|string)
-    The Unix MapReduce group name or a group object (see Mecano Group documentation).
+    The Unix MapReduce group name or a group object (see Nikita Group documentation).
 *   `group` (object|string)
-    The Unix Test group name or a group object (see Mecano Group documentation).
+    The Unix Test group name or a group object (see Nikita Group documentation).
 
 Default configuration:
 

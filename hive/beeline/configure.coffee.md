@@ -54,4 +54,4 @@ Example:
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

@@ -83,7 +83,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       params.end = false
       params.modules = [
         'masson/bootstrap/connection'
-        'masson/bootstrap/mecano'
+        'masson/bootstrap/nikita'
         'masson/bootstrap/log'
         'masson/core/yum'
       ]
@@ -220,6 +220,6 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
 
     util = require 'util'
     each = require 'each'
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'
     run = require 'masson/lib/run'
     mkcmd = require '../mkcmd'

@@ -153,4 +153,4 @@ Set up jave heap size linke in `ryba/hadoop/hdfs_nn`.
 ## Dependencies
 
     appender = require '../../lib/appender'
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

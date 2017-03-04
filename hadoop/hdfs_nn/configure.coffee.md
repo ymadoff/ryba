@@ -199,6 +199,6 @@ fencing method should be configured to not block failover.
 
 ## Dependencies
 
-    string = require 'mecano/lib/misc/string'
-    {merge} = require 'mecano/lib/misc'
+    string = require 'nikita/lib/misc/string'
+    {merge} = require 'nikita/lib/misc'
     appender = require '../../lib/appender'

@@ -186,5 +186,5 @@ Configure deep storage.
 
 ## Dependencies
 
-    db = require 'mecano/lib/misc/db'
+    db = require 'nikita/lib/misc/db'
     path = require 'path'

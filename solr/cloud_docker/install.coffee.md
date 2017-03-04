@@ -108,7 +108,7 @@ Create user and groups for solr user.
 ## Container
 Ryba support installing solr from apache official release or HDP Search repos.
 Priority to docker pull function to get the solr container, else a tar should
-be prepared in the mecano cache dir.
+be prepared in the nikita cache dir.
 
       @call header: 'Load Container', handler: ->
         exists = false
@@ -221,7 +221,7 @@ configuration like solr.in.sh or solr.xml.
           gid: solr.group.name
           mode: 0o0750
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: config.pid_dir
           uid: solr.user.name
           gid: solr.group.name

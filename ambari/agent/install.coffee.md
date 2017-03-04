@@ -69,4 +69,4 @@ Install Ambari server package.
         Defaults: ambari !requiretty 
         """
 
-    misc = require 'mecano/lib/misc'
+    misc = require 'nikita/lib/misc'

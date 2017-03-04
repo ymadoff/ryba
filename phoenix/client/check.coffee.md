@@ -85,6 +85,6 @@ instructions.
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
-    string = require 'mecano/lib/misc/string'
+    string = require 'nikita/lib/misc/string'
 
 [sqlline]: http://sqlline.sourceforge.net/#commands

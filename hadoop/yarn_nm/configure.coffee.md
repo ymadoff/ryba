@@ -155,6 +155,6 @@ Resources:
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'
 
 [yarn-cgroup-red7]:(https://issues.apache.org/jira/browse/YARN-2194)

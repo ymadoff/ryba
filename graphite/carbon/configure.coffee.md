@@ -2,9 +2,9 @@
 ## Configure
 
 *   `carbon_user` (object|string)
-    The Unix RRDtool login name or a user object (see Mecano User documentation).
+    The Unix RRDtool login name or a user object (see Nikita User documentation).
 *   `carbon_group` (object|string)
-    The Unix Hue group name or a group object (see Mecano Group documentation).
+    The Unix Hue group name or a group object (see Nikita Group documentation).
 
 Example:
 

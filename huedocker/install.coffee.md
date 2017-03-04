@@ -14,7 +14,7 @@ Run `ryba prepare` to create the Docker container.
       hive_conf_dir = hue_docker.ini['beeswax']['hive_conf_dir'] 
       hbase_conf_dir = hue_docker.ini['hbase']['hbase_conf_dir']
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-      machine = @config.mecano.machine
+      machine = @config.nikita.machine
 
 ## Register
 
@@ -330,7 +330,7 @@ Write startup script to /etc/init.d/service-hue-docker
           context: hue_docker
           mode: 0o755
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: hue_docker.pid_file
           uid: hue_docker.user.name
           gid: hue_docker.group.name
@@ -338,9 +338,9 @@ Write startup script to /etc/init.d/service-hue-docker
 
 ## Dependencies
 
-    misc = require 'mecano/lib/misc'
+    misc = require 'nikita/lib/misc'
     fs = require 'fs'
-    db = require 'mecano/lib/misc/db'
+    db = require 'nikita/lib/misc/db'
 
 ## Resources:
 

@@ -37,9 +37,9 @@ in order to rendered configuration file with custom properties.
         @service name: 'mongodb-org-tools'
         @call
           header: 'RPM'
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos'])
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos'])
           handler: ->
-            switch options.store['mecano:system:release'][0]
+            switch options.store['nikita:system:release'][0]
               when '6'
                 @file.render
                   source: "#{__dirname}/../resources/mongod-router-server.j2"

@@ -2,9 +2,9 @@
 ## OpenTSDB Configuration
 
 *   `opentsdb.user` (object|string)   
-    The Unix OpenTSDB login name or a user object (see Mecano User documentation).   
+    The Unix OpenTSDB login name or a user object (see Nikita User documentation).   
 *   `opentsdb.group` (object|string)   
-    The Unix OpenTSDB group name or a group object (see Mecano Group documentation).   
+    The Unix OpenTSDB group name or a group object (see Nikita Group documentation).   
 
 Example
 

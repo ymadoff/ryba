@@ -1183,5 +1183,5 @@ For now, masson are ignored
 
     fs = require 'fs'
     glob = require 'glob'
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'
     path = require 'path'

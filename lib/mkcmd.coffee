@@ -12,7 +12,7 @@ Options:
 Unix exemple
 
 ```
-mecano.execute mkcmd
+nikita.execute mkcmd
   name: 'ryba'
   cmd: 'hdfs dfs -ls'
 ```
@@ -20,7 +20,7 @@ mecano.execute mkcmd
 Kerberos exemple
 
 ```
-mecano.execute mkcmd
+nikita.execute mkcmd
   principal: 'ryba'
   password: 'ryba123'
   cmd: 'hdfs dfs -ls'

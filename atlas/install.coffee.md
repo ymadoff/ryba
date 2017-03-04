@@ -100,7 +100,7 @@ Install Atlas packages
           target: atlas.conf_dir
           source: '/usr/hdp/current/atlas-server/conf'
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: atlas.pid_dir
           uid: atlas.user.name
           gid: atlas.group.name
@@ -787,9 +787,9 @@ Populates the Oozie directory with the Atlas server JAR files.
 ## Dependencies
 
     mkcmd = require '../lib/mkcmd'
-    string = require 'mecano/lib/misc/string'
+    string = require 'nikita/lib/misc/string'
     path = require 'path'
     fs = require 'ssh2-fs'
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'
 
 [atlas-credential-file]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_data-governance/content/ch_hdp_data_governance_install_atlas_ambari.html)

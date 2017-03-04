@@ -86,7 +86,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           target: '/etc/init.d/hbase-master'
           mode: 0o0755
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: hbase.master.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name

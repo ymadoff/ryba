@@ -146,7 +146,7 @@ Environment passed to the HBase Rest Server before it starts.
           context: @config
           mode: 0o0755
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: hbase.thrift.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name

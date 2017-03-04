@@ -85,7 +85,7 @@ inside "/etc/init.d" and activate it on startup.
           target: '/etc/init.d/hbase-regionserver'
           mode: 0o0755
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: hbase.rs.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name

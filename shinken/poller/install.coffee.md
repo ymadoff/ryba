@@ -91,7 +91,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
         @call header: 'Docker', timeout: -1, handler: ->
           @file.download
-            source: "#{@config.mecano.cache_dir or '.'}/shinken-poller-executor.tar"
+            source: "#{@config.nikita.cache_dir or '.'}/shinken-poller-executor.tar"
             target: '/var/lib/docker_images/shinken-poller-executor.tar'
             md5: true
           @docker_load

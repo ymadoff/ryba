@@ -2,9 +2,9 @@
 # Oozie Server Configure
 
 *   `oozie.user` (object|string)
-    The Unix Oozie login name or a user object (see Mecano User documentation).
+    The Unix Oozie login name or a user object (see Nikita User documentation).
 *   `oozie.group` (object|string)
-    The Unix Oozie group name or a group object (see Mecano Group documentation).
+    The Unix Oozie group name or a group object (see Nikita Group documentation).
 
 Example
 

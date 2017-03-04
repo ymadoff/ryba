@@ -94,7 +94,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           target: '/etc/init.d/oozie'
           mode: 0o0755
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: oozie.pid_dir
           uid: oozie.user.name
           gid: hadoop_group.name
@@ -528,5 +528,5 @@ the ShareLib contents without having to go into HDFS.
     url = require 'url'
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'
-    db = require 'mecano/lib/misc/db'
+    db = require 'nikita/lib/misc/db'
     quote = require 'regexp-quote'

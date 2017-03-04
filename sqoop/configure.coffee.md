@@ -9,7 +9,7 @@ The module extends the "ryba/hadoop/core" module configuration.
     string. This is for example used to add the Oracle JDBC driver "ojdbc6.jar"
     which cannt be downloaded for licensing reasons.
 *   `sqoop_user` (object|string)
-    The Unix Sqoop login name or a user object (see Mecano User documentation).
+    The Unix Sqoop login name or a user object (see Nikita User documentation).
 
 Todo, with oozie, it seems like drivers must be stored in "/user/oozie/share/lib/sqoop".
 

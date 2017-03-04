@@ -32,7 +32,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
           'pid_dir': smartsense.server.pid_dir
           'user': smartsense.user.name
       @system.tmpfs
-        if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+        if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
         mount: smartsense.server.pid_dir
         perm: '0750'
         uid: smartsense.user.name
@@ -136,4 +136,4 @@ Note rmp can only be download from the Hortonworks Support Web UI.
 
 ## Dependencies
 
-    misc = require 'mecano/lib/misc'
+    misc = require 'nikita/lib/misc'

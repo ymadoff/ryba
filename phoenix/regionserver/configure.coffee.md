@@ -18,7 +18,7 @@
         # "ERROR: DISABLED: Security features are not available" after a grant 
         # hbase.site['hbase.coprocessor.regionserver.classes'] = 'org.apache.hadoop.hbase.regionserver.LocalIndexMerger'
       @after
-        # TODO: add header support to aspect in mecano
+        # TODO: add header support to aspect in nikita
         type: 'service'
         name: 'hbase-regionserver'
       , ->

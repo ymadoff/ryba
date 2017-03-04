@@ -148,7 +148,7 @@ Load Zeppelin docker image from local host
 
       @call header: 'Import', timeout: -1, handler: ->
         @file.download
-          source: "#{@config.mecano.cache_dir}/zeppelin.tar"
+          source: "#{@config.nikita.cache_dir}/zeppelin.tar"
           target: "/tmp/zeppelin.tar" # add versioning
         @docker_load
           machine: 'ryba'

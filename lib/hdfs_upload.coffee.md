@@ -128,4 +128,4 @@
 ## Dependencies
 
     mkcmd = require './mkcmd'
-    string = require 'mecano/lib/misc/string'
+    string = require 'nikita/lib/misc/string'

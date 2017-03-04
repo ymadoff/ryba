@@ -139,4 +139,4 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

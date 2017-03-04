@@ -2,7 +2,7 @@
 # ZooKeeper Client Configure
 
 *   `zookeeper.user` (object|string)   
-    The Unix Zookeeper login name or a user object (see Mecano User documentation).   
+    The Unix Zookeeper login name or a user object (see Nikita User documentation).   
 *   `zookeeper.env` (object)   
     Map of variables present in "zookeeper-env.sh" and used to initialize the server.   
 *   `zookeeper.config` (object)   

@@ -45,7 +45,7 @@ Try to pull the image first, or upload from cache if not pull possible.
           unless: -> @status(-1) or @status(-2)
           binary: true
           header: 'from cache'
-          source: "#{@config.mecano.cache_dir}/swarm.tar"
+          source: "#{@config.nikita.cache_dir}/swarm.tar"
           target: "#{tmp_dir}/swarm.tar"
         @docker.load
           header: 'Load'
@@ -66,9 +66,9 @@ Same logic that `masson/commons/docker`, but add the swarm starting options.
           opts.push "-H #{type}://#{path}" for path in socketPaths
         other_opts += opts.join ' '
         @call 
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos'])
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos'])
           handler: ->
-            switch options.store['mecano:system:release'][0]
+            switch options.store['nikita:system:release'][0]
               when '6' 
                 @file
                   target: '/etc/sysconfig/docker'

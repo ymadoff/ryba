@@ -60,7 +60,7 @@ Write startup script to /etc/init.d/service-hue-docker
           context: spark.livy
           mode: 0o755
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: spark.livy.pid_dir
           uid: spark.user.name
           gid: spark.group.name

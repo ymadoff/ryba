@@ -315,4 +315,4 @@ Knox read its own env variable to read configuration.
 ## Dependencies
 
     appender = require '../lib/appender'
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

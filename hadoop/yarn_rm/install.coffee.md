@@ -87,7 +87,7 @@ inside "/etc/init.d" and activate it on startup.
           context: @config
           mode: 0o0755
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: "#{yarn.rm.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
@@ -273,7 +273,7 @@ the "ryba/hadoop/hdfs" module for additional information.
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'
 
 ## Todo: WebAppProxy.
 

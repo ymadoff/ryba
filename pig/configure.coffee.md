@@ -8,7 +8,7 @@ Pig uses the "hdfs" configuration. It also declare 2 optional properties:
     run only on the first install. The property is shared by multiple
     modules and default to false.
 *   `pig.user` (object|string)
-    The Unix Pig login name or a user object (see Mecano User documentation).
+    The Unix Pig login name or a user object (see Nikita User documentation).
 *   `hdp.pig.conf_dir` (string)
     The Pig configuration directory, dont overwrite, default to "/etc/pig/conf".
 

@@ -69,7 +69,7 @@ inside "/etc/init.d" and activate it on startup.
           mode: 0o0755
           context: @config.ryba
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: webhcat.pid_dir
           uid: hive.user.name
           gid: hadoop_group.name

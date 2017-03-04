@@ -3,7 +3,7 @@
 
 Follows Cloudera   [build-instruction][cloudera-hue] for Hue 3.7 and later version.
 An internet Connection is needed to be able to download.
-Becareful when used with docker-machine mecano might exit before finishing
+Becareful when used with docker-machine nikita might exit before finishing
 the execution. you can resume build by executing again prepare
 
 First container
@@ -39,7 +39,7 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
 
       @call header: 'Build Prepare', timeout: -1,  handler: ->
         @system.mkdir
-          target: "#{@config.mecano.cache_dir}/huedocker"
+          target: "#{@config.nikita.cache_dir}/huedocker"
         @system.mkdir
           target: "#{hue_docker.build.directory}/"
         @system.copy

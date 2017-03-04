@@ -60,7 +60,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           context: @config.ryba.knox
           mode: 0o755
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: "/var/run/#{knox.user.name}"
           uid: knox.user.name
           gid: knox.group.name

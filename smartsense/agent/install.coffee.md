@@ -78,4 +78,4 @@ Note rmp can only be download from the Hortonworks Support Web UI.
 
 ## Dependencies
 
-    misc = require 'mecano/lib/misc'
+    misc = require 'nikita/lib/misc'

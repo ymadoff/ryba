@@ -19,7 +19,7 @@
         stderr: process.stderr
         # stdout : fs.createWriteStream path.resolve './log', filename_stdout
         # stderr : fs.createWriteStream path.resolve './log', filename_stderr
-      m = mecano options
+      m = nikita options
       for mod in mods
         resolved = "#{__dirname}/../../../#{mod}"
         todos = require resolved
@@ -32,7 +32,7 @@
 
 ## Dependencies
 
-    mecano = require 'mecano'
+    nikita = require 'nikita'
     path = require 'path'
     fs = require 'fs'
 

@@ -21,7 +21,7 @@ Resources:
 
 ```coffee
 coffee -s <<COFFEE
-m = require 'mecano'
+m = require 'nikita'
 m.register 'cm_prepare', 'ryba/cloudera-manager/server/prepare'
 m.cm_prepare
   distrib: 'precise'

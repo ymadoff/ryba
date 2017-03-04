@@ -134,4 +134,4 @@ The properties can be found [here][kafka-repository]
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

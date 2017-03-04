@@ -25,15 +25,15 @@ image.
       @docker_run
         image: zeppelin.build.tag
         rm: true
-        volume: "#{@config.mecano.cache_dir}:/target"
+        volume: "#{@config.nikita.cache_dir}:/target"
       @system.mkdir
-        target: "#{@config.mecano.cache_dir}/zeppelin"
+        target: "#{@config.nikita.cache_dir}/zeppelin"
       @system.copy
         source: "#{zeppelin.prod.cwd}/Dockerfile"
-        target: "#{@config.mecano.cache_dir}/zeppelin"
+        target: "#{@config.nikita.cache_dir}/zeppelin"
       @system.copy
-        source: "#{@config.mecano.cache_dir}/zeppelin-build.tar.gz"
-        target: "#{@config.mecano.cache_dir}/zeppelin"
+        source: "#{@config.nikita.cache_dir}/zeppelin-build.tar.gz"
+        target: "#{@config.nikita.cache_dir}/zeppelin"
 
 ## Prepare Container
 
@@ -42,11 +42,11 @@ Build the Docker container and place it inside the cache directory.
       @docker_build
         header: 'Build Container'
         tag: "#{zeppelin.prod.tag}"
-        cwd: "#{@config.mecano.cache_dir}/zeppelin"
+        cwd: "#{@config.nikita.cache_dir}/zeppelin"
       @docker_save
         header: 'Export Container'
         image: "#{zeppelin.prod.tag}"
-        target: "#{@config.mecano.cache_dir}/zeppelin.tar"
+        target: "#{@config.nikita.cache_dir}/zeppelin.tar"
 
 ## Instructions
 

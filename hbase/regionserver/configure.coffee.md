@@ -147,4 +147,4 @@ HA properties must be available to masters and regionservers.
 ## Dependencies
 
     appender = require '../../lib/appender'
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

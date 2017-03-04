@@ -18,7 +18,7 @@ Waiting for docker to deliver an net=host option for docker build command !
 
       @call header: 'Prepare Build Container', timeout: -1,  handler: ->
         @system.mkdir
-          target: "#{@config.mecano.cache_dir}/spark_livy_server"
+          target: "#{@config.nikita.cache_dir}/spark_livy_server"
         @system.mkdir
           target: "#{spark.livy.build.directory}/"
         @file.render

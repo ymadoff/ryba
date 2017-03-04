@@ -265,4 +265,4 @@ Add Hive user as proxyuser
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

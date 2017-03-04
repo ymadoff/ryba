@@ -68,7 +68,7 @@ ryba:
       solr.cloud_docker.log_dir ?= '/var/log/solr'
       solr.cloud_docker.conf_dir ?= '/etc/solr-cloud-docker/conf'
       solr.cloud_docker.build ?= {}
-      solr.cloud_docker.build.dir ?= "#{@config.mecano.cache_dir}/solr"
+      solr.cloud_docker.build.dir ?= "#{@config.nikita.cache_dir}/solr"
       solr.cloud_docker.build.image ?= "ryba/solr"
       solr.cloud_docker.build.tar ?= "solr_image.tar"
       solr.cloud_docker.build.source ?= "#{solr.cloud_docker.build.dir}/#{solr.cloud_docker.build.tar}"
@@ -134,7 +134,7 @@ The property `zkCredentialsProvider` was named `zkCredientialsProvider`
 
 ## Swarn Config
 
-      if @config.mecano.swarm
+      if @config.nikita.swarm
         solr.cloud_docker.swarm_conf ?=
           host: "tcp://#{@config.host}:#{solr.cloud_docker.port ? 2376}"
           tlsverify:" "

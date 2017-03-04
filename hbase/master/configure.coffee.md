@@ -15,9 +15,9 @@
 # Users & Groups
 
 *   `hbase.user` (object|string)
-    The Unix HBase login name or a user object (see Mecano User documentation).
+    The Unix HBase login name or a user object (see Nikita User documentation).
 *   `hbase.group` (object|string)
-    The Unix HBase group name or a group object (see Mecano Group documentation).
+    The Unix HBase group name or a group object (see Nikita Group documentation).
 
 Example
 
@@ -215,7 +215,7 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
 ## Dependencies
 
     appender = require '../../lib/appender'
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'
 
 ## Resources
 

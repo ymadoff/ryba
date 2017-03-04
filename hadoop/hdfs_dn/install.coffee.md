@@ -119,7 +119,7 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
           mode: 0o0750
           parent: true
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: pid_dir
           uid: hdfs.user.name
           gid: hadoop_group.name
@@ -380,7 +380,7 @@ need to fix limits to root account, until Bigtop integrates jsvc 1.0.6
 
 ## Dependencies
 
-    misc = require 'mecano/lib/misc'
+    misc = require 'nikita/lib/misc'
 
 [key_os]: http://fr.slideshare.net/vgogate/hadoop-configuration-performance-tuning
 [jsvc-192]: https://issues.apache.org/jira/browse/DAEMON-192

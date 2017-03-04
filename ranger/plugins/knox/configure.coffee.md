@@ -124,4 +124,4 @@ Configure Audit to SOLR
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

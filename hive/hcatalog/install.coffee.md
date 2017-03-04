@@ -94,7 +94,7 @@ isnt yet started.
           context: @config.ryba
           mode: 0o0755
         @system.tmpfs
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
           mount: hive.hcatalog.pid_dir
           uid: hive.user.name
           gid: hive.group.name
@@ -333,5 +333,5 @@ Create the directories to store the logs and pid information. The properties
 # Module Dependencies
 
     path = require 'path'
-    db = require 'mecano/lib/misc/db'
+    db = require 'nikita/lib/misc/db'
     mkcmd = require '../../lib/mkcmd'

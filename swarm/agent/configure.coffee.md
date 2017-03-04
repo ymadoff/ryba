@@ -45,4 +45,4 @@ This starting options should be injected to @config.docker variable. For now
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'

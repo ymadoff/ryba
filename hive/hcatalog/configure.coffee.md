@@ -334,7 +334,7 @@ default to the [DBTokenStore]. Also worth of interest is the
 
 # Module Dependencies
 
-    db = require 'mecano/lib/misc/db'
+    db = require 'nikita/lib/misc/db'
 
 [HIVE-7935]: https://issues.apache.org/jira/browse/HIVE-7935
 [ha_hdp_2.2]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/Hadoop_HA_v22/ha_hive_metastore/index.html#Item1.1.2

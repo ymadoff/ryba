@@ -39,4 +39,4 @@ HDFS server to answer queries.
 
 # Module Dependencies
 
-    db = require 'mecano/lib/misc/db'
+    db = require 'nikita/lib/misc/db'

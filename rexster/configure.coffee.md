@@ -2,7 +2,7 @@
 ## Configure Rexster
 
 *   `admin` (string | user object)
-    The login name or a user object (see Mecano User documentation).
+    The login name or a user object (see Nikita User documentation).
 *   `config` (object)
     Object for Rexster configuration (xml) file
 

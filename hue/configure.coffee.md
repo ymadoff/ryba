@@ -8,9 +8,9 @@
 *   `hue.ini`
     Configuration merged with default values and written to "/etc/hue/conf/hue.ini" file.
 *   `hue.user` (object|string)
-    The Unix Hue login name or a user object (see Mecano User documentation).
+    The Unix Hue login name or a user object (see Nikita User documentation).
 *   `hue.group` (object|string)
-    The Unix Hue group name or a group object (see Mecano Group documentation).
+    The Unix Hue group name or a group object (see Nikita Group documentation).
 
 Example:
 
