@@ -2,7 +2,7 @@
 # Cloudera Manager Server install
 
     module.exports = header: 'Cloudera Manager Server Install', timeout: -1, handler: ->
-      {db} = @config.cloudera_manager.server
+      {db} = @config.ryba.cloudera_manager.server
       {java} = @config
 
 ## Packages
