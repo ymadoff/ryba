@@ -54,7 +54,7 @@ Set the server's hostname in the agent's configuration
             -P #{db.port} \
             --scm-host #{@config.hostname} \
             -u root \
-            -p #{mysql_pwd} \
+            -p#{mysql_pwd} \
             #{db.type} \
             #{db.main_account.db_name} \
             #{db.main_account.user} \
