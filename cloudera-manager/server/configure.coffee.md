@@ -4,27 +4,27 @@
 Example:
 
 ```json
-cloudera_manager:
-  # name: 'big'
-  # username: process.env['HADOOP_USERNAME']
-  # password: process.env['HADOOP_PASSWORD']
-  server:
-    db:
-      type: 'mysql'
-      host: 'localhost'
-      port: 3306
-      root_password: ''
-      main_account: # Cloudera manager account
-        user: 'cloudera'
-        password: 'cloudera123'
-        db_name: 'cloudera'
-      accounts: # accounts for hadoop services
-        account:
-          user: '...'
-          password: '..'
-          db_name: '...'
+{ "ryba": { "cloudera_manager": { "server":
+    "db": {
+      "type": "mysql",
+      "host": "localhost",
+      "port": "3306",
+      "root_password": '',
+      "main_account": {
+        "user": "cloudera",
+        "password": "cloudera123",
+        "db_name": "cloudera"
+      },
+      "accounts": [
+        {
+          "user": "...",
+          "password": "...",
+          "db_name": "..."
+        }
+      ]
+    }
+} } }
 ```
-
 
     module.exports = ->
       cloudera_manager = @config.ryba.cloudera_manager ?= {}
