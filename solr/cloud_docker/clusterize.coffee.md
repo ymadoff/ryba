@@ -68,6 +68,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
         config['env'] ?= {}
         ## allow administrators to disable ssl on solr cloud docker clusters.
         config['env']['SSL_ENABLED'] = "#{config.is_ssl_enabled}"
+        config['env']['SOLR_HEAP'] ?= config.heap_size
         volumes = [
             "#{config.conf_dir}/docker_entrypoint.sh:/docker_entrypoint.sh",
             "#{solr.cloud_docker.conf_dir}/keystore:#{solr.cloud_docker.conf_dir}/keystore",
@@ -142,6 +143,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             config_host['env']['SOLR_HOME'] ?= "#{solr.user.home}"
             config_host['env']['SOLR_PORT'] ?= "#{config.port}"
             config_host['env']['SOLR_HOST'] ?= "#{host}"
+            config_host['env']['SOLR_HEAP'] ?= config.env['SOLR_HEAP']
             config_host['env']['SOLR_AUTHENTICATION_OPTS'] ?= "-Djetty.port=#{config.port}" #backward compatibility
             config_host['env']['ZK_HOST'] ?= "#{solr.cloud_docker.zk_connect}/#{config.zk_node}"
             props = [
@@ -209,6 +211,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             nodePluginName = "#{name}-#{context.config.host}"
             rangerize(context, name, config, config_host) if config.rangerEnabled and context.config.rangerized.indexOf(nodePluginName) is -1
             context.config.rangerized.push nodePluginName
+        return config
 
 ## Dependencies
 
