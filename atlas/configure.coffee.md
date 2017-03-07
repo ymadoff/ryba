@@ -456,32 +456,56 @@ in or out of docker.
             solr.cloud_docker ?= {}
             solr.cloud_docker.clusters ?= {}
             #Search for a cloud_docker cluster find in solr.cloud_docker.clusters
-            if not solr.cloud_docker.clusters[cluster_name]?
-              for solr_ctx in scd_ctxs
-                solr = solr_ctx.config.ryba.solr ?= {}
-                #By default Ryba search for a solr cloud cluster named ryba_ranger_cluster in config
-                # Configures one cluster if not in config
-                solr.cloud_docker.clusters ?= {}
-                cluster_config  = solr.cloud_docker.clusters[cluster_name] ?= {}
-                cluster_config.volumes ?= []
-                cluster_config.atlas_collection_dir = "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/atlas_solr"
-                cluster_config.volumes.push "#{cluster_config.atlas_collection_dir}:/atlas_solr" if cluster_config.volumes.indexOf("#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/atlas_solr:/atlas_solr") is -1
-                cluster_config['containers'] ?= scd_ctxs.length
-                cluster_config['master'] ?= scd_ctxs[0].config.host
-                cluster_config['heap_size'] ?= '256m'
-                cluster_config['port'] ?= 8985
-                cluster_config.zk_opts ?= {}
-                cluster_config.rangerEnabled ?= atlas.ranger_solr_plugin
-                cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host 
-                configure_solr_cluster solr_ctx , cluster_name, cluster_config
-              atlas.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
-              scd_ctxs[0]
+            for key, solr_ctx of scd_ctxs
+              solr = solr_ctx.config.ryba.solr ?= {}
+              #By default Ryba search for a solr cloud cluster named ryba_ranger_cluster in config
+              # Configures one cluster if not in config
+              solr_ctx.config.ryba.solr.cloud_docker.clusters ?= {}
+              cluster_config  = atlas.solr_cluster_config ?= {}
+              cluster_config.volumes ?= []
+              cluster_config.atlas_collection_dir = "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/atlas_solr"
+              cluster_config.volumes.push "#{cluster_config.atlas_collection_dir}:/atlas_solr" if cluster_config.volumes.indexOf("#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/atlas_solr:/atlas_solr") is -1
+              cluster_config['containers'] ?= scd_ctxs.length
+              cluster_config['master'] ?= scd_ctxs[0].config.host
+              cluster_config['heap_size'] ?= '256m'
+              cluster_config['port'] ?= 8985
+              cluster_config.zk_opts ?= {}
+              cluster_config.rangerEnabled ?= atlas.ranger_solr_plugin
+              cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host
+              clusterized_config = configure_solr_cluster solr_ctx , cluster_name, cluster_config
+              solr_ctx.config.ryba.solr.cloud_docker.clusters[cluster_name] = Object.assign {},clusterized_config
+              solr_ctx
+              .after
+                type: ['file','yaml']
+                target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
+                handler: ->
+                  dir = "#{cluster_config.atlas_collection_dir}"
+                  @file.download
+                    source: "#{__dirname}/resources/solr/lang/stopwords_en.txt"
+                    target: "#{dir}/lang/stopwords_en.txt"
+                  @file.download
+                    source: "#{__dirname}/resources/solr/currency.xml"
+                    target: "#{dir}/currency.xml"
+                  @file.download
+                    source: "#{__dirname}/resources/solr/protwords.txt"
+                    target: "#{dir}/protwords.txt"
+                  @file.download
+                    source: "#{__dirname}/resources/solr/schema.xml"
+                    target: "#{dir}/schema.xml"
+                  @file.download
+                    source: "#{__dirname}/resources/solr/solrconfig.xml"
+                    target: "#{dir}/solrconfig.xml"
+                  @file.download
+                    source: "#{__dirname}/resources/solr/stopwords.txt"
+                    target: "#{dir}/stopwords.txt"
+                  @file.download
+                    source: "#{__dirname}/resources/solr/synonyms.txt"
+                    target: "#{dir}/synonyms.txt"
               .after
                 type: ['docker','compose','up']
                 target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
-                handler: -> @call 'ryba/atlas/solr_layout'
-            else
-              atlas.cluster_config = solr.cloud_docker.clusters[cluster_name]
+                handler: -> @call 'ryba/atlas/solr_layout', cluster_config: atlas.cluster_config
+            atlas.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
             urls = cluster_config.zk_connect.split(',').map( (host) -> "#{host}/#{cluster_config.zk_node}").join(',')
             atlas.application.properties['atlas.graph.index.search.solr.zookeeper-url'] ?= "#{urls}"
             atlas.application.properties['atlas.graph.index.search.solr.mode'] ?= 'cloud'
@@ -496,6 +520,4 @@ in or out of docker.
 ## Dependencies
   
     configure_solr_cluster = require '../solr/cloud_docker/clusterize'
-    {merge} = 'nikita/lib/misc'
-
 [titan]:(http://titan.thinkaurelius.com)
