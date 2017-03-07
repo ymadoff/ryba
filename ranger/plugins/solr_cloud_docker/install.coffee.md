@@ -1,7 +1,8 @@
 
 # Ranger Solr Cloud on Docker Ranger Plugin Install
 
-    module.exports = header: 'Ranger Solr Plugin install', handler: (options)->
+    module.exports = header: 'Ranger Solr Plugin install', handler: (options) ->
+      return if @config.ryba.ranger_solr_installed
       {solr_cluster} = options
       {ranger, solr, realm, hadoop_group, core_site} = @config.ryba
       ranger_admin_ctx = @contexts('ryba/ranger/admin')[0]
@@ -30,7 +31,7 @@
         unless_exec: """
           curl --fail -H "Content-Type: application/json"   -k -X GET \
           -u admin:#{admin.password} \
-          \"#{admin.install['policymgr_external_url']}/service/xusers/users\" | grep '#{solr_plugin.ranger_user.name}'
+          \"#{admin.install['policymgr_external_url']}/service/xusers/users/userName/#{solr_plugin.ranger_user.name}\"
         """
 
 # Create Solr Ranger Plugin Policy for On HDFS Repo
@@ -276,6 +277,7 @@ loads the lib directory found in the `SOLR_HOME`.
               exit 0
               """
           @then callback
+      @call -> @config.ryba.ranger_solr_installed = true
 
 ## Dependencies
 

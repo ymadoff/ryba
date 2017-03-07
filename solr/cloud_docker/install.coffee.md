@@ -183,7 +183,7 @@ be prepared in the nikita cache dir.
 ## Cluster Specific configuration
 Here we loop through the clusters definition to write container specific file
 configuration like solr.in.sh or solr.xml.
-      
+
       @each solr.cloud_docker.clusters, (options, callback) ->
         counter = 0
         name = options.key

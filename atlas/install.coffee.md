@@ -436,7 +436,7 @@ Grant Permission to atlas for its titan' tables through ranger or from hbase she
             unless_exec: """
               curl --fail -H "Content-Type: application/json"   -k -X GET \ 
               -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/users\" | grep '#{atlas.ranger_user.name}'
+              \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/users/userName/#{atlas.ranger_user.name}\"
             """
           @system.execute
             header: 'Ranger Ryba Policy'
