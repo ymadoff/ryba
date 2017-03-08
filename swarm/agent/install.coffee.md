@@ -45,7 +45,7 @@ Try to pull the image first, or upload from cache if not pull possible.
           unless: -> @status(-1) or @status(-2)
           binary: true
           header: 'from cache'
-          source: "#{@config.nikita.cache_dir}/swarm.tar"
+          source: "#{@config.mecano.cache_dir}/swarm.tar"
           target: "#{tmp_dir}/swarm.tar"
         @docker.load
           header: 'Load'
@@ -66,9 +66,9 @@ Same logic that `masson/commons/docker`, but add the swarm starting options.
           opts.push "-H #{type}://#{path}" for path in socketPaths
         other_opts += opts.join ' '
         @call 
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos'])
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos'])
           handler: ->
-            switch options.store['nikita:system:release'][0]
+            switch options.store['mecano:system:release'][0]
               when '6' 
                 @file
                   target: '/etc/sysconfig/docker'
@@ -77,14 +77,13 @@ Same logic that `masson/commons/docker`, but add the swarm starting options.
                     replace: "other_args=\"#{other_opts}\"" 
                   ]
                   backup: true
-              when '7'
-                @file
-                  target: '/etc/sysconfig/docker'
-                  write: [
-                    match: /^OPTIONS=.*$/mg
-                    replace: "OPTIONS=\"#{other_opts}\"" 
-                  ]
-                  backup: true
+              when '7' then @file
+                target: '/etc/sysconfig/docker'
+                write: [
+                  match: /^OPTIONS=.*$/mg
+                  replace: "OPTIONS=\"#{other_opts}\""
+                ]
+                backup: true
         @service.restart
           name: 'docker'
           if: -> @status -1
@@ -126,15 +125,15 @@ Write file in profile.d to be able to communicate with swarm master.
           target: '/etc/profile.d/docker.sh'
           write: [
             match: /^export DOCKER_HOST=.*$/mg
-            replace: "export DOCKER_HOST=tcp://#{primary_ctx.config.host}:#{primary_ctx.config.ryba.swarm.manager.listen_port}" 
+            replace: "export DOCKER_HOST=tcp://#{primary_ctx.config.host}:#{primary_ctx.config.ryba.swarm.manager.listen_port}"
             append: true
           ,
             match: /^export DOCKER_CERT_PATH=.*$/mg
-            replace: "export DOCKER_CERT_PATH=#{@config.docker.conf_dir}/certs.d" 
+            replace: "export DOCKER_CERT_PATH=#{@config.docker.conf_dir}/certs.d"
             append: true
           ,
             match: /^export DOCKER_TLS_VERIFY=.*$/mg
-            replace: "export DOCKER_TLS_VERIFY=#{if @config.docker.sslEnabled then 1 else 0}" 
+            replace: "export DOCKER_TLS_VERIFY=#{if @config.docker.sslEnabled then 1 else 0}"
             append: true
           ]
           backup: true

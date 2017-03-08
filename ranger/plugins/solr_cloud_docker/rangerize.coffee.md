@@ -181,4 +181,4 @@ which does need it.
 
 ## Dependencies
 
-    {merge} = require 'mecano/lib/misc'
+    {merge} = require 'nikita/lib/misc'
