@@ -328,13 +328,14 @@ configuration like solr.in.sh or solr.xml.
                       version:'2'
                       services: @config.ryba.solr.cloud_docker.clusters[name].service_def
                     break;
-                @file.yaml
-                  if: @config.host is config['master'] or not @config.docker.swarm?
-                  target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
-                  content: dockerfile
-                  uid: solr.user.name
-                  gid: solr.group.name
-                  mode: 0o0750
+                @call ->
+                  @file.yaml
+                    if: @config.host is config['master'] or not @config.docker.swarm?
+                    target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
+                    content: dockerfile
+                    uid: solr.user.name
+                    gid: solr.group.name
+                    mode: 0o0750
         @docker.compose.up
           header: 'Compose up through swarm'
           if: @config.host is config['master'] and (@has_service('ryba/swarm/agent') or @has_service('ryba/swarm/master'))

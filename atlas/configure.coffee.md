@@ -474,37 +474,40 @@ in or out of docker.
               cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host
               clusterized_config = configure_solr_cluster solr_ctx , cluster_name, cluster_config
               solr_ctx.config.ryba.solr.cloud_docker.clusters[cluster_name] = Object.assign {},clusterized_config
-              solr_ctx
-              .after
-                type: ['file','yaml']
-                target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
-                handler: ->
-                  dir = "#{cluster_config.atlas_collection_dir}"
-                  @file.download
-                    source: "#{__dirname}/resources/solr/lang/stopwords_en.txt"
-                    target: "#{dir}/lang/stopwords_en.txt"
-                  @file.download
-                    source: "#{__dirname}/resources/solr/currency.xml"
-                    target: "#{dir}/currency.xml"
-                  @file.download
-                    source: "#{__dirname}/resources/solr/protwords.txt"
-                    target: "#{dir}/protwords.txt"
-                  @file.download
-                    source: "#{__dirname}/resources/solr/schema.xml"
-                    target: "#{dir}/schema.xml"
-                  @file.download
-                    source: "#{__dirname}/resources/solr/solrconfig.xml"
-                    target: "#{dir}/solrconfig.xml"
-                  @file.download
-                    source: "#{__dirname}/resources/solr/stopwords.txt"
-                    target: "#{dir}/stopwords.txt"
-                  @file.download
-                    source: "#{__dirname}/resources/solr/synonyms.txt"
-                    target: "#{dir}/synonyms.txt"
-              .after
-                type: ['docker','compose','up']
-                target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
-                handler: -> @call 'ryba/atlas/solr_layout', cluster_config: atlas.cluster_config
+              if @config.host is atlas_ctxs[0].config.host
+                solr_ctx
+                .after
+                  type: ['file','yaml']
+                  target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
+                  handler: (_, cb) ->
+                    dir = "#{cluster_config.atlas_collection_dir}"
+                    @file.download
+                      source: "#{__dirname}/resources/solr/lang/stopwords_en.txt"
+                      target: "#{dir}/lang/stopwords_en.txt"
+                    @file.download
+                      source: "#{__dirname}/resources/solr/currency.xml"
+                      target: "#{dir}/currency.xml"
+                    @file.download
+                      source: "#{__dirname}/resources/solr/protwords.txt"
+                      target: "#{dir}/protwords.txt"
+                    @file.download
+                      source: "#{__dirname}/resources/solr/schema.xml"
+                      target: "#{dir}/schema.xml"
+                    @file.download
+                      source: "#{__dirname}/resources/solr/solrconfig.xml"
+                      target: "#{dir}/solrconfig.xml"
+                    @file.download
+                      source: "#{__dirname}/resources/solr/stopwords.txt"
+                      target: "#{dir}/stopwords.txt"
+                    @file.download
+                      source: "#{__dirname}/resources/solr/synonyms.txt"
+                      target: "#{dir}/synonyms.txt"
+                    @then cb
+                solr_ctx
+                .after
+                  type: ['docker','compose','up']
+                  target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
+                  handler: -> @call 'ryba/atlas/solr_layout', cluster_config: atlas.cluster_config
             atlas.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
             urls = cluster_config.zk_connect.split(',').map( (host) -> "#{host}/#{cluster_config.zk_node}").join(',')
             atlas.application.properties['atlas.graph.index.search.solr.zookeeper-url'] ?= "#{urls}"

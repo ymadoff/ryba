@@ -158,125 +158,122 @@ loads the lib directory found in the `SOLR_HOME`.
             match: RegExp "^#{quote k}=.*$", 'mg'
             replace: "#{k}=#{v}"
             append: true
-        @system.mkdir
-          target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes"
-          uid: solr.user.name
-          gid: hadoop_group.name
-          mode: 0o0750
-        @system.mkdir
-          target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/lib"
-          uid: solr.user.name
-          gid: hadoop_group.name
-          mode: 0o0750
-        @call
-          header: 'Enable Solr Plugin'
-          handler: (options, callback) ->
-            files = ['ranger-solr-audit.xml','ranger-solr-security.xml','ranger-policymgr-ssl.xml']
-            sources_props = {}
-            current_props = {}
-            files_exists = {}
-            @system.execute
-              cmd: """
-                echo '' | keytool -list \
-                -storetype jceks \
-                -keystore /etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
-              """
-              code_skipped: 1 
-            @call 
-              if: -> @status -1 #do not need this if the cred.jceks file is not provisioned
-              handler: ->
-                @each files, (options, cb) ->
-                  file = options.key
-                  target = "#{solr_plugin.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/#{file}"
-                  @fs.exists target, (err, exists) ->
-                    return cb err if err
-                    return cb() unless exists
-                    files_exists["#{file}"] = exists
-                    properties.read options.ssh, target , (err, props) ->
-                      return cb err if err
-                      sources_props["#{file}"] = props
-                      cb()
-            @system.execute
-              header: 'Script Execution'
-              cmd: """
-                if /usr/hdp/#{version}/ranger-solr-plugin/enable-solr-plugin.sh ;
-                then exit 0 ;
-                else exit 1 ;
-                fi;
-              """
-            @hconfigure
-              header: 'Fix ranger-solr-security conf'
-              target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/ranger-solr-security.xml"
-              merge: true
-              properties:
-                'ranger.plugin.solr.policy.rest.ssl.config.file': "/usr/solr-cloud/current/server/solr-webapp/webapp/WEB-INF/classes/ranger-policymgr-ssl.xml"
-            @chown
-              header: 'Fix Permissions'
-              target: "/etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}/.cred.jceks.crc"
-              uid: solr.user.name
-              gid: solr.group.name
-            @hconfigure
-              header: 'JAAS Properties for solr'
-              target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/ranger-solr-audit.xml"
-              merge: true
-              properties: solr_plugin.audit
-            @each files, (options, cb) ->
-              file = options.key
-              target = "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/#{file}"
-              @fs.exists target, (err, exists) ->
-                return callback err if err
-                properties.read options.ssh, target , (err, props) ->
-                  return cb err if err
-                  current_props["#{file}"] = props
-                  cb()
-            @call
-              header: 'Compare Current Config Files'
-              shy: true
-              handler: ->
-                for file in files
-                  #do not need to go further if the file did not exist
-                  return callback null, true unless sources_props["#{file}"]?
-                  for prop, value of current_props["#{file}"]
-                    return callback null, true unless value is sources_props["#{file}"][prop]
-                  for prop, value of sources_props["#{file}"]
-                    return callback null, true unless value is current_props["#{file}"][prop]
-                  return callback null, false
-        @call header: 'Fix Plugin Classpath', handler: (_, callback) ->
-          @system.copy
-            source: '/etc/hadoop/conf/core-site.xml'
-            target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/core-site.xml"
-          @system.copy
-            source: '/etc/hadoop/conf/hdfs-site.xml'
-            target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/hdfs-site.xml"
-          @system.mkdir
-            target:  "#{solr_cluster.config.data_dir}/lib"
+      @system.mkdir
+        target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes"
+        uid: solr.user.name
+        gid: hadoop_group.name
+        mode: 0o0750
+      @system.mkdir
+        target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/lib"
+        uid: solr.user.name
+        gid: hadoop_group.name
+        mode: 0o0750
+      @call
+        header: 'Enable Solr Plugin'
+        handler: (options, callback) ->
+          files = ['ranger-solr-audit.xml','ranger-solr-security.xml','ranger-policymgr-ssl.xml']
+          sources_props = {}
+          current_props = {}
+          files_exists = {}
           @system.execute
-            trap: true
+            cmd: """
+              echo '' | keytool -list \
+              -storetype jceks \
+              -keystore /etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
+            """
+            code_skipped: 1
+          @call 
+            if: -> @status -1 #do not need this if the cred.jceks file is not provisioned
+            handler: ->
+              @each files, (options, cb) ->
+                file = options.key
+                target = "#{solr_plugin.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/#{file}"
+                @fs.exists target, (err, exists) ->
+                  return cb err if err
+                  return cb() unless exists
+                  files_exists["#{file}"] = exists
+                  properties.read options.ssh, target , (err, props) ->
+                    return cb err if err
+                    sources_props["#{file}"] = props
+                    cb()
+          @system.execute
+            header: 'Script Execution'
+            cmd: """
+              if /usr/hdp/#{version}/ranger-solr-plugin/enable-solr-plugin.sh ;
+              then exit 0 ;
+              else exit 1 ;
+              fi;
+            """
+          @hconfigure
+            header: 'Fix ranger-solr-security conf'
+            target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/ranger-solr-security.xml"
+            merge: true
+            properties:
+              'ranger.plugin.solr.policy.rest.ssl.config.file': "/usr/solr-cloud/current/server/solr-webapp/webapp/WEB-INF/classes/ranger-policymgr-ssl.xml"
+          @chown
+            header: 'Fix Permissions'
+            target: "/etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}/.cred.jceks.crc"
+            uid: solr.user.name
+            gid: solr.group.name
+          @hconfigure
+            header: 'JAAS Properties for solr'
+            target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/ranger-solr-audit.xml"
+            merge: true
+            properties: solr_plugin.audit
+          @each files, (options, cb) ->
+            file = options.key
+            target = "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/#{file}"
+            @fs.exists target, (err, exists) ->
+              return callback err if err
+              properties.read options.ssh, target , (err, props) ->
+                return cb err if err
+                current_props["#{file}"] = props
+                cb()
+          @call
+            header: 'Compare Current Config Files'
             shy: true
-            cmd:  """
-              version=`hdp-select versions | tail -1`
-              lib=`ls /usr/hdp/$version/ranger-solr-plugin/lib`
-              for file in $lib ;
-                do
-                  echo "link $file ranger/plugins/solr_cloud_docker/install"
-                  target="#{solr_cluster.config.data_dir}/lib/$file"
-                  source="/usr/hdp/$version/ranger-solr-plugin/lib/$file"
-                  if [ -L "$target" ] || [ -e "$target" ] ;
-                    then
-                      current=`readlink $target`
-                      if [ "$source" != "$current" ] ; then
-                        rm -f $target ;
-                        ln -sf $source $target ;
-                      fi
-                    else
-                      rm -f $target;
-                      ln -sf $source $target;
-                  fi
-                done
-              echo done
-              exit 0
-              """
-          @then callback
+            handler: ->
+              for file in files
+                #do not need to go further if the file did not exist
+                return callback null, true unless sources_props["#{file}"]?
+                for prop, value of current_props["#{file}"]
+                  return callback null, true unless value is sources_props["#{file}"][prop]
+                for prop, value of sources_props["#{file}"]
+                  return callback null, true unless value is current_props["#{file}"][prop]
+                return callback null, false
+      @system.copy
+        source: '/etc/hadoop/conf/core-site.xml'
+        target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/core-site.xml"
+      @system.copy
+        source: '/etc/hadoop/conf/hdfs-site.xml'
+        target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/hdfs-site.xml"
+      @system.mkdir
+        target:  "#{solr_cluster.config.data_dir}/lib"
+      , ->
+        @system.execute
+          cmd:  """
+            version=`hdp-select versions | tail -1`
+            lib=`ls /usr/hdp/$version/ranger-solr-plugin/lib`
+            for file in $lib ;
+              do
+                echo "link $file ranger/plugins/solr_cloud_docker/install"
+                target="#{solr_cluster.config.data_dir}/lib/$file"
+                source="/usr/hdp/$version/ranger-solr-plugin/lib/$file"
+                if [ -L "$target" ] || [ -e "$target" ] ;
+                  then
+                    current=`readlink $target`
+                    if [ "$source" != "$current" ] ; then
+                      rm -f $target ;
+                      ln -sf $source $target ;
+                    fi
+                  else
+                    rm -f $target;
+                    ln -sf $source $target;
+                fi
+              done;
+            echo finished;
+            exit 0;
+            """
       @call -> @config.ryba.ranger_solr_installed = true
 
 ## Dependencies

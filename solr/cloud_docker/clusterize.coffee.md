@@ -34,7 +34,7 @@ Makes this method public to let other services use its configuration logic (rang
 You can check the [docker-compose file reference](https://docs.docker.com/compose/compose-file/)
 
       module.exports = (context, name, config={}) ->
-        config.hosts ?= context.contexts('ryba/solr/cloud_docker').map((c)->c.config.host)
+        config.hosts ?= context.contexts('ryba/solr/cloud_docker').map (c)-> c.config.host
         throw Error "Malformed Master for cluster: #{name}" unless config.hosts.indexOf config['master'] > -1
         throw Error "Missing port for cluster: #{name}"  unless config.port?
         throw Error "Name should not contain -" if /-+/.test name
@@ -83,60 +83,57 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             "/etc/krb5.conf:/etc/krb5.conf" ] 
         volumes.push config.volumes...
         config.master_configured = false
-        config.node_names ?= {}
-        for node in [1..config.containers]
-          command = "/docker_entrypoint.sh --zk_node #{config.zk_node} " # --port #{config.port}"
-          environment = []
-          # `affinity:container` enables docker to start a new container on a host 
-          # where no other container belonging to the cluster is already running.
-          environment.push "affinity:container!=*#{name.split('_').join('')}_node*"
-          environment.push "SSL_ENABLED=true" if config.is_ssl_enabled
-          container_name = "node_#{node}"
-          # We need to set master property to now which server will launch bootstrap
-          # command and get it's node name (solr node inside a container for a cluster).
-          if config['master'] is context.config.host and not config.master_configured
-            #we configure this name generally but only needed for solr collection from ranger install
-            config.master_container_runtime_name ?= "#{name.split('_').join('')}_#{container_name}_1"
-            # --bootstrap args in commands enable master to create the zookeeper 
-            # node for the current cluster. Check docker_entrypoint.sh file for more infos.
-            command += " --bootstrap"
-            config.master_node = node
-            config.master_configured = true
-            config.master_container_name = container_name
-          #docker-compose.yml container specific properties
-          #be careful this property is used in `ryba/ranger/admin/solr_bootstrap` file
-          switch config.docker_compose_version
-            when '1'
-              config.service_def[container_name]=
-                'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version}"
-                # 'restart': "always"
-                'command': command
-                'volumes': volumes
-                'ports': [config.port]
-                'net': 'host'
-                'mem_limit': config.mem_limit
-                'cpu_shares': config.cpu_shares
-                'cpu_quota': config.cpu_quota
-              config.service_def[container_name]['environment'] = environment if  environment.length > 0
-            when '2'
-              config.service_def[container_name]=
-                'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version}"
-                # 'restart': "always"
-                'command': command
-                'volumes': volumes
-                'ports': [config.port]
-                'network_mode': 'host'
-                'mem_limit': config.mem_limit
-                'cpu_shares': config.cpu_shares
-                'cpu_quota': config.cpu_quota
-              config.service_def[container_name]['environment'] = environment if  environment.length > 0
-            else 
-              throw Error 'Docker compose version not supported'
-        # solr.in.sh node specific properties
         # Custom Host config (a container for a host)
         config_hosts = config.config_hosts = {}
-        for host in config.hosts
-          if host is context.config.host
+        for n, host of config.hosts
+            node = parseInt(n)+1
+            command = "/docker_entrypoint.sh --zk_node #{config.zk_node} " # --port #{config.port}"
+            environment = []
+            # `affinity:container` enables docker to start a new container on a host 
+            # where no other container belonging to the cluster is already running.
+            environment.push "affinity:container!=*#{name.split('_').join('')}_node*"
+            environment.push "SSL_ENABLED=true" if config.is_ssl_enabled
+            container_name = "node_#{node}"
+            # We need to set master property to now which server will launch bootstrap
+            # command and get it's node name (solr node inside a container for a cluster).
+            if config['master'] is host
+              #we configure this name generally but only needed for solr collection from ranger install
+              config.master_container_runtime_name ?= "#{name.split('_').join('')}_#{container_name}_1"
+              # --bootstrap args in commands enable master to create the zookeeper 
+              # node for the current cluster. Check docker_entrypoint.sh file for more infos.
+              command += " --bootstrap"
+              config.master_node = node
+              config.master_configured = true
+              config.master_container_name = container_name
+            #docker-compose.yml container specific properties
+            #be careful this property is used in `ryba/ranger/admin/solr_bootstrap` file
+            switch config.docker_compose_version
+              when '1'
+                config.service_def[container_name]=
+                  'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version}"
+                  # 'restart': "always"
+                  'command': command
+                  'volumes': volumes
+                  'ports': [config.port]
+                  'net': 'host'
+                  'mem_limit': config.mem_limit
+                  'cpu_shares': config.cpu_shares
+                  'cpu_quota': config.cpu_quota
+                config.service_def[container_name]['environment'] = environment if  environment.length > 0
+              when '2'
+                config.service_def[container_name]=
+                  'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version}"
+                  # 'restart': "always"
+                  'command': command
+                  'volumes': volumes
+                  'ports': [config.port]
+                  'network_mode': 'host'
+                  'mem_limit': config.mem_limit
+                  'cpu_shares': config.cpu_shares
+                  'cpu_quota': config.cpu_quota
+                config.service_def[container_name]['environment'] = environment if  environment.length > 0
+              else 
+                throw Error 'Docker compose version not supported'
             config_host = config_hosts["#{host}"] ?= {}
             # Configure host environment config
             config_host['env'] ?= {}
