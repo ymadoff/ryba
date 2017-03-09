@@ -60,7 +60,7 @@
       spark.conf['spark.ssl.trustStorePassword'] ?= "ryba123"
       spark.conf['spark.eventLog.overwrite'] ?= 'true'
       spark.conf['spark.yarn.jar'] ?= "hdfs:///apps/#{spark.user.name}/spark-assembly.jar"
-      spark.conf['spark.yarn.applicationMaster.waitTries'] = null # Deprecated in favor of "spark.yarn.am.waitTime"
+      # spark.conf['spark.yarn.applicationMaster.waitTries'] = null Deprecated in favor of "spark.yarn.am.waitTime"
       spark.conf['spark.yarn.am.waitTime'] ?= '10'
       spark.conf['spark.yarn.containerLauncherMaxThreads'] ?= '25'
       spark.conf['spark.yarn.driver.memoryOverhead'] ?= '384'
@@ -82,38 +82,58 @@ The metrics.properties file needs to be sent to every executor,
 and spark.metrics.conf=metrics.properties will tell all executors to load that file when initializing their respective MetricsSystems
 
       # spark.conf['spark.metrics.conf'] ?= 'metrics.properties'
-      spark.conf['spark.metrics.conf'] ?= null # Error, spark complain it cant find if value is 'metrics.properties'    
-      spark.dist_files.push "file://#{spark.conf_dir}/metrics.properties" if spark.conf['spark.metrics.conf']?
+      spark.conf_metrics ?= false
+      if spark.conf_metrics
+        spark.conf['spark.metrics.conf'] ?= "metrics.properties" # Error, spark complain it cant find if value is 'metrics.properties'
+        if spark.conf['spark.metrics.conf']?
+          spark.dist_files.push "file://#{spark.conf_dir}/metrics.properties" unless spark.dist_files.indexOf "file://#{spark.conf_dir}/metrics.properties" is -1
+        spark.metrics =
+          'master.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
+          'worker.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
+          'driver.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
+          'executor.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
+
+        if graphite_ctxs.length
+          spark.metrics['*.sink.graphite.class'] = 'org.apache.spark.metrics.sink.GraphiteSink'
+          spark.metrics['*.sink.graphite.host'] = graphite_ctxs.map( (ctx) -> ctx.config.host)
+          spark.metrics['*.sink.graphite.port'] = graphite_ctxs[0].config.ryba.graphite.carbon_aggregator_port
+          spark.metrics['*.sink.graphite.prefix'] = "#{graphite_ctxs[0].config.ryba.graphite.metrics_prefix}.spark"
+
+        # TODO : metrics.MetricsSystem: Sink class org.apache.spark.metrics.sink.GangliaSink cannot be instantialized
+        if false #ctx.host_with_module 'ryba/ganglia/collector'
+          ganglia_ctx.config.ryba.ganglia
+          spark.metrics['*.sink.ganglia.class'] = 'org.apache.spark.metrics.sink.GangliaSink'
+          spark.metrics['*.sink.ganglia.host'] = graphite_ctx.map( (ctx) -> ctx.config.host)
+          spark.metrics['*.sink.ganglia.port'] = ganglia_ctx.spark_port
+      
       spark.conf['spark.yarn.dist.files'] ?= spark.dist_files.join(',') if spark.dist_files.length > 0
-      spark.metrics =
-        'master.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
-        'worker.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
-        'driver.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
-        'executor.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
-
-      if graphite_ctxs.length
-        spark.metrics['*.sink.graphite.class'] = 'org.apache.spark.metrics.sink.GraphiteSink'
-        spark.metrics['*.sink.graphite.host'] = graphite_ctxs.map( (ctx) -> ctx.config.host)
-        spark.metrics['*.sink.graphite.port'] = graphite_ctxs[0].config.ryba.graphite.carbon_aggregator_port
-        spark.metrics['*.sink.graphite.prefix'] = "#{graphite_ctxs[0].config.ryba.graphite.metrics_prefix}.spark"
-
-      # TODO : metrics.MetricsSystem: Sink class org.apache.spark.metrics.sink.GangliaSink cannot be instantialized
-      if false #ctx.host_with_module 'ryba/ganglia/collector'
-        ganglia_ctx.config.ryba.ganglia
-        spark.metrics['*.sink.ganglia.class'] = 'org.apache.spark.metrics.sink.GangliaSink'
-        spark.metrics['*.sink.ganglia.host'] = graphite_ctx.map( (ctx) -> ctx.config.host)
-        spark.metrics['*.sink.ganglia.port'] = ganglia_ctx.spark_port
 
 ## Dynamic Resource Allocation
 Spark mecanism to set up resources based on cluster availability
 
       #http://spark.apache.org/docs/1.6.0/job-scheduling.html#dynamic-resource-allocation
-      spark.conf['spark.dynamicAllocation.enabled'] ?= 'true'
+      spark.conf['spark.dynamicAllocation.enabled'] ?= 'false' #disable by default
+      
       spark.conf['spark.shuffle.service.enabled'] ?= spark.conf['spark.dynamicAllocation.enabled']
       if spark.conf['spark.dynamicAllocation.enabled'] is 'true'
+        spark.conf['spark.shuffle.service.port'] ?= '56789'
         for nm_ctx in nm_ctxs
           aux_services  = nm_ctx.config.ryba.yarn.site['yarn.nodemanager.aux-services'].split ','
           aux_services.push 'spark_shuffle' unless 'spark_shuffle' in aux_services
           nm_ctx.config.ryba.yarn.site['yarn.nodemanager.aux-services'] = aux_services.join ','
           nm_ctx.config.ryba.yarn.site['yarn.nodemanager.aux-services.spark_shuffle.class'] ?= 'org.apache.spark.network.yarn.YarnShuffleService'
           nm_ctx.config.ryba.yarn.site['spark.shuffle.service.enabled'] ?= 'true'
+          nm_ctx
+          .after
+            type: ['hconfigure']
+            target: "#{nm_ctx.config.ryba.yarn.nm.conf_dir}/yarn-site.xml"
+            handler: (options, callback) ->
+              nm_ctx
+              .iptables
+                header: 'Spark YARN Shuffle Service Port'
+                ssh: options.ssh
+                rules: [
+                  { chain: 'INPUT', jump: 'ACCEPT', dport: spark.conf['spark.shuffle.service.port'], protocol: 'tcp', state: 'NEW', comment: "Spark YARN Shuffle Service" }
+                ]
+                if: nm_ctx.config.iptables.action is 'start'
+              .then callback
