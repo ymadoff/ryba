@@ -2,7 +2,7 @@
 # HBase Master Configuration
 
     module.exports = ->
-      zk_ctxs = @contexts 'ryba/zookeeper/server'
+      zk_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
       hadoop_ctxs = @contexts ['ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']

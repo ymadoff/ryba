@@ -2,7 +2,7 @@
 # Hadoop KMS Configure
 
     module.exports = ->
-      zoo_servers = @contexts 'ryba/zookeeper/server'
+      zoo_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       {realm} = @config.ryba
       kms = @config.ryba.kms ?= {}
 
@@ -78,7 +78,7 @@ KMS delegation token secret manager can be configured with the following propert
 
 ## HTTP Authentication Signature
 
-      # zookeeper_quorum = for server in zoo_servers then "#{server.config.host}:#{server.config.ryba.zookeeper.port}"
+      # zookeeper_quorum = for server in zoo_ctxs then "#{server.config.host}:#{server.config.ryba.zookeeper.port}"
       # kms.site['hadoop.kms.authentication.signer.secret.provider'] ?= 'zookeeper'
       # kms.site['hadoop.kms.authentication.signer.secret.provider.zookeeper.path'] ?= '/hadoop-kms/hadoop-auth-signature-secret'
       # kms.site['hadoop.kms.authentication.signer.secret.provider.zookeeper.connection.string'] ?= "#{zookeeper_quorum}"

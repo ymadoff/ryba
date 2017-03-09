@@ -26,7 +26,7 @@ Example:
 ```
 
     module.exports = ->
-      zoo_ctxs = @contexts 'ryba/zookeeper/server'
+      zoo_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       hadoop_ctxs = @contexts ['ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       hcat_ctxs = @contexts 'ryba/hive/hcatalog'
       hs2_ctxs = @contexts 'ryba/hive/server2'

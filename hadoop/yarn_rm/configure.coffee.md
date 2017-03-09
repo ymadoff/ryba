@@ -9,7 +9,7 @@
 ```
 
     module.exports = ->
-      zk_ctxs = @contexts 'ryba/zookeeper/server'
+      zk_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       [jhs_ctx] = @contexts 'ryba/hadoop/mapred_jhs'
       [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts'
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'

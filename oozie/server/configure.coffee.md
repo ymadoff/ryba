@@ -22,7 +22,7 @@ Example
 
     module.exports = ->
       # Internal properties
-      zk_ctxs = @contexts 'ryba/zookeeper/server'
+      zk_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       {ryba} = @config
       ryba.force_war ?= false
       # User

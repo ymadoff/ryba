@@ -30,7 +30,7 @@ Example:
       kafka.user.home = "/var/lib/#{kafka.user.name}"
       kafka.user.gid = kafka.group.name
       # ZooKeeper Quorun
-      zoo_ctxs = @contexts 'ryba/zookeeper/server'
+      zoo_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       zookeeper_quorum = kafka.zookeeper_quorum ?= for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
       kafka.admin ?= {}

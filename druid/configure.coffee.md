@@ -14,10 +14,10 @@ Example:
     module.exports = ->
       [pg_ctx] = @contexts 'masson/commons/postgres/server'
       [my_ctx] = @contexts 'masson/commons/mysql/server'
-      zoo_ctxs = @contexts 'ryba/zookeeper/server'
+      zk_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       [hadoop_ctx] = @contexts 'ryba/hadoop/core'
       # Get ZooKeeper Quorum
-      zookeeper_quorum = for zoo_ctx in zoo_ctxs then "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
+      zookeeper_quorum = for zk_ctx in zk_ctxs then "#{zk_ctx.config.host}:#{zk_ctx.config.ryba.zookeeper.port}"
       @config.ryba ?= {}
       {realm} = @config.ryba
       druid = @config.ryba.druid ?= {}

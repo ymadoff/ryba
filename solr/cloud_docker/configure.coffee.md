@@ -80,7 +80,7 @@ ryba:
       solr.cloud_docker.log_dir ?= '/var/log/solr'
       solr.cloud_docker.pid_dir ?= '/var/run/solr'
       solr.cloud_docker.env ?= {}
-      zk_hosts = @contexts 'ryba/zookeeper/server'
+      zk_hosts = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       solr.cloud_docker.zk_connect = zk_hosts.map( (ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
       solr.cloud_docker.zkhosts = "#{solr.cloud_docker.zk_connect}/solr"
       solr.cloud_docker.zk_node = "/solr"

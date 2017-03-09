@@ -19,7 +19,7 @@ Atlas needs also kafka as a bus to broadcats message betwwen the different compo
       atlas_ctxs = @contexts 'ryba/atlas'
       ranger_ctxs = @contexts 'ryba/ranger/tagsync'
       hs2_ctxs = @contexts 'ryba/hive/server2'
-      zk_ctxs = @contexts 'ryba/zookeeper/server'
+      zk_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       kafka_ctxs = @contexts 'ryba/kafka/broker'
       hm_ctxs = @contexts 'ryba/hbase/master'
       sc_ctxs = @contexts 'ryba/solr/cloud'

@@ -7,7 +7,7 @@
       @config.ryba.hdf_hdp ?= false
       nifi.conf_dir ?= '/etc/nifi/conf'
       nifi.log_dir ?= '/var/log/nifi'
-      zk_hosts = @contexts 'ryba/zookeeper/server'
+      zk_hosts = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
 
 ## User and Groups
 

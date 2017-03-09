@@ -34,7 +34,7 @@ Example:
     module.exports = ->
       [pg_ctx] = @contexts 'masson/commons/postgres/server'
       [my_ctx] = @contexts 'masson/commons/mysql/server'
-      zookeeper_server = @contexts 'ryba/zookeeper/server'
+      zk_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       hive_hcatalog = @contexts 'ryba/hive/hcatalog'
       hadoop_ctxs = @contexts ['ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       hive = @config.ryba.hive ?= {}
@@ -184,7 +184,7 @@ full ACID semantics at the row level, so that one application can add rows while
 another reads from the same partition without interfering with each other.
 
       # Get ZooKeeper Quorum
-      zookeeper_quorum = zookeeper_server.map((zoo_ctx) -> "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}")
+      zookeeper_quorum = zk_ctxs.map((ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.config['clientPort]}")
       # Enable Table Lock Manager
       # Accoring to [Cloudera](http://www.cloudera.com/content/cloudera/en/documentation/cdh4/v4-2-0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html),
       # enabling the Table Lock Manager without specifying a list of valid

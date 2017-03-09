@@ -2,7 +2,7 @@
 # Zookeeper Client Install
 
     module.exports = header: 'ZooKeeper Client Install', handler: (options) ->
-      [zoo_server] = @contexts 'ryba/zookeeper/server'
+      [zk_ctx] = @contexts 'ryba/zookeeper/server'
       {zookeeper} = @config.ryba
 
 ## Register
@@ -21,9 +21,9 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-      @system.group zoo_server.config.ryba.zookeeper.group
-      @system.group zoo_server.config.ryba.hadoop_group
-      @system.user zoo_server.config.ryba.zookeeper.user
+      @system.group zk_ctx.config.ryba.zookeeper.group
+      @system.group zk_ctx.config.ryba.hadoop_group
+      @system.user zk_ctx.config.ryba.zookeeper.user
 
 ## Packages
 

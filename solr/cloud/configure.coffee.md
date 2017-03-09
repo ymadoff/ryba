@@ -64,7 +64,7 @@ differents cores ( and so with different ports).
       # Layout
       solr.cloud.port ?= 8983
       solr.cloud.env ?= {}
-      zk_hosts = @contexts 'ryba/zookeeper/server'
+      zk_hosts = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       solr.cloud.zk_connect = zk_hosts.map( (ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
       solr.cloud.zk_node ?= 'solr'
       solr.cloud.zkhosts = "#{solr.cloud.zk_connect}/#{solr.cloud.zk_node}"
