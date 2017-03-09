@@ -20,6 +20,13 @@
         hm_ctx.config.ryba.hbase.master.site['hbase.rpc.controllerfactory.class'] = 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
         hm_ctx.config.ryba.hbase.master.site['phoenix.schema.isNamespaceMappingEnabled'] = 'true'
         hm_ctx.config.ryba.hbase.master.site['phoenix.schema.mapSystemTablesToNamespace'] = 'true'
+        hm_ctx.after
+          type: 'service'
+          name: 'hbase-master'
+          handler: ->
+            @service
+              header: 'Install Phoenix'
+              name: 'phoenix'
       for rs_ctx in rs_ctxs
         rs_ctx.config.ryba.hbase.rs.site['hbase.defaults.for.version.skip'] = 'true'
         rs_ctx.config.ryba.hbase.rs.site['hbase.regionserver.wal.codec'] = 'org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec'
@@ -28,6 +35,13 @@
         rs_ctx.config.ryba.hbase.rs.site['hbase.rpc.controllerfactory.class'] = 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
         rs_ctx.config.ryba.hbase.rs.site['phoenix.schema.isNamespaceMappingEnabled'] = 'true'
         rs_ctx.config.ryba.hbase.rs.site['phoenix.schema.mapSystemTablesToNamespace'] = 'true'
+        rs_ctx.after
+          type: 'service'
+          name: 'hbase-regionserver'
+          handler: ->
+            @service
+              header: 'Install Phoenix'
+              name: 'phoenix'
 
 ## Optimisation
 
