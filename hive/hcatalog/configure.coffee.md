@@ -184,7 +184,7 @@ full ACID semantics at the row level, so that one application can add rows while
 another reads from the same partition without interfering with each other.
 
       # Get ZooKeeper Quorum
-      zookeeper_quorum = zk_ctxs.map((ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.config['clientPort]}")
+      zookeeper_quorum = zk_ctxs.map((ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.config['clientPort']}")
       # Enable Table Lock Manager
       # Accoring to [Cloudera](http://www.cloudera.com/content/cloudera/en/documentation/cdh4/v4-2-0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html),
       # enabling the Table Lock Manager without specifying a list of valid
