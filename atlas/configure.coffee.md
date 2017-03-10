@@ -285,7 +285,7 @@ hard coded.
           # Step 2 (only if 1) Check if an url is already written
           server2.site['atlas.rest.address'] = add_prop server2.site['atlas.rest.address'], rest_address, ','
           server2.site['hive.exec.post.hooks'] = add_prop server2.site['hive.exec.post.hooks'], 'org.apache.atlas.hive.hook.HiveHook', ','
-          server2.aux_jars = add_prop server2.aux_jars, "/usr/hdp/current/atlas-client/hook/hive", ':'
+          # server2.aux_jars = add_prop server2.aux_jars, "/usr/hdp/current/atlas-client/hook/hive", ':'
           
 ### Apache Hive Hook Kafka Notification
           
