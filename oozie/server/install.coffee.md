@@ -456,7 +456,11 @@ The `oozie admin -shareliblist` command can be used by the final user to list
 the ShareLib contents without having to go into HDFS.
 
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'
-      @call header: 'Share lib', timeout: 600000, handler: ->
+      @call 
+        header: 'Share lib'
+        timeout: 600000
+        if: @contexts('ryba/oozie/server')[0].config.host is @config.host
+        handler: ->
         @hdfs_mkdir
           target: "/user/#{oozie.user.name}/share/lib"
           user: "#{oozie.user.name}"
@@ -498,7 +502,6 @@ the ShareLib contents without having to go into HDFS.
           hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
           """
           trap: true
-
 
 ## Hive Site
 

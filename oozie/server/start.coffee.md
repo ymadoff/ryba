@@ -18,6 +18,7 @@ su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozied.sh start"
 Note, there is no need to clean a zombie pid file before starting the server.
 
     module.exports = header: 'Oozie Server Start', label_true: 'STARTED', timeout: -1, handler: ->
+      oozie_ctx = @contexts('ryba/oozie/server')[0]
 
 Wait for all the dependencies.
 
@@ -31,5 +32,9 @@ Wait for all the dependencies.
 
 Start the service
 
+      @connection.wait
+        host: oozie_ctx.config.host
+        port: oozie_ctx.config.ryba.oozie.http_port
+        unless: oozie_ctx.config.host is @config.host
       @service.start
         name: 'oozie'
