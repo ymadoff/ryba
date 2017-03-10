@@ -83,7 +83,13 @@ Example:
           -Dcom.sun.management.jmxremote.port=#{hive.hcatalog.env["JMXPORT"]} \
           -Dcom.sun.management.jmxremote.rmi.port=#{hive.hcatalog.env["JMXPORT"]} \
           """
-      hive.hcatalog.aux_jars ?= '/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar'
+      paths = []
+      hive.hcatalog.aux_jars_paths ?= []
+      #adding defaults jars
+      paths.push '/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar'
+      hive.hcatalog.aux_jars_paths ?= []
+      hive.hcatalog.aux_jars_paths.push p if hive.hcatalog.aux_jars_paths.indexOf(p) is -1 for p in paths
+      hive.hcatalog.aux_jars ?= "#{hive.hcatalog.aux_jars_paths.join ':'}"
 
 ## Warehouse directory
 

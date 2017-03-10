@@ -113,14 +113,17 @@ Example:
       aux_jars = hcat_ctxs[0].config.ryba.hive.hcatalog.aux_jars
       # fix bug where phoenix-server and phoenix-client do not contain same
       # version of class used.
+      paths = []
       if hm_ctxs.length and @has_service 'ryba/hbase/client'
-        aux_jars = add_prop aux_jars, '/usr/hdp/current/hbase-client/lib/hbase-server.jar', ':'
-        aux_jars = add_prop aux_jars, '/usr/hdp/current/hbase-client/lib/hbase-client.jar', ':'
-        aux_jars = add_prop aux_jars, '/usr/hdp/current/hbase-client/lib/hbase-common.jar', ':'
+        paths.push '/usr/hdp/current/hbase-client/lib/hbase-server.jar'
+        paths.push'/usr/hdp/current/hbase-client/lib/hbase-client.jar'
+        paths.push '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
         if @has_service 'ryba/phoenix/client'
           #aux_jars.push '/usr/hdp/current/phoenix-client/phoenix-server.jar'
-          aux_jars = add_prop aux_jars, '/usr/hdp/current/phoenix-client/phoenix-hive.jar', ':'
-      hive.server2.aux_jars ?= aux_jars
+          paths.push '/usr/hdp/current/phoenix-client/phoenix-hive.jar'
+      hive.server2.aux_jars_paths ?= []
+      hive.server2.aux_jars_paths.push p if hive.server2.aux_jars_paths.indexOf(p) is -1 for p in paths
+      hive.server2.aux_jars ?= "#{hive.server2.aux_jars_paths.join ':'}"
 
 ## Configure Kerberos
 
@@ -256,12 +259,6 @@ Add Hive user as proxyuser
         hcat_ctx.config.ryba.core_site ?= {}
         hcat_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
         hcat_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
-
-    add_prop = (value, add, separator) ->
-      throw Error 'No separator provided' unless separator?
-      value ?= ''
-      return add if value.length is 0
-      return if value.indexOf(add) is -1 then "#{value}#{separator}#{add}" else value
 
 ## Dependencies
 
