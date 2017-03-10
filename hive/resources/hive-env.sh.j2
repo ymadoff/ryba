@@ -61,11 +61,18 @@ if [ "$SERVICE" = "metastore" ]; then
 fi
 # RYBA HIVE HCATALOG END
 
+#GET ATLAS JARS
+
+ATLAS_JARS=""
+for i in `ls /usr/hdp/current/atlas-client/hook/hive/*.jar`;do ATLAS_JARS="${ATLAS_JARS=}:${i}";done
+for i in `ls /usr/hdp/current/atlas-client/hook/hive/atlas-hive-plugin-impl/*.jar`;do ATLAS_JARS="${ATLAS_JARS=}:${i}";done
+
 # RYBA HIVE SERVER2 START
 if [ "$SERVICE" = "hiveserver2" ]; then
   export HADOOP_HEAPSIZE="{{ryba.hive.server2.heapsize}}"
   export HADOOP_CLIENT_OPTS="{{ryba.hive.server2.env.JMX_OPTS}} -Xmx${HADOOP_HEAPSIZE}m {{ryba.hive.server2.env.opts}} ${HADOOP_CLIENT_OPTS}"
-  export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-{{ryba.hive.server2.aux_jars}}} # RYBA FIX
+  HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-{{ryba.hive.server2.aux_jars}}} # RYBA FIX
+  export HIVE_AUX_JARS_PATH="${HIVE_AUX_JARS_PATH}${ATLAS_JARS}"
 fi
 # RYBA HIVE SERVER2 END
 
