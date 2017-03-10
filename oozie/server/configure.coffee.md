@@ -125,7 +125,15 @@ Example
 
 ## Configuration for Proxy Users
 
-      hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm', 'ryba/hive/server2', 'ryba/hbase/master']
+      hadoop_ctxs = @contexts [
+        'ryba/hadoop/hdfs_nn'
+        'ryba/hadoop/hdfs_dn'
+        'ryba/hadoop/yarn_rm'
+        'ryba/hadoop/yarn_nm'
+        'ryba/hive/server2'
+        'ryba/hive/hcatalog'
+        'ryba/hbase/master'
+        ]
       for hadoop_ctx in hadoop_ctxs
         hadoop_ctx.config.ryba ?= {}
         hadoop_ctx.config.ryba.core_site ?= {}
