@@ -3,6 +3,8 @@
 
     module.exports = header: 'Oozie Client Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check, user, core_site, yarn, oozie} = @config.ryba
+      hs2_ctxs = @contexts 'ryba/hive/server2'
+      [ranger_admin] = @contexts 'ryba/ranger/admin'
 
 ## Wait
 
@@ -341,7 +343,7 @@
         else
           rm_ctx = rm_ctxs[0]
           shortname = ''
-        rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
+        rm_address = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address#{shortname}"]
         # Get the name of the user running the Oozie Server
         os_ctxs = @contexts 'ryba/oozie/server'#, require('../server').configure
         {oozie} = os_ctxs[0].config.ryba
@@ -439,9 +441,190 @@
           trap: false # or while loop will exit on first run
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{@config.shortname}-oozie-pig/output"
 
+## Check Hive2 Workflow
+From HDP 2.5 Hive action becomes deprecated against hive2 actions. As hive2 action use jdbc connection to communicate
+with hiveserver2. It enables Ranger policies to be applied same way whatever the client.
+
+      @call
+        header: 'Check Policies (Ranger)'
+        if: ranger_admin?
+        handler: ->
+          {install} = ranger_admin.config.ryba.ranger.hive_plugin
+          dbs = []
+          for hs2_ctx in hs2_ctxs
+            dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
+          dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
+          # use v1 policy api (old style) from ranger to have an example
+          hive_policy =
+            "policyName": "Ranger-Ryba-HIVE-Policy-#{@config.host}"
+            "repositoryName": "#{install['REPOSITORY_NAME']}"
+            "repositoryType":"hive"
+            "description": 'Ryba check hive policy'
+            "databases": "#{dbs.join ','}"
+            'tables': '*'
+            "columns": "*"
+            "udfs": ""
+            'tableType': 'Inclusion'
+            'columnType': 'Inclusion'
+            'isEnabled': true
+            'isAuditEnabled': true
+            "permMapList": [{
+              "userList": ["#{user.name}"],
+              "permList": ["all"]
+            }]
+          @wait.execute
+            cmd: """
+              curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+            """
+            code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
+          @system.execute
+            cmd: """
+              curl --fail -H "Content-Type: application/json" -k -X POST \
+              -d '#{JSON.stringify hive_policy}' \
+              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/api/policy\"
+            """
+            unless_exec: """
+              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy-#{@config.host}\"
+            """
+            code_skippe: 22
+
+      @call header: 'Check Hive2 Workflow (No ZK)', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+        rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
+        if rm_ctxs.length > 1
+          rm_ctx = rm_ctxs[0]
+          # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
+          shortname = ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}"
+        else
+          rm_ctx = rm_ctxs[0]
+          shortname = ''
+        rm_address = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address#{shortname}"]
+        # Get the name of the user running the Oozie Server
+        os_ctxs = @contexts 'ryba/oozie/server'#, require('../server').configure
+        {oozie} = os_ctxs[0].config.ryba
+        {hive} = hs2_ctxs[0].config.ryba
+        # Constructs Hiveserver2 jdbc url
+        for hs2_ctx in hs2_ctxs
+          # {hive} = hs2_ctx.config.ryba
+          db = "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
+          port = if hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'http'
+          then hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.http.port']
+          else hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.port']
+          principal = hs2_ctx.config.ryba.hive.server2.site['hive.server2.authentication.kerberos.principal']
+          url = "jdbc:hive2://#{hs2_ctx.config.host}:#{port}/default"
+          if hs2_ctx.config.ryba.hive.server2.site['hive.server2.use.SSL'] is 'true'
+            url += ";ssl=true"
+            url += ";sslTrustStore=#{@config.ryba.ssl_client['ssl.client.truststore.location']}"
+            url += ";trustStorePassword=#{@config.ryba.ssl_client['ssl.client.truststore.password']}"
+          if hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'http'
+            url += ";transportMode=#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode']}"
+            url += ";httpPath=#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.http.path']}"
+          workflow_dir = "check-#{@config.shortname}-oozie-hive2-#{hs2_ctx.config.shortname}"
+          app_name = "check-#{@config.shortname}-oozie-hive2-#{hs2_ctx.config.shortname}"
+          @file
+            content: """
+            nameNode=#{core_site['fs.defaultFS']}
+            jobTracker=#{rm_address}
+            oozie.libpath=/user/#{oozie.user.name}/share/lib
+            queueName=default
+            basedir=${nameNode}/user/#{user.name}/#{workflow_dir}
+            oozie.wf.application.path=${basedir}
+            oozie.use.system.libpath=true
+            jdbcURL=#{url}
+            principal=#{principal}
+            """
+            target: "#{user.home}/#{workflow_dir}/job.properties"
+            uid: user.name
+            gid: user.group
+            eof: true
+          @file
+            content: """
+            <workflow-app name='#{app_name}' xmlns='uri:oozie:workflow:0.4'>
+              <credentials>
+                <credential name='hive2_credentials' type='hive2'>
+                  <property>
+                    <name>hive2.jdbc.url</name>
+                    <value>${jdbcURL}</value>
+                  </property>
+                  <property>
+                    <name>hive2.server.principal</name>
+                    <value>${principal}</value>
+                  </property>
+                </credential>
+              </credentials>
+              <start to='test-hive2' />
+              <action name='test-hive2' cred="hive2_credentials">
+                <hive2 xmlns="uri:oozie:hive2-action:0.1">
+                  <job-tracker>${jobTracker}</job-tracker>
+                  <name-node>${nameNode}</name-node>
+                  <prepare>
+                      <delete path="${nameNode}/user/${wf:user()}/#{workflow_dir}/second_table"/>
+                  </prepare>
+                  <configuration>
+                      <property>
+                          <name>mapred.job.queue.name</name>
+                          <value>${queueName}</value>
+                      </property>
+                  </configuration>
+                  <jdbc-url>${jdbcURL}</jdbc-url>
+                  <script>hive.q</script>
+                  <param>INPUT=/user/${wf:user()}/#{db}/first_table</param>
+                  <param>OUTPUT=/user/${wf:user()}/#{db}/second_table</param>
+                  <file>/user/ryba/#{workflow_dir}/truststore#truststore</file>
+                </hive2>
+                <ok to="end" />
+                <error to="fail" />
+              </action>
+              <kill name="fail">
+                <message>Hive2 (Beeline) action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+              </kill>
+              <end name='end' />
+            </workflow-app>
+            """
+            target: "#{user.home}/#{workflow_dir}/workflow.xml"
+            uid: user.name
+            gid: user.group
+            eof: true
+          @file
+            content: """
+              DROP TABLE IF EXISTS #{db}.first_table;
+              DROP DATABASE IF EXISTS #{db};
+              CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{user.name}/#{db}';
+              USE #{db};
+              CREATE EXTERNAL TABLE first_table (mynumber INT) STORED AS TEXTFILE LOCATION '${INPUT}';
+              select SUM(mynumber) from first_table;
+              INSERT OVERWRITE DIRECTORY '${OUTPUT}' SELECT * FROM first_table;
+            """
+            target: "#{user.home}/#{workflow_dir}/hive.q"
+            uid: user.name
+            gid: user.group
+            eof: true
+          @system.execute
+            cmd: mkcmd.test @, """
+            hdfs dfs -rm -r -skipTrash #{workflow_dir}2>/dev/null
+            hdfs dfs -mkdir -p #{workflow_dir}/first_table
+            echo -e '1\\n2\\n3' | hdfs dfs -put - #{db}/first_table/data
+            hdfs dfs -put -f #{user.home}/#{workflow_dir}/workflow.xml #{workflow_dir}
+            hdfs dfs -put -f #{user.home}/#{workflow_dir}/hive.q #{workflow_dir}
+            hdfs dfs -put -f /etc/hive/conf/truststore #{workflow_dir}
+            export OOZIE_URL=#{oozie.site['oozie.base.url']}
+            oozie job -dryrun -config #{user.home}/#{workflow_dir}/job.properties
+            jobid=`oozie job -run -config #{user.home}/#{workflow_dir}/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+            i=0
+            echo $jobid
+            while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
+            do ((i++)); sleep 1; done
+            oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
+            """
+            trap: false # or while loop will exit on first run
+            unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d #{workflow_dir}/result"
 ## Check Spark Workflow
 
-      @call header: 'Check Spark', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call header: 'Check Spark', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
