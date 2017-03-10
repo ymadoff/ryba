@@ -135,6 +135,11 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
           uid: hdfs.user.name
           gid: hdfs.group.name
           parent: true
+        @system.mkdir
+          target: "#{path.dirname ryba.hdfs.site['dfs.domain.socket.path']}"
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          parent: true
 
 ## Core Site
 
@@ -381,6 +386,7 @@ need to fix limits to root account, until Bigtop integrates jsvc 1.0.6
 ## Dependencies
 
     misc = require 'nikita/lib/misc'
+    path = require 'path'
 
 [key_os]: http://fr.slideshare.net/vgogate/hadoop-configuration-performance-tuning
 [jsvc-192]: https://issues.apache.org/jira/browse/DAEMON-192
