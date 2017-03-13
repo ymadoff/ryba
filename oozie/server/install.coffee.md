@@ -11,6 +11,7 @@ failover and Oozie must target the active node.
       {oozie, hadoop_group, hadoop_conf_dir, yarn, realm, db_admin, core_site, ssl_client,ssl} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       is_falcon_installed = @contexts('ryba/falcon/server').length isnt 0
+      is_hbase_installed = @contexts('ryba/hbase/master').length isnt 0
       port = url.parse(oozie.site['oozie.base.url']).port
 
 ## Register
@@ -311,11 +312,22 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           local: true
 
       @call header: 'War', handler: ->
-        @call header: 'HBase', handler: ->
-          @system.copy
-            header: 'HBase Libs'
-            source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
-            destination: '/usr/hdp/current/oozie-server/libext/'
+        @call 
+          header: 'HBase'
+          if: is_hbase_installed
+          handler: ->
+            files = [
+              'hbase-common.jar'
+              'hbase-client.jar'
+              'hbase-server.jar'
+              'hbase-protocol.jar'
+              'hbase-hadoop2-compat.jar'
+            ]
+            for file in files
+              @system.copy
+                header: 'HBase Libs'
+                source: "/usr/hdp/current/hbase-client/lib/#{file}"
+                destination: '/usr/hdp/current/oozie-server/libext/'
         @call
           header: 'Falcon'
           if: is_falcon_installed
@@ -493,9 +505,37 @@ the ShareLib contents without having to go into HDFS.
                 source: "#{addition}"
                 target: "/usr/hdp/current/oozie-server/share/lib/#{sublib}"
                 mode: 0o0755
+        # use bash script to copy hbase-client jar to oozie sharelib to avoid
+        # too much ssh action
+        @call
+          header: "HBase Sharelib"
+          if: is_hbase_installed
+          handler: ->
+            @service
+              name: 'hbase'
+            @system.mkdir
+              target: '/usr/hdp/current/oozie-server/share/lib/hbase'
+            @system.execute
+              header: 'Copy jars'
+              code_skipped: 2
+              cmd: """
+                count=0
+                for name in `ls -l /usr/hdp/current/hbase-client/lib/ | grep ^- | egrep '(htrace)|(hbase-)' | grep -v test | awk '{print $9}'`;
+                do
+                  if test -f /usr/hdp/current/oozie-server/share/lib/hbase/$name;
+                    then
+                      echo "file: $name  status: ok";
+                    else
+                      cp /usr/hdp/current/hbase-client/lib/$name /usr/hdp/current/oozie-server/share/lib/hbase/$name
+                      count=$((count+1))
+                      echo "file: $name  status: copied";
+                  fi;
+                  done;
+                if [ $count -eq 0 ] ; then exit 2 ; else exit 0; fi
+              """
         # Deploy a versionned sharelib
         @system.execute
-          if: -> @status -1 or @status -2 or @status -3
+          if: -> @status -1 or @status -2 or @status -3 or @status -4
           header: 'Deploy to HDFS'
           cmd: mkcmd.hdfs @, """
           su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-server/share"
