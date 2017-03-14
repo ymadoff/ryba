@@ -116,7 +116,7 @@ Example:
       paths = []
       if hm_ctxs.length and @has_service 'ryba/hbase/client'
         paths.push '/usr/hdp/current/hbase-client/lib/hbase-server.jar'
-        paths.push'/usr/hdp/current/hbase-client/lib/hbase-client.jar'
+        paths.push '/usr/hdp/current/hbase-client/lib/hbase-client.jar'
         paths.push '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
         if @has_service 'ryba/phoenix/client'
           #aux_jars.push '/usr/hdp/current/phoenix-client/phoenix-server.jar'
