@@ -94,12 +94,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           local: true
           target: '/etc/init.d/oozie'
           mode: 0o0755
-        @system.tmpfs
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-          mount: oozie.pid_dir
-          uid: oozie.user.name
-          gid: hadoop_group.name
-          perm: '0750'
+        @system.discover (err, status, os) ->
+          @system.tmpfs
+            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+            mount: oozie.pid_dir
+            uid: oozie.user.name
+            gid: hadoop_group.name
+            perm: '0750'
         @system.execute
           cmd: "service oozie restart"
           if: -> @status -4

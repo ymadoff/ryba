@@ -41,12 +41,13 @@
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-          mount: "#{kms.pid_dir}"
-          uid: kms.user.name
-          gid: kms.group.name
-          perm: '0755'
+        @system.discover (err, status, os) ->
+          @system.tmpfs
+            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+            mount: "#{kms.pid_dir}"
+            uid: kms.user.name
+            gid: kms.group.name
+            perm: '0755'
         
 
 ## Layout

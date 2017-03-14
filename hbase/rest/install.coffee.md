@@ -81,12 +81,13 @@ hbase:x:492:
           target: '/etc/init.d/hbase-rest'
           mode: 0o0755
           unlink: true
-        @system.tmpfs
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-          mount: hbase.rest.pid_dir
-          uid: hbase.user.name
-          gid: hbase.group.name
-          perm: '0755'
+        @system.discover (err, status, os) ->
+          @system.tmpfs
+            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+            mount: hbase.rest.pid_dir
+            uid: hbase.user.name
+            gid: hbase.group.name
+            perm: '0755'
 
 ## Configure
 

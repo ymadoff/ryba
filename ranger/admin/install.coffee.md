@@ -137,12 +137,13 @@ to allow user to create none-determisitic functions.
         local: true
         mode: 0o0755
         context: @config.ryba
-      @system.tmpfs
-        if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-        mount: '/var/run/ranger'
-        uid: ranger.user.name
-        gid: ranger.user.name
-        perm: '0750'
+      @system.discover (err, status, os) ->
+        @system.tmpfs
+          if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+          mount: '/var/run/ranger'
+          uid: ranger.user.name
+          gid: ranger.user.name
+          perm: '0750'
       @service
         name: 'ranger-admin'
         startup: true

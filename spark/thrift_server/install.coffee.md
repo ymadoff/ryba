@@ -30,12 +30,13 @@
         context: @config.ryba
         backup: true
         mode: 0o0755
-      @system.tmpfs
-        if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-        mount: spark.thrift.pid_dir
-        uid: spark.user.name
-        gid: @config.ryba.hadoop_group.gid
-        perm: '0750'
+      @system.discover (err, status, os) ->
+        @system.tmpfs
+          if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+          mount: spark.thrift.pid_dir
+          uid: spark.user.name
+          gid: @config.ryba.hadoop_group.gid
+          perm: '0750'
 
 
 ## IPTables

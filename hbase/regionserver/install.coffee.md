@@ -84,12 +84,13 @@ inside "/etc/init.d" and activate it on startup.
           context: @config
           target: '/etc/init.d/hbase-regionserver'
           mode: 0o0755
-        @system.tmpfs
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-          mount: hbase.rs.pid_dir
-          uid: hbase.user.name
-          gid: hbase.group.name
-          perm: '0755'
+        @system.discover (err, status, os) ->
+          @system.tmpfs
+            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+            mount: hbase.rs.pid_dir
+            uid: hbase.user.name
+            gid: hbase.group.name
+            perm: '0755'
 
 ## Zookeeper JAAS
 

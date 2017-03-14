@@ -59,12 +59,13 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-          mount: "#{yarn.ats.pid_dir}"
-          uid: yarn.user.name
-          gid: hadoop_group.name
-          perm: '0755'
+        @system.discover (err, status, os) ->
+          @system.tmpfs
+            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+            mount: "#{yarn.ats.pid_dir}"
+            uid: yarn.user.name
+            gid: hadoop_group.name
+            perm: '0755'
         @system.execute
           cmd: "service hadoop-yarn-timelineserver restart"
           if: -> @status -4

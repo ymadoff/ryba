@@ -89,12 +89,13 @@ So we must manually force install of hdf-select outside of yum to handle it
           context: @config
           local: true
           mode: 0o0755
-        @system.tmpfs
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-          mount: '/var/run/nifi'
-          uid: nifi.user.name
-          gid: nifi.group.name
-          perm: '0750'
+        @system.discover (err, status, os) ->
+          @system.tmpfs
+            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+            mount: '/var/run/nifi'
+            uid: nifi.user.name
+            gid: nifi.group.name
+            perm: '0750'
 
 ## Env
 

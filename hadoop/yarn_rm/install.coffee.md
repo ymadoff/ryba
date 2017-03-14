@@ -86,12 +86,13 @@ inside "/etc/init.d" and activate it on startup.
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-          mount: "#{yarn.rm.pid_dir}"
-          uid: yarn.user.name
-          gid: hadoop_group.name
-          perm: '0755'
+        @system.discover (err, status, os) ->
+          @system.tmpfs
+            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+            mount: "#{yarn.rm.pid_dir}"
+            uid: yarn.user.name
+            gid: hadoop_group.name
+            perm: '0755'
         @system.execute
           cmd: "service hadoop-yarn-resourcemanager restart"
           if: -> @status -4

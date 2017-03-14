@@ -38,12 +38,13 @@ directories.
           target: ranger.usersync.conf_dir
         @system.mkdir
           target: ranger.usersync.log_dir
-        @system.tmpfs
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos']) and (options.store['nikita:system:release'][0] is '7')
-          mount: ranger.usersync.pid_dir
-          uid: ranger.user.name
-          gid: ranger.user.name
-          perm: '0750'
+        @system.discover (err, status, os) ->
+          @system.tmpfs
+            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
+            mount: ranger.usersync.pid_dir
+            uid: ranger.user.name
+            gid: ranger.user.name
+            perm: '0750'
         @system.mkdir
           target: ranger.usersync.pid_dir 
 
