@@ -507,6 +507,7 @@ the ShareLib contents without having to go into HDFS.
                 mode: 0o0755
         # use bash script to copy hbase-client jar to oozie sharelib to avoid
         # too much ssh action
+        #https://community.hortonworks.com/content/supportkb/49407/how-to-set-up-oozie-to-connect-to-secured-hbase-cl-1.html
         @call
           header: "HBase Sharelib"
           if: is_hbase_installed
