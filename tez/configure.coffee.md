@@ -11,7 +11,7 @@
       tez.env['TEZ_JARS'] ?= '/usr/hdp/current/tez-client/*:/usr/hdp/current/tez-client/lib/*'
       tez.env['HADOOP_CLASSPATH'] ?= '$TEZ_CONF_DIR:$TEZ_JARS:$HADOOP_CLASSPATH'
       tez.ui ?= {}
-      tez.ui.enabled ?= false
+      tez.ui.enabled ?= @config.host in @contexts('masson/commons/httpd').map( (c) -> c.config.host )
       tez.site ?= {}
       # tez.site['tez.lib.uris'] ?= "#{hdfs_url}/apps/tez/,#{hdfs_url}/apps/tez/lib/"
       tez.site['tez.lib.uris'] ?= "/hdp/apps/${hdp.version}/tez/tez.tar.gz"
@@ -21,8 +21,6 @@
       # Validation
       # Java.lang.IllegalArgumentException: tez.runtime.io.sort.mb 512 should be larger than 0 and should be less than the available task memory (MB):364
       # throw Error '' ryba.tez.site['tez.runtime.io.sort.mb']
-      # Tez UI
-      tez.site['tez.runtime.convert.user-payload.to.history-text'] ?= 'true' if tez.ui.enabled
 
 ## Configuration for Resource Allocation
 
@@ -105,6 +103,13 @@ Convert [deprecated values][dep] between HDP 2.1 and HDP 2.2.
 ## Tez UI
 
       if tez.ui.enabled
+        tez.ui.env ?= {}
+        tez.ui.env.hosts ?= {}
+        unless tez.site['tez.tez-ui.history-url.base'] and tez.ui.html_path
+          unless @config.host in @contexts('masson/commons/httpd').map( (c) -> c.config.host )
+            throw 'Install masson/commons/httpd on ' + @config.host + ' or specify tez.site[\'tez.tez-ui.history-url.base\'] and tez.ui.html_path if tez.ui.enabled'
+          tez.site['tez.tez-ui.history-url.base'] ?= "http://#{@config.host}/tez-ui"
+          tez.ui.html_path ?= "#{@config.httpd.user.home}/tez-ui"
         yarn_ts_ctxs = @contexts 'ryba/hadoop/yarn_ts'
         yarn_rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         throw Error 'Cannot install Tez UI without Yarn TS' unless yarn_ts_ctxs.length
@@ -112,15 +117,15 @@ Convert [deprecated values][dep] between HDP 2.1 and HDP 2.2.
         ats_ctx = yarn_ts_ctxs[0]
         rm_ctx = yarn_rm_ctxs[0]
         id = if rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''
-        tez.ui.html_path ?= '/var/www/html/tez-ui'
-        tez.ui.env ?= {}
-        tez.ui.env.hosts ?= {}
         tez.ui.env.hosts.timeline ?= if ats_ctx.config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
         then "http://" + ats_ctx.config.ryba.yarn.site['yarn.timeline-service.webapp.address']
         else "https://"+ ats_ctx.config.ryba.yarn.site['yarn.timeline-service.webapp.https.address']
         tez.ui.env.hosts.rm ?= if rm_ctx.config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
         then "http://" + rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.webapp.address#{id}"]
         else "https://"+ rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.webapp.https.address#{id}"]
+        ## Tez Site when UI is enabled
+        tez.site['tez.runtime.convert.user-payload.to.history-text'] ?= 'true'
+        tez.site['tez.history.logging.service.class'] ?= 'org.apache.tez.dag.history.logging.ats.ATSHistoryLoggingService'
 
 [tez]: http://tez.apache.org/
 [instructions]: (http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.8.4)
