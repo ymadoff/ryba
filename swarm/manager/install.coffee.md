@@ -12,12 +12,6 @@
 
       @call 'ryba/zookeeper/server/wait'
 
-## System Cache 
-
-      @call 
-        header: 'Cache Current System'
-        handler: discover.system
-
 ## IPTables
 
 | Service                 | Port  | Proto       | Parameter          |
@@ -74,10 +68,9 @@ Same logic that `masson/commons/docker`, but add the swarm starting options.
         for type, socketPaths of @config.docker.sockets
           opts.push "-H #{type}://#{path}" for path in socketPaths
         other_opts += opts.join ' '
-        @call 
-          if: -> (options.store['nikita:system:type'] in ['redhat','centos'])
-          handler: ->
-            switch options.store['nikita:system:release'][0]
+        @system.discover (err, status, os) ->
+          if os.type in ['redhat','centos']
+            switch os.release[0]
               when '6' 
                 @file
                   target: '/etc/sysconfig/docker'
@@ -94,6 +87,7 @@ Same logic that `masson/commons/docker`, but add the swarm starting options.
                     replace: "OPTIONS=\"#{other_opts}\"" 
                   ]
                   backup: true
+          else throw Error 'Swarm agent not supported on your OS'
         @service.restart
           name: 'docker'
           if: -> @status -1
@@ -168,4 +162,3 @@ on the swarm cluster level
 ## Dependencies
     
     path = require 'path'
-    discover = require 'nikita/lib/misc/discover'
