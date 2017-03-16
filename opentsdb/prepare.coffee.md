@@ -11,3 +11,4 @@ Download the rpm package.
         @file.cache
           ssh: null
           source: "#{@config.ryba.opentsdb.source}"
+          location: true
