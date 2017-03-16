@@ -7,6 +7,7 @@ The driver program manages the executors task.
 
     module.exports = header: 'Spark Client Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {spark, force_check,  user, core_site} = @config.ryba
+      hive_server2 = @contexts 'ryba/hive/server2'
 
 ## Wait
 
@@ -129,28 +130,49 @@ Creating database from SparkSql is not supported for now.
         dir_check = "check-#{@config.shortname}-spark-shell-scala-sql"
         directory = "check-#{@config.shortname}-spark_shell_scala-sql"
         db = "check_#{@config.shortname}_spark_shell_hive_#{@config.shortname}"
-        @system.execute
-          cmd: mkcmd.test @, """
-          hdfs dfs -rm -r -skipTrash #{directory} || true
-          hdfs dfs -rm -r -skipTrash #{dir_check} || true
-          hdfs dfs -mkdir -p #{directory}/my_db/spark_sql_test
-          echo -e 'a,1\\nb,2\\nc,3' > /var/tmp/spark_sql_test
-          hive -e "
-            DROP DATABASE IF EXISTS #{db};
-            CREATE DATABASE #{db} LOCATION '/user/#{user.name}/#{directory}/my_db/';
-          "
-          spark-shell --master yarn-client 2>/dev/null <<SPARKSHELL
-          sqlContext.sql(\"USE #{db}\");
-          sqlContext.sql(\"DROP TABLE IF EXISTS spark_sql_test\");
-          sqlContext.sql(\"CREATE TABLE IF NOT EXISTS spark_sql_test (key STRING, value INT)\");
-          sqlContext.sql(\"LOAD DATA LOCAL INPATH '/var/tmp/spark_sql_test' INTO TABLE spark_sql_test\");
-          sqlContext.sql(\"FROM spark_sql_test SELECT key, value\").collect().foreach(println)
-          sqlContext.sql(\"FROM spark_sql_test SELECT key, value\").rdd.saveAsTextFile(\"#{core_site['fs.defaultFS']}/user/#{user.name}/#{dir_check}\")
-          SPARKSHELL
-          hive -e "DROP TABLE #{db}.spark_sql_test; DROP DATABASE #{db};"
-          if hdfs dfs -test -f /user/#{user.name}/#{dir_check}/_SUCCESS; then exit 0; else exit 1;fi
-          """
-          unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{dir_check}/_SUCCESS"
+        current = null
+        url = null
+        urls = hive_server2
+        .map (hs2_ctx) =>
+          quorum = hs2_ctx.config.ryba.hive.server2.site['hive.zookeeper.quorum']
+          namespace = hs2_ctx.config.ryba.hive.server2.site['hive.server2.zookeeper.namespace']
+          principal = hs2_ctx.config.ryba.hive.server2.site['hive.server2.authentication.kerberos.principal']
+          url = "jdbc:hive2://#{quorum}/;principal=#{principal};serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=#{namespace}"
+          if hs2_ctx.config.ryba.hive.server2.site['hive.server2.use.SSL'] is 'true'
+            url += ";ssl=true"
+            url += ";sslTrustStore=#{@config.ryba.hive.client.truststore_location}"
+            url += ";trustStorePassword=#{@config.ryba.hive.client.truststore_password}"
+          if hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'http'
+            url += ";transportMode=#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode']}"
+            url += ";httpPath=#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.http.path']}"
+          url
+        .sort()
+        .filter (c) ->
+          p = current; current = c; p isnt c
+        beeline = "beeline -u \"#{url}\" --silent=true "
+        @call ->
+          @system.execute
+            cmd: mkcmd.test @, """
+            hdfs dfs -rm -r -skipTrash #{directory} || true
+            hdfs dfs -rm -r -skipTrash #{dir_check} || true
+            hdfs dfs -mkdir -p #{directory}/my_db/spark_sql_test
+            echo -e 'a,1\\nb,2\\nc,3' > /var/tmp/spark_sql_test
+            #{beeline} \
+              -e "DROP DATABASE IF EXISTS #{db};" \
+              -e "CREATE DATABASE #{db} LOCATION '/user/#{user.name}/#{directory}/my_db/';"
+            spark-shell --master yarn-client 2>/dev/null <<SPARKSHELL
+            sqlContext.sql(\"USE #{db}\");
+            sqlContext.sql(\"DROP TABLE IF EXISTS spark_sql_test\");
+            sqlContext.sql(\"CREATE TABLE IF NOT EXISTS spark_sql_test (key STRING, value INT)\");
+            sqlContext.sql(\"LOAD DATA LOCAL INPATH '/var/tmp/spark_sql_test' INTO TABLE spark_sql_test\");
+            sqlContext.sql(\"FROM spark_sql_test SELECT key, value\").collect().foreach(println)
+            sqlContext.sql(\"FROM spark_sql_test SELECT key, value\").rdd.saveAsTextFile(\"#{core_site['fs.defaultFS']}/user/#{user.name}/#{dir_check}\")
+            SPARKSHELL
+            #{beeline} \
+              -e "DROP TABLE #{db}.spark_sql_test; DROP DATABASE #{db};"
+            if hdfs dfs -test -f /user/#{user.name}/#{dir_check}/_SUCCESS; then exit 0; else exit 1;fi
+            """
+            unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{dir_check}/_SUCCESS"
 
 
 ## Spark Shell Python
