@@ -74,7 +74,7 @@ We use the SPNEGO keytab, so we let hadoop/core handle principal & keytab
             mount: phoenix.pid_dir
             uid: phoenix.user.name
             gid: phoenix.group.name
-            perm: 0o755
+            perm: '0750'
 
 ## HBase Site
 
