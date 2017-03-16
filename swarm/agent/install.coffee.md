@@ -45,7 +45,7 @@ Try to pull the image first, or upload from cache if not pull possible.
           unless: -> @status(-1) or @status(-2)
           binary: true
           header: 'from cache'
-          source: "#{@config.mecano.cache_dir}/swarm.tar"
+          source: "#{@config.nikita.cache_dir}/swarm.tar"
           target: "#{tmp_dir}/swarm.tar"
         @docker.load
           header: 'Load'
@@ -65,10 +65,9 @@ Same logic that `masson/commons/docker`, but add the swarm starting options.
         for type, socketPaths of @config.docker.sockets
           opts.push "-H #{type}://#{path}" for path in socketPaths
         other_opts += opts.join ' '
-        @call 
-          if: -> (options.store['mecano:system:type'] in ['redhat','centos'])
-          handler: ->
-            switch options.store['mecano:system:release'][0]
+        @system.discover (err, status, os) ->
+          if os.type in ['redhat','centos']
+            switch os.release[0]
               when '6' 
                 @file
                   target: '/etc/sysconfig/docker'
@@ -84,6 +83,7 @@ Same logic that `masson/commons/docker`, but add the swarm starting options.
                   replace: "OPTIONS=\"#{other_opts}\""
                 ]
                 backup: true
+          else throw Error 'Swarm agent not supported on your OS'
         @service.restart
           name: 'docker'
           if: -> @status -1
