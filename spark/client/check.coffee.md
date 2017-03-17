@@ -140,8 +140,8 @@ Creating database from SparkSql is not supported for now.
           url = "jdbc:hive2://#{quorum}/;principal=#{principal};serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=#{namespace}"
           if hs2_ctx.config.ryba.hive.server2.site['hive.server2.use.SSL'] is 'true'
             url += ";ssl=true"
-            url += ";sslTrustStore=#{@config.ryba.hive.client.truststore_location}"
-            url += ";trustStorePassword=#{@config.ryba.hive.client.truststore_password}"
+            url += ";sslTrustStore=#{@config.ryba.ssl_client['ssl.client.truststore.location']}"
+            url += ";trustStorePassword=#{@config.ryba.ssl_client['ssl.client.truststore.password']}"
           if hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'http'
             url += ";transportMode=#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode']}"
             url += ";httpPath=#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.http.path']}"
