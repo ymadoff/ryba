@@ -76,6 +76,7 @@ Example
       oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
       # Path to hadoop configuration is required when running 'sharelib upgrade'
       # or an error will complain that the hdfs url is invalid
+      oozie.site['oozie.services.ext']?= []
       oozie.site['oozie.service.HadoopAccessorService.hadoop.configurations'] ?= '*=/etc/hadoop/conf'
       oozie.site['oozie.service.SparkConfigurationService.spark.configurations'] ?= '*=/etc/spark/conf/'
       #oozie.site['oozie.service.SparkConfigurationService.spark.configurations.ignore.spark.yarn.jar'] ?= 'true'
@@ -121,6 +122,30 @@ Example
       oozie.sharelib.spark.push '/usr/hdp/current/spark-client/lib/spark-assembly-1.6.2.2.5.3.0-37-hadoop2.7.3.2.5.3.0-37.jar'
       oozie.sharelib.spark.push '/usr/hdp/current/spark-client/python/lib/pyspark.zip'
       oozie.sharelib.spark.push '/usr/hdp/current/spark-client/python/lib/py4j-0.9-src.zip'
+      # Oozie Notifications
+      # see https://oozie.apache.org/docs/4.1.0/AG_Install.html#Notifications_Configuration
+      if oozie.jms_url
+        oozie.site['oozie.services.ext'].push [
+          'org.apache.oozie.service.JMSAccessorService'
+          'org.apache.oozie.service.JMSTopicService'
+          'org.apache.oozie.service.EventHandlerService'
+          'org.apache.oozie.sla.service.SLAService'
+          ]
+        oozie.site['oozie.service.EventHandlerService.event.listeners'] ?= [
+          'org.apache.oozie.jms.JMSJobEventListener'
+          'org.apache.oozie.sla.listener.SLAJobEventListener'
+          'org.apache.oozie.jms.JMSSLAEventListener'
+          'org.apache.oozie.sla.listener.SLAEmailEventListener'
+          ]
+        oozie.site['oozie.service.SchedulerService.threads'] ?= 15
+        oozie.site['oozie.jms.producer.connection.properties'] ?= "java.naming.factory.initial#org.apache.activemq.jndi.ActiveMQInitialContextFactory;java.naming.provider.url#"+"#{oozie.jms_url}"+";connectionFactoryNames#ConnectionFactory"
+        #oozie.site['oozie.service.JMSTopicService.topic.prefix'] ?= 'oozie.' # despite the docs, this parameter does not exist
+        oozie.site['oozie.service.JMSTopicService.topic.name'] ?= [
+          'default=${username}'
+          'WORKFLOW=workflow'
+          'COORDINATOR=coordinator'
+          'BUNDLE=bundle'
+          ].join(',')
 
 
 ## Configuration for Proxy Users
@@ -174,7 +199,7 @@ the same database. It uses zookeeper for enabling HA.
           "#{zk_ctx.config.host}:#{zk_ctx.config.ryba.zookeeper.config['clientPort']}"
         oozie.site['oozie.zookeeper.connection.string'] ?= quorum.join ','
         oozie.site['oozie.zookeeper.namespace'] ?= 'oozie-ha'
-        oozie.site['oozie.services.ext'] ?= [
+        oozie.site['oozie.services.ext'].push [
           'org.apache.oozie.service.ZKLocksService'
           'org.apache.oozie.service.ZKXLogStreamingService'
           'org.apache.oozie.service.ZKJobsConcurrencyService'
