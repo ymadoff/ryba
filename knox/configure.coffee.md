@@ -28,6 +28,8 @@ loop on topologies to provide missing values
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       knox = @config.ryba.knox ?= {}
       knox.conf_dir ?= '/etc/knox/conf'
+      knox.log_dir ?= '/var/log/knox'
+      knox.bin_dir ?= '/usr/hdp/current/knox-server/bin'
       # User
       knox.user = name: knox.user if typeof knox.user is 'string'
       knox.user ?= {}
@@ -46,8 +48,12 @@ loop on topologies to provide missing values
       knox.krb5_user.principal ?= "#{knox.user.name}/#{@config.host}@#{@config.ryba.realm}"
       knox.krb5_user.keytab ?= '/etc/security/keytabs/knox.service.keytab'
       # Env
+      # Knox reads its own env variable to read configuration.
       knox.env ?= {}
       knox.env.app_mem_opts ?= '-Xmx8192m'
+      knox.env.app_log_dir ?= "#{knox.log_dir}"
+      knox.env.app_log_opts ?= ''
+      knox.env.app_dbg_opts ?= ''
       # Configuration
       knox.site ?= {}
       knox.site['gateway.port'] ?= '8443'
@@ -280,17 +286,12 @@ This mechanism can be used to configure a specific gateway without having to dec
               topology.providers['ha'].config['webhbase'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
           else throw Error 'Cannot autoconfigure KNOX webhbase service, no webhbase declared'
 
-## Java Options
-Knox read its own env variable to read configuration.
-
-      knox.opts ?= {}
-      knox.env.app_log_opts ?= ''
-
 ## Configuration for Log4J
 
       knox.log4j ?= {}
       knox.log4jopts ?= {}
-      knox.log4jopts['log4j.rootLogger'] ?= 'ERROR, drfa'
+      knox.log4jopts['app.log.dir'] ?= "#{knox.log_dir}"
+      knox.log4jopts['log4j.rootLogger'] ?= 'ERROR,rfa'
       if @config.log4j?.services?
         if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/knox' in @config.log4j?.services)
           knox.socket_client ?= 'SOCKET'

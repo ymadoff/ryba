@@ -49,10 +49,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             '/usr/hdp/current/knox-server/conf/topologies/sandbox.xml'
           ] , (options) ->
               @system.remove  target: options.key
-        @system.chown
-          target: '/var/log/knox'
+        # Fix for the bug with rpm/deb packages. During installation of the package, they re-apply permissions to the folder
+        @system.mkdir
+          target: "#{knox.log_dir}"
           uid: knox.user.name
-          gid: knox.user.gid
+          gid: knox.group.name
+          mode: 0o0755
         @service.init
           target: '/etc/init.d/knox-server'
           source: "#{__dirname}/resources/knox-server.j2"
@@ -90,11 +92,12 @@ in the gateway.sh service script.
         knox.env.app_log_opts += " -D#{k}=#{v}" for k,v of knox.log4jopts
         @file
           header: 'Env'
-          target: "#{knox.conf_dir}/gateway.sh"
+          target: "#{knox.bin_dir}/gateway.sh"
+          mode: 0o0755
           write: for k, v of knox.env
-            match: new RegExp "^#{k}=.*$", 'i'
+            match: RegExp "^#{k.toUpperCase()}=.*$", 'img'
             replace: "#{k.toUpperCase()}=\"#{v}\""
-            append: true
+            append: false
 
 ## Kerberos
 
