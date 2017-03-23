@@ -295,8 +295,8 @@
         '-Djava.protocol.handler.pkgs=sun.net.www.protocol'
         '-XX:+UseG1GC'
         '-Djava.awt.headless=true'
-        "-Djava.security.auth.login.config=#{nifi.conf_dir}/nifi-zookeeper.jaas"
       ]
+      nifi.java_opts.push "-Djava.security.auth.login.config=#{nifi.conf_dir}/nifi-zookeeper.jaas"
 
 ## Additional Libs
 
