@@ -65,10 +65,6 @@
     <value>true</value>
   </property>
     <property>
-    <name>hbase.client.scanner.caching</name>
-    <value>100</value>
-  </property>
-    <property>
     <name>hbase.defaults.for.version.skip</name>
     <value>true</value>
   </property>
