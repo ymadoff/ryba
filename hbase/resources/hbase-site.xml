@@ -54,7 +54,7 @@
   </property>
     <property>
     <name>hbase.hregion.majorcompaction</name>
-    <value>86400000</value>
+    <value>604800000</value>
   </property>
     <property>
     <name>hbase.security.authorization</name>
