@@ -92,8 +92,13 @@ memory that you can lock than what you have configured.
       # Note, maybe do a better estimation of du.reserved inside capacity
       # currently, 50GB throw DataXceiver exception inside vagrant vm
       ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '1073741824' # 1GB, also default in ambari
-      # dfs.datanode.fsdataset.volume.choosing.policy:AvailableSpace 
-      # dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction:1.0
+
+## HDFS Balancer Performance increase (Fast Mode)
+
+      # https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_hdfs-administration/content/configuring_balancer.html
+      # https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_hdfs-administration/content/recommended_configurations.html
+      ryba.hdfs.site['dfs.datanode.balance.max.concurrent.moves'] ?=  Math.max 5, dataDirs.length * 4
+      ryba.hdfs.site['dfs.datanode.balance.bandwidthPerSec'] ?= 10737418240 #(10 GB/s) default is 1048576 (=1MB/s)
 
 ## Env
 
