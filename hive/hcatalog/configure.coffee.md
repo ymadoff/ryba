@@ -17,8 +17,8 @@ Example:
   "ryba": {
     "hive": {
       "hcatalog": {
-        opts": "-Xmx4096m",
-        heapsize": "1024"
+        "opts": "-Xmx4096m",
+        "heapsize": "1024"
       },
       "site": {
         "javax.jdo.option.ConnectionURL": "jdbc:mysql://front1.hadoop:3306/hive?createDatabaseIfNotExist=true",

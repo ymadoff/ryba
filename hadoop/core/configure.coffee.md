@@ -41,7 +41,7 @@ Default configuration:
         "name": "hdfs", "system": true
       }
     },
-    "yarn: {
+    "yarn": {
       "user": {
         "name": "yarn", "system": true, "gid": "yarn",
         "comment": "YARN User", "home": "/var/lib/hadoop-yarn"

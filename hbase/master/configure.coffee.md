@@ -24,7 +24,7 @@ Example
 ```json
     "hbase":{
       "user": {
-        "name": "hbase", "system": true, "gid": "hbase",
+        "name": "hbase", "system": true, "gid": "hbase", groups: "hadoop",
         "comment": "HBase User", "home": "/var/run/hbase"
       },
       "group": {

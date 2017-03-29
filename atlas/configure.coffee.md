@@ -35,7 +35,7 @@ Atlas needs also kafka as a bus to broadcats message betwwen the different compo
       atlas.user ?= {}
       atlas.user.name ?= 'atlas'
       atlas.user.system ?= true
-      atlas.user.comment ?= 'atlas User'
+      atlas.user.comment ?= 'Atlas User'
       atlas.user.home ?= '/var/lib/atlas'
       atlas.user.groups ?= ['hadoop']
       # Group
