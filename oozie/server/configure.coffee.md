@@ -95,9 +95,16 @@ Example
        'hbase=org.apache.oozie.action.hadoop.HbaseCredentials'
        'hive2=org.apache.oozie.action.hadoop.Hive2Credentials'
       ]
+      # Spark and Shell action dedicated configuration in each yarn container
+      # To benefit from that feature in a ShellAction, one must specify the --config parameter
+      # with the HADOOP_CONF_DIR env variable set by Oozie at runtime
+      # eg : hadoop --config $HADOOP_CONF_DIR fs -ls /
+      # see also OOZIE-2343, OOZIE-2481, OOZIE-2569 and OOZIE-2504, fixed by OOZIE-2739
+      oozie.site['oozie.action.spark.setup.hadoop.conf.dir'] ?= 'true'
+      oozie.site['oozie.action.shell.setup.hadoop.conf.dir'] ?= 'true'
+      oozie.site['oozie.action.shell.setup.hadoop.conf.dir.write.log4j.properties'] ?= 'true'
       oozie.site['oozie.action.shell.setup.hadoop.conf.dir.log4j.content'] ?= '''
-      log4j.rootLogger=${hadoop.root.logger}
-      hadoop.root.logger=INFO,console
+      log4j.rootLogger=INFO,console
       log4j.appender.console=org.apache.log4j.ConsoleAppender
       log4j.appender.console.target=System.err
       log4j.appender.console.layout=org.apache.log4j.PatternLayout
