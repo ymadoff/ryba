@@ -102,7 +102,7 @@ memory that you can lock than what you have configured.
 
 ## Env
 
-Set up jave heap size linke in `ryba/hadoop/hdfs_nn`.
+Set up Java heap size like in `ryba/hadoop/hdfs_nn`.
 
       ryba.hdfs.dn ?= {}
       ryba.hdfs.dn.opts ?= {}
