@@ -259,7 +259,7 @@ default to the [DBTokenStore]. Also worth of interest is the
       #hive-hcatalog server's client core site also need to be set
       @config.core_site ?= {}
       @config.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
-      @config.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
+      @config.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
 
 ## Configure Log4J Properties
 
