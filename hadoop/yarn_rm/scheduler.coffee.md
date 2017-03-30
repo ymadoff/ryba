@@ -30,7 +30,7 @@ ResourceCalculator class name is expected.
         merge: false
         backup: true
       @system.execute
-        cmd: mkcmd.hdfs @, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues || exit 0'
+        cmd: mkcmd.hdfs @, "service hadoop-yarn-resourcemanager status && yarn --config #{yarn.rm.conf_dir} rmadmin -refreshQueues || exit 0"
         if: -> @status -1
 
 ## Dependencies
