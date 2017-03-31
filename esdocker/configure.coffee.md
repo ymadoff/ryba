@@ -139,19 +139,6 @@
           es.config["metrics.graphite.port"] = docker_es.graphite.port
           es.config["metrics.graphite.every"] = docker_es.graphite.every ?= "10s"
           es.config["metrics.graphite.prefix"] = "es.#{es_name}.${HOSTNAME}"
-        if "elasticsearch-repository-hdfs" in es.plugins
-          es.config["security.manager.enabled"] = false
-          es.config["repositories.hdfs.uri"] = "hdfs://torval:8020/"
-          es.config["repositories.hdfs.path"] = "/backup/es"
-          es.config["repositories.hdfs.conf_location"] = "/hadoop-config/core-site.xml,/hadoop-config/hdfs-site.xml"
-          es.config["repositories.hdfs.user_keytab"] = "/hadoop-config/keytabs/dsp_app_adm.keytab"
-          es.config["repositories.hdfs.user_principal"] = "dsp_app_adm@HADOOP.EDF.FR"
-          es.volumes = [
-            "/etc/krb5.conf:/etc/krb5.conf",
-            "/etc/hadoop/conf/core-site.xml:/hadoop-config/core-site.xml",
-            "/etc/hadoop/conf/hdfs-site.xml:/hadoop-config/hdfs-site.xml",
-            "/etc/elasticsearch/keytabs:/hadoop-config/keytabs"
-          ].concat es.volumes
         # es plugins urls
         es.plugins_urls = {}
         official_plugins = [
