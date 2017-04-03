@@ -88,7 +88,7 @@
               when "master" then "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{master_node}_1 -Des.node.master=true -Des.node.data=false"
               when "master_data" then "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{master_node}_1 -Des.node.master=true -Des.node.data=true"
               when "data" then "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{master_node}_1 -Des.node.master=false -Des.node.data=true"
-            docker_services[type] = {'environment' : [es.environment,"ES_HEAP_SIZE=#{es_node.heap_size}"] }
+            docker_services[type] = {'environment' : [es.environment,"ES_HEAP_SIZE=#{es_node.heap_size}","bootstrap.memory_lock=true"] }
             service_def = 
               image : es.docker_es_image
               restart: "always"
@@ -98,7 +98,9 @@
               volumes: es.volumes
               ports: es.ports
               mem_limit: if es_node.mem_limit? then es_node.mem_limit else es.default_mem
-              # cpu_shares: if es_node.cpu_shares? then es_node.cpu_shares else es.default_cpu_shares
+              ulimits:  es.ulimits
+              cap_add:  es.cap_add
+
             if es_node.cpuset?
               service_def["cpuset"] = es_node.cpuset
             else 

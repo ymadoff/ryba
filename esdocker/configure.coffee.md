@@ -83,6 +83,16 @@
         es.default_mem = '2g'
         # cpu quota 100%
         es.default_cpu_quota = 100000
+
+        nofile = {}
+        nofile.soft=65536
+        nofile.hard=65536
+
+        es.ulimits ?= {}
+        es.ulimits.nofile = nofile
+
+        es.cap_add ?= ["IPC_LOCK"]
+
         es.environment = "affinity:container!=*#{es.normalized_name}*"
         throw Error 'Required property "ports"' unless es.ports?
         if es.ports instanceof Array
