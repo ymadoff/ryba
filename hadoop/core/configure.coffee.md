@@ -153,7 +153,7 @@ Default configuration:
       if nn_ctxs.length is 1
         core_site['fs.defaultFS'] ?= "hdfs://#{nn_ctxs[0].config.host}:8020"
       else if nn_ctxs.length is 2
-        core_site['fs.defaultFS'] ?= "hdfs://#{ryba.nameservice}:8020"
+        core_site['fs.defaultFS'] ?= "hdfs://#{ryba.nameservice}"
         ryba.active_nn_host ?= nn_ctxs[0].config.host
         # [active_nn_ctxs] = nn_ctxs.filter( (nn_ctx) => nn_ctx.config.host is ryba.active_nn_host )
         [standby_nn_ctxs] = nn_ctxs.filter( (nn_ctx) => nn_ctx.config.host isnt ryba.active_nn_host )
