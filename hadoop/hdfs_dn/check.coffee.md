@@ -39,13 +39,15 @@ DataNodes.
 
       @system.execute
         header: 'Native'
+        trap: true
         cmd: """
-        hadoop checknative | grep hadoop:
-        hadoop checknative | grep zlib:
-        hadoop checknative | grep snappy:
-        hadoop checknative | grep lz4:
-        hadoop checknative | grep bzip2:
-        hadoop checknative | grep openssl:
+        nativelist=`hadoop checknative`
+        echo $nativelist | egrep 'hadoop:\s+true'
+        echo $nativelist | egrep 'zlib:\s+true'
+        echo $nativelist | egrep 'snappy:\s+true'
+        echo $nativelist | egrep 'lz4:\s+true'
+        echo $nativelist | egrep 'bzip2:\s+true'
+        echo $nativelist | egrep 'openssl:\s+true'
         """
 
 ## Dependencies
