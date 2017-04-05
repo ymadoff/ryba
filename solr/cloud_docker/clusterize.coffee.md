@@ -204,10 +204,11 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             config_host.auth_opts['solr.kerberos.name.rules'] ?= "RULE:[1:\\$1]RULE:[2:\\$1]"
 
             # Rangerize
-            context.config.rangerized ?= []
-            nodePluginName = "#{name}-#{context.config.host}"
-            rangerize(context, name, config, config_host) if config.rangerEnabled and context.config.rangerized.indexOf(nodePluginName) is -1
-            context.config.rangerized.push nodePluginName
+            if context.contexts('ryba/ranger/admin').length > 0
+              context.config.rangerized ?= []
+              nodePluginName = "#{name}-#{context.config.host}"
+              rangerize(context, name, config, config_host) if config.rangerEnabled and context.config.rangerized.indexOf(nodePluginName) is -1
+              context.config.rangerized.push nodePluginName
         return config
 
 ## Dependencies
