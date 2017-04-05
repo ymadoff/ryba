@@ -9,6 +9,25 @@
 ## Register
 
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hdp_select', 'ryba/lib/hdp_select'
+
+## Packages
+
+Install the "hadoop-client" and "openssl" packages as well as their
+dependecies.
+
+The environment script "hadoop-env.sh" from the HDP companion files is also
+uploaded when the package is first installed or upgraded. Be careful, the
+original file will be overwritten with and user modifications. A copy will be
+made available in the same directory after any modification.
+
+      @call header: 'Packages', timeout: -1, handler: ->
+        @service
+          name: 'openssl'
+        @service
+          name: 'hadoop-client'
+        @hdp_select
+          name: 'hadoop-client'
 
 ## Users & Groups
 
