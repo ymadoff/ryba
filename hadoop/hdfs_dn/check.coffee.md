@@ -42,12 +42,12 @@ DataNodes.
         trap: true
         cmd: """
         nativelist=`hadoop checknative`
-        echo $nativelist | egrep 'hadoop:\s+true'
-        echo $nativelist | egrep 'zlib:\s+true'
-        echo $nativelist | egrep 'snappy:\s+true'
-        echo $nativelist | egrep 'lz4:\s+true'
-        echo $nativelist | egrep 'bzip2:\s+true'
-        echo $nativelist | egrep 'openssl:\s+true'
+        echo $nativelist | egrep 'hadoop:\\s+true'
+        echo $nativelist | egrep 'zlib:\\s+true'
+        echo $nativelist | egrep 'snappy:\\s+true'
+        echo $nativelist | egrep 'lz4:\\s+true'
+        echo $nativelist | egrep 'bzip2:\\s+true'
+        echo $nativelist | egrep 'openssl:\\s+true'
         """
 
 ## Dependencies
