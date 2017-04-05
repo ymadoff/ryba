@@ -6,8 +6,6 @@
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm, hadoop_group} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_dir  = solr.cloud_docker.tmp_dir ?= "/var/tmp/ryba/solr"
-      ranger_admin_ctxs = @contexts('ryba/ranger/admin')
-      admin = ranger_admin_ctxs[0].config.ryba.ranger.admin
       hosts = @contexts('ryba/solr/cloud_docker').map (ctx) -> ctx.config.host
       solr.cloud_docker.build.dir = '/tmp/solr/build'
 
