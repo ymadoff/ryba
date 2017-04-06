@@ -239,7 +239,7 @@ An external configuration can be obtained with a different instance of ryba usin
 'configure' command
 
     from_contexts = (servers, name)->
-      servers ?= @contexts().map( (ctx) -> ctx.config )
+      servers ?= @contexts('**').map( (ctx) -> ctx.config )
       name ?= @config.ryba.nameservice or 'default'
       {shinken} = @config.ryba
       {hostgroups, hosts, clusters} = shinken.config

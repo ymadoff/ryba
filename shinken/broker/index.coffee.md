@@ -18,23 +18,26 @@ Some of the modules are:
 To automatically download and install a module, please at least provide a version number,
 and a type if different from the name.
 
-    module.exports = ->
-      'configure': [
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+      configure: [
         'ryba/shinken/lib/configure'
         'ryba/shinken/broker/configure'
       ]
-      'check':
-        'ryba/shinken/broker/configure'
-      'install': [
-        'masson/core/yum'
-        'masson/core/iptables'
-        'ryba/shinken/lib/commons'
-        #'ryba/mongodb'
-        'ryba/shinken/broker/install'
-        'ryba/shinken/broker/start'
-        'ryba/shinken/broker/check'
-      ]
-      'start':
-        'ryba/shinken/broker/start'
-      'stop':
-        'ryba/shinken/broker/stop'
+      commands:
+        'check':
+          'ryba/shinken/broker/configure'
+        'install': [
+          'masson/core/yum'
+          'masson/core/iptables'
+          'ryba/shinken/lib/commons'
+          #'ryba/mongodb'
+          'ryba/shinken/broker/install'
+          'ryba/shinken/broker/start'
+          'ryba/shinken/broker/check'
+        ]
+        'start':
+          'ryba/shinken/broker/start'
+        'stop':
+          'ryba/shinken/broker/stop'

@@ -1,7 +1,7 @@
 
 # Shinken Receiver Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       {shinken} = @config.ryba
       receiver = shinken.receiver ?= {}
       # Additionnal Modules to install

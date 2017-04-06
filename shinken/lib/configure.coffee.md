@@ -20,7 +20,7 @@ Example
     }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
       shinken = @config.ryba.shinken ?= {}
       throw Error 'Cannot install Shinken: no scheduler provided' unless @contexts('ryba/shinken/scheduler').length
       throw Error 'Cannot install Shinken: no poller provided' unless @contexts('ryba/shinken/poller').length
@@ -50,4 +50,3 @@ Example
       shinken.config.use_ssl ?= '0'
       shinken.config.hard_ssl_name_check ?= '0'
       shinken.import_config ?= false
-

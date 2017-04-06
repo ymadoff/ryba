@@ -14,24 +14,27 @@ Modules for receivers:
 
 This module is only needed when enabling passive checks
 
-    module.exports = ->
-      'configure': [
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+      configure: [
         'ryba/shinken/lib/configure'
         'ryba/shinken/receiver/configure'
       ]
-      'check':
-        'ryba/shinken/receiver/check'
-      'install': [
-        'masson/core/yum'
-        'masson/core/iptables'
-        'ryba/shinken/lib/commons'
-        'ryba/shinken/receiver/install'
-        'ryba/shinken/receiver/start'
-        'ryba/shinken/receiver/check'
-      ]
-      'start':
-        'ryba/shinken/receiver/start'        
-      'status':
-        'ryba/shinken/receiver/status'
-      'stop':
-        'ryba/shinken/receiver/stop'
+      commands:
+        'check':
+          'ryba/shinken/receiver/check'
+        'install': [
+          'masson/core/yum'
+          'masson/core/iptables'
+          'ryba/shinken/lib/commons'
+          'ryba/shinken/receiver/install'
+          'ryba/shinken/receiver/start'
+          'ryba/shinken/receiver/check'
+        ]
+        'start':
+          'ryba/shinken/receiver/start'        
+        'status':
+          'ryba/shinken/receiver/status'
+        'stop':
+          'ryba/shinken/receiver/stop'

@@ -1,7 +1,7 @@
 
 # Shinken Reactionner Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       {shinken} = @config.ryba
       reactionner = shinken.reactionner ?= {}
       # Additionnal Modules to install

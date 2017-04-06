@@ -1,7 +1,7 @@
 
 # Shinken Broker Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       {shinken} = @config.ryba
       broker = shinken.broker ?= {}
       # Additionnal modules to install

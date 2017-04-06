@@ -9,24 +9,27 @@ Raises Notifications and dispatches them to the reactionner(s)
 Updates the retention file (or other retention backends)
 Sends broks (internal events of any kind) to the broker(s)
 
-    module.exports = ->
-      'configure': [
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+      configure: [
         'ryba/shinken/lib/configure'
         'ryba/shinken/scheduler/configure'
       ]
-      'check':
-        'ryba/shinken/scheduler/check'
-      'install': [
-        'masson/core/yum'
-        'masson/core/iptables'
-        'ryba/shinken/lib/commons'
-        'ryba/shinken/scheduler/install'
-        'ryba/shinken/scheduler/start'
-        'ryba/shinken/scheduler/check'
-      ]
-      'start':
-        'ryba/shinken/scheduler/start'        
-      'status':
-        'ryba/shinken/scheduler/status'
-      'stop':
-        'ryba/shinken/scheduler/stop'
+      commands:
+        'check':
+          'ryba/shinken/scheduler/check'
+        'install': [
+          'masson/core/yum'
+          'masson/core/iptables'
+          'ryba/shinken/lib/commons'
+          'ryba/shinken/scheduler/install'
+          'ryba/shinken/scheduler/start'
+          'ryba/shinken/scheduler/check'
+        ]
+        'start':
+          'ryba/shinken/scheduler/start'        
+        'status':
+          'ryba/shinken/scheduler/status'
+        'stop':
+          'ryba/shinken/scheduler/stop'

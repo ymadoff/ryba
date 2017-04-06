@@ -1,7 +1,7 @@
 
 # Shinken Scheduler Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       {shinken} = @config.ryba
       scheduler = shinken.scheduler ?= {}
       # Additionnal Modules to install

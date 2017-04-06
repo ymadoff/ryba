@@ -1,7 +1,7 @@
 
 # Shinken Arbiter Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       {shinken} = @config.ryba
       # Arbiter specific configuration
       arbiter = shinken.arbiter ?= {}

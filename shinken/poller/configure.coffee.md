@@ -1,7 +1,7 @@
 
 # Shinken Poller Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       {shinken} = @config.ryba
       # Add shinken to docker group
       shinken.user.groups ?= ['docker']
