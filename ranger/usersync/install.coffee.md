@@ -125,7 +125,7 @@ Update the file "install.properties" with the properties defined by the
 
       writes = [
         match: RegExp "JAVA_OPTS=.*", 'm'
-        replace: "JAVA_OPTS=\"${JAVA_OPTS} -XX:MaxPermSize=256m -Xmx#{ranger.usersync.heap_size} -Xms#{ranger.usersync.heap_size} \""
+        replace: "JAVA_OPTS=\"${JAVA_OPTS} -Xmx#{ranger.usersync.heap_size} -Xms#{ranger.usersync.heap_size} \""
         append: true
       ]
       for k,v of ranger.usersync.opts

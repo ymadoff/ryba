@@ -215,7 +215,7 @@ This part of the setup is not documented. Deduce from launch scripts.
       @call header: 'Ranger Admin Env', ->
         writes = [
           match: RegExp "JAVA_OPTS=.*", 'm'
-          replace: "JAVA_OPTS=\"${JAVA_OPTS} -XX:MaxPermSize=256m -Xmx#{ranger.admin.heap_size} -Xms#{ranger.admin.heap_size} \""
+          replace: "JAVA_OPTS=\"${JAVA_OPTS} -Xmx#{ranger.admin.heap_size} -Xms#{ranger.admin.heap_size} \""
           append: true
         ,
 

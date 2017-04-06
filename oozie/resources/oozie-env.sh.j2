@@ -78,7 +78,7 @@ export OOZIE_CLIENT_OPTS="${OOZIE_CLIENT_OPTS} -Doozie.connection.retry.count=5 
 # workflows/coordinator jobs, the memory settings may need to be revised
 
 if [[ `java -version 2>&1 | head -n 1 | sed 's/.*"1\.\([0-9]*\)\..*/\1/'` < 8 ]]; then
-  export CATALINA_OPTS="${CATALINA_OPTS} -Xmx{{ryba.oozie.heap_size}} -XX:MaxPermSize=256m "
+  export CATALINA_OPTS="${CATALINA_OPTS} -Xmx{{ryba.oozie.heap_size}}  "
 else
   export CATALINA_OPTS="${CATALINA_OPTS} -Xmx{{ryba.oozie.heap_size}}"
 fi

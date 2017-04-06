@@ -70,21 +70,21 @@ export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true ${HADOOP_OPTS}"
 
 # Command specific options appended to HADOOP_OPTS when specified
 HADOOP_NAMENODE_OPTS="{{HADOOP_NAMENODE_OPTS}} ${HADOOP_NAMENODE_OPTS}"
-export HADOOP_NAMENODE_OPTS="-server -XX:ParallelGCThreads=8 -XX:+UseConcMarkSweepGC -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize={{namenode_newsize}} -XX:MaxNewSize={{namenode_newsize}} -XX:PermSize=128m -XX:MaxPermSize=256m -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xms{{namenode_heapsize}} -Xmx{{namenode_heapsize}} -Dhadoop.security.logger=${HADOOP_SECURITY_LOGGER} -Dhdfs.audit.logger=${HDFS_AUDIT_LOGGER} ${HADOOP_NAMENODE_OPTS}"
+export HADOOP_NAMENODE_OPTS="-server -XX:ParallelGCThreads=8 -XX:+UseConcMarkSweepGC -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize={{namenode_newsize}} -XX:MaxNewSize={{namenode_newsize}} -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xms{{namenode_heapsize}} -Xmx{{namenode_heapsize}} -Dhadoop.security.logger=${HADOOP_SECURITY_LOGGER} -Dhdfs.audit.logger=${HDFS_AUDIT_LOGGER} ${HADOOP_NAMENODE_OPTS}"
 
-HADOOP_JOBTRACKER_OPTS="-server -XX:ParallelGCThreads=8 -XX:+UseConcMarkSweepGC -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize=200m -XX:MaxNewSize=200m -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Dhadoop.security.logger=${HADOOP_ROOT_LOGGER} -Dmapred.audit.logger=INFO,MRAUDIT -Dhadoop.mapreduce.jobsummary.logger=INFO,JSA ${HADOOP_JOBTRACKER_OPTS}"
+HADOOP_JOBTRACKER_OPTS="-server -XX:ParallelGCThreads=8 -XX:+UseConcMarkSweepGC  -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize=200m -XX:MaxNewSize=200m -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Dhadoop.security.logger=${HADOOP_ROOT_LOGGER} -Dmapred.audit.logger=INFO,MRAUDIT -Dhadoop.mapreduce.jobsummary.logger=INFO,JSA ${HADOOP_JOBTRACKER_OPTS}"
 
 HADOOP_TASKTRACKER_OPTS="-server -Xmx1024m -Dhadoop.security.logger=ERROR,console -Dmapred.audit.logger=ERROR,console ${HADOOP_TASKTRACKER_OPTS}"
 
 HADOOP_DATANODE_OPTS="{{HADOOP_DATANODE_OPTS}} ${HADOOP_DATANODE_OPTS}"
-export HADOOP_DATANODE_OPTS="-server -XX:ParallelGCThreads=4 -XX:+UseConcMarkSweepGC -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize={{datanode_newsize}} -XX:MaxNewSize={{datanode_newsize}} -XX:PermSize=128m -XX:MaxPermSize=256m -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xms{{datanode_heapsize}} -Xmx{{datanode_heapsize}} -Dhadoop.security.logger=${HADOOP_SECURITY_LOGGER} -Dhdfs.audit.logger=${HDFS_AUDIT_LOGGER} ${HADOOP_DATANODE_OPTS}"
+export HADOOP_DATANODE_OPTS="-server -XX:ParallelGCThreads=4 -XX:+UseConcMarkSweepGC -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize={{datanode_newsize}} -XX:MaxNewSize={{datanode_newsize}} -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xms{{datanode_heapsize}} -Xmx{{datanode_heapsize}} -Dhadoop.security.logger=${HADOOP_SECURITY_LOGGER} -Dhdfs.audit.logger=${HDFS_AUDIT_LOGGER} ${HADOOP_DATANODE_OPTS}"
 HADOOP_BALANCER_OPTS="-server -Xmx1024m ${HADOOP_BALANCER_OPTS}"
 
 export HADOOP_SECONDARYNAMENODE_OPTS=$HADOOP_NAMENODE_OPTS
 
 # The following applies to multiple commands (fs, dfs, fsck, distcp etc)
 HADOOP_CLIENT_OPTS=${HADOOP_CLIENT_OPTS:-"-Xmx1024m"}
-export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m -XX:MaxPermSize=512m $HADOOP_CLIENT_OPTS"
+export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m  $HADOOP_CLIENT_OPTS"
 
 # On secure datanodes, user to run the datanode as after dropping privileges
 export HADOOP_SECURE_DN_USER=${HADOOP_SECURE_DN_USER:-"hdfs"}

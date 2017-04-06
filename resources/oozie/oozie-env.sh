@@ -26,7 +26,7 @@ export OOZIE_CLIENT_OPTS="${OOZIE_CLIENT_OPTS} -Doozie.connection.retry.count=5"
 # Settings for the Embedded Tomcat that runs Oozie
 # Java System properties for Oozie should be specified in this variable
 #
-export CATALINA_OPTS="${CATALINA_OPTS} -Xmx2048m -XX:MaxPermSize=256m"
+export CATALINA_OPTS="${CATALINA_OPTS} -Xmx2048m"
 
 # Oozie configuration file to load from Oozie configuration directory
 #
