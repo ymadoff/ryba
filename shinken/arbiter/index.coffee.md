@@ -12,7 +12,7 @@ to its associated Scheduler.
         # List of monitored services
         mysql_server: 'masson/commons/mysql/server'
         elasticsearch: 'ryba/elasticsearch'
-        elasticsearch: 'ryba/esdocker'
+        esdocker: 'ryba/esdocker'
         falcon: 'ryba/falcon'
         flume: 'ryba/flume'
         hdfs_client: 'ryba/hadoop/hdfs_client'
