@@ -235,12 +235,12 @@ This function creates hostgroups and servicegroups from ryba (sub)modules
 ## Configure from context
 
 This function is called with a context, taken from internal context, or imported.
-An external configuration can be obtained with a different instance of ryba using
+An external configuration can be obtained with an instance of ryba using
 'configure' command
 
-    from_contexts = (servers, name)->
-      servers ?= @contexts('**').map( (ctx) -> ctx.config )
-      name ?= @config.ryba.nameservice or 'default'
+    from_contexts = (ctxs) ->
+      ctxs ?= @contexts '**'
+      name = ctxs[0].config.ryba.nameservice or 'default'
       {shinken} = @config.ryba
       {hostgroups, hosts, clusters} = shinken.config
       clusters[name] ?= {}
@@ -251,8 +251,6 @@ An external configuration can be obtained with a different instance of ryba usin
       hostgroups[name].hostgroup_members = [hostgroups[name].hostgroup_members] unless Array.isArray hostgroups[name].hostgroup_members
       hostgroups.by_topology.hostgroup_members.push name unless name in hostgroups.by_topology.hostgroup_members
       hostgroups[name].members.push name
-      # True servers must be initialized before watchers
-      hosts[srv.host] ?= {} for srv in servers
       # Watchers
       hosts[name] ?= {}
       hosts[name].ip = '0.0.0.0'
@@ -265,27 +263,47 @@ An external configuration can be obtained with a different instance of ryba usin
       hosts[name].modules ?= []
       hosts[name].modules = [hosts[name].modules] unless Array.isArray hosts[name].modules
       # True Servers
-      for srv in servers
-        hostgroups[name].members.push srv.host
-        hosts[srv.host].ip ?= srv.ip
-        hosts[srv.host].hostgroups ?= []
-        hosts[srv.host].hostgroups = [hosts[srv.host].hostgroups] unless Array.isArray hosts[srv.host].hostgroups
-        hosts[srv.host].use ?= 'linux-server'
-        hosts[srv.host].config ?= srv
-        hosts[srv.host].realm ?= clusters[name].realm if clusters[name].realm?
-        hosts[srv.host].cluster ?= name
-        hosts[srv.host].notes ?= name
-        for mod in srv.modules
+      for ctx in ctxs
+        {host, ip} = ctx.config
+        hostgroups[name].members.push host
+        hosts[host] ?= {}
+        hosts[host].ip ?= ip
+        hosts[host].hostgroups ?= []
+        hosts[host].hostgroups = [hosts[host].hostgroups] unless Array.isArray hosts[host].hostgroups
+        hosts[host].use ?= 'linux-server'
+        hosts[host].config ?= ctx.config
+        hosts[host].realm ?= clusters[name].realm if clusters[name].realm?
+        hosts[host].cluster ?= name
+        hosts[host].notes ?= name
+        for mod in ctx.services
           hosts[name].modules.push modules_list[mod] if modules_list[mod]? and modules_list[mod] not in hosts[name].modules
-          hosts[srv.host].hostgroups.push modules_list[mod] if modules_list[mod]?
+          hosts[host].hostgroups.push modules_list[mod] if modules_list[mod]?
 
 ## Normalize
+
+Theses functions are used to generate business rules
+
+    bp_miss = (n, name, g) -> "bp_rule!(100%,1,#{n} of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
+    bp_has_quorum = (name, g) -> "bp_rule!(100%,1,50% of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
+    bp_has_one = (name, g) -> "bp_rule!(100%,1,100% of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
+    bp_has_all = (name, g) -> "bp_rule!(100%,1,1 of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
+    #bp_has_percent = (name, w, c, g) -> "bp_rule!(100%,#{w}%,#{c}% of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
 
 This function is called at the end to normalize values
 
     normalize = ->
       {shinken} = @config.ryba
       {services} = shinken.config
+      create_dependency = (s1, s2, h1, h2) ->
+        h2 ?= h1
+        dep = shinken.config.dependencies["#{s1} / #{s2}"] ?= {}
+        dep.service ?= s2
+        dep.dependent_service ?= s1
+        dep.hosts ?= [h2]
+        dep.dependent_hosts ?= [h1]
+        dep.inherits_parent ?= '1'
+        dep.execution_failure_criteria ?= 'c,u,p'
+        dep.notification_failure_criteria ?= 'c,u,p'
       # HostGroups
       for name, group of shinken.config.hostgroups
         group.alias ?= name
@@ -301,22 +319,8 @@ This function is called at the end to normalize values
         host.use ?= 'generic-host'
         host.hostgroups = [host.hostgroups] unless Array.isArray host.hostgroups
 
-### Declate Services
+### Declare Services
 
-        has_quorum = (name, g) -> "bp_rule!(100%,1,50% of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
-        has_one = (name, g) -> "bp_rule!(100%,1,100% of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
-        has_all = (name, g) -> "bp_rule!(100%,1,1 of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
-        has_percent = (name, w, c, g) -> "bp_rule!(100%,#{w},#{c}% of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
-        create_dependency = (s1, s2, h1, h2) ->
-          h2 ?= h1
-          dep = shinken.config.dependencies["#{s1} / #{s2}"] ?= {}
-          dep.service ?= s2
-          dep.dependent_service ?= s1
-          dep.hosts ?= [h2]
-          dep.dependent_hosts ?= [h1]
-          dep.inherits_parent ?= '1'
-          dep.execution_failure_criteria ?= 'c,u,p'
-          dep.notification_failure_criteria ?= 'c,u,p'
         if 'mysql_server' in host.hostgroups
           services['MySQL - TCP'] ?= {}
           services['MySQL - TCP'].hosts ?= []
@@ -794,21 +798,21 @@ This function is called at the end to normalize values
             services['MySQL - Available'].hosts.push name
             services['MySQL - Available'].servicegroups ?= ['hadoop']
             services['MySQL - Available'].use ?= 'bp-service'
-            services['MySQL - Available'].check_command ?= has_one 'MySQL - TCP', '$HOSTNAME$'
+            services['MySQL - Available'].check_command ?= bp_has_one 'MySQL - TCP', '$HOSTNAME$'
           if 'zookeeper_server' in host.modules
             services['Zookeeper Server - Available'] ?= {}
             services['Zookeeper Server - Available'].hosts ?= []
             services['Zookeeper Server - Available'].hosts.push name
             services['Zookeeper Server - Available'].servicegroups ?= ['zookeeper_server']
             services['Zookeeper Server - Available'].use ?= 'bp-service'
-            services['Zookeeper Server - Available'].check_command ?= has_quorum 'Zookeeper Server - TCP', '$HOSTNAME$'
+            services['Zookeeper Server - Available'].check_command ?= bp_has_quorum 'Zookeeper Server - TCP', '$HOSTNAME$'
           if 'hdfs_nn' in host.modules
             services['HDFS NN - Available'] ?= {}
             services['HDFS NN - Available'].hosts ?= []
             services['HDFS NN - Available'].hosts.push name
             services['HDFS NN - Available'].servicegroups ?= ['hdfs_nn']
             services['HDFS NN - Available'].use ?= 'bp-service'
-            services['HDFS NN - Available'].check_command ?= has_one 'HDFS NN - TCP', '$HOSTNAME$'
+            services['HDFS NN - Available'].check_command ?= bp_has_one 'HDFS NN - TCP', '$HOSTNAME$'
             services['HDFS NN - Active Node'] ?= {}
             services['HDFS NN - Active Node'].hosts ?= []
             services['HDFS NN - Active Node'].hosts.push name
@@ -821,7 +825,7 @@ This function is called at the end to normalize values
             services['ZKFC - Available'].hosts.push name
             services['ZKFC - Available'].servicegroups ?= ['zkfc']
             services['ZKFC - Available'].use ?= 'bp-service'
-            services['ZKFC - Available'].check_command ?= has_all 'ZKFC - TCP', '$HOSTNAME$'
+            services['ZKFC - Available'].check_command ?= bp_has_all 'ZKFC - TCP', '$HOSTNAME$'
             create_dependency 'ZKFC - Available', 'Zookeeper Server - Available', name
           if 'hdfs_jn' in host.modules
             services['HDFS JN - Available'] ?= {}
@@ -829,34 +833,34 @@ This function is called at the end to normalize values
             services['HDFS JN - Available'].hosts.push name
             services['HDFS JN - Available'].servicegroups ?= ['hdfs_jn']
             services['HDFS JN - Available'].use ?= 'bp-service'
-            services['HDFS JN - Available'].check_command ?= has_quorum 'HDFS JN - TCP SSL', '$HOSTNAME$'
+            services['HDFS JN - Available'].check_command ?= bp_has_quorum 'HDFS JN - TCP SSL', '$HOSTNAME$'
           if 'hdfs_dn' in host.modules
             services['HDFS DN - Available'] ?= {}
             services['HDFS DN - Available'].hosts ?= []
             services['HDFS DN - Available'].hosts.push name
             services['HDFS DN - Available'].servicegroups ?= ['hdfs_dn']
             services['HDFS DN - Available'].use ?= 'bp-service'
-            services['HDFS DN - Available'].check_command ?= has_percent 'HDFS DN - TCP SSL', 1, 3, '$HOSTNAME$'
+            services['HDFS DN - Available'].check_command ?= bp_miss 3, 'HDFS DN - TCP SSL', '$HOSTNAME$'
             services['HDFS DN - Nodes w/ Free space'] ?= {}
             services['HDFS DN - Nodes w/ Free space'].hosts ?= []
             services['HDFS DN - Nodes w/ Free space'].hosts.push name
             services['HDFS DN - Nodes w/ Free space'].servicegroups ?= ['hdfs_dn']
             services['HDFS DN - Nodes w/ Free space'].use ?= 'bp-service'
-            services['HDFS DN - Nodes w/ Free space'].check_command ?= has_one 'HDFS DN - Free space', '$HOSTNAME$'
+            services['HDFS DN - Nodes w/ Free space'].check_command ?= bp_has_one 'HDFS DN - Free space', '$HOSTNAME$'
           if 'httpfs' in host.modules
             services['HttpFS - Available'] ?= {}
             services['HttpFS - Available'].hosts ?= []
             services['HttpFS - Available'].hosts.push name
             services['HttpFS - Available'].servicegroups ?= ['httpfs']
             services['HttpFS - Available'].use ?= 'bp-service'
-            services['HttpFS - Available'].check_command ?= has_one 'HttpFS - WebService', '$HOSTNAME$'
+            services['HttpFS - Available'].check_command ?= bp_has_one 'HttpFS - WebService', '$HOSTNAME$'
           if 'yarn_rm' in host.modules
             services['YARN RM - Available'] ?= {}
             services['YARN RM - Available'].hosts ?= []
             services['YARN RM - Available'].hosts.push name
             services['YARN RM - Available'].servicegroups ?= ['yarn_rm']
             services['YARN RM - Available'].use ?= 'bp-service'
-            services['YARN RM - Available'].check_command ?= has_one 'YARN RM - Admin TCP', '$HOSTNAME$'
+            services['YARN RM - Available'].check_command ?= bp_has_one 'YARN RM - Admin TCP', '$HOSTNAME$'
             create_dependency 'YARN RM - Available', 'Zookeeper Server - Available', name
             services['YARN RM - Active Node'] ?= {}
             services['YARN RM - Active Node'].hosts ?= []
@@ -899,14 +903,14 @@ This function is called at the end to normalize values
             services['YARN NM - Available'].hosts.push name
             services['YARN NM - Available'].servicegroups ?= ['yarn_nm']
             services['YARN NM - Available'].use ?= 'bp-service'
-            services['YARN NM - Available'].check_command ?= has_percent 'YARN NM - TCP', 1, 3, '$HOSTNAME$'
+            services['YARN NM - Available'].check_command ?= bp_miss 3, 'YARN NM - TCP', '$HOSTNAME$'
           if 'hbase_master' in host.modules
             services['HBase Master - Available'] ?= {}
             services['HBase Master - Available'].hosts ?= []
             services['HBase Master - Available'].hosts.push name
             services['HBase Master - Available'].servicegroups ?= ['hbase_master']
             services['HBase Master - Available'].use ?= 'bp-service'
-            services['HBase Master - Available'].check_command ?= has_one 'HBase Master - TCP', '$HOSTNAME$'
+            services['HBase Master - Available'].check_command ?= bp_has_one 'HBase Master - TCP', '$HOSTNAME$'
             create_dependency 'HBase Master - Available', 'Zookeeper Server - Available', name
             create_dependency 'HBase Master - Available', 'HDFS - Available', name
             services['HBase - Replication logs'] ?= {}
@@ -921,7 +925,7 @@ This function is called at the end to normalize values
             services['HBase RegionServer - Available'].hosts.push name
             services['HBase RegionServer - Available'].servicegroups ?= ['hbase_regionserver']
             services['HBase RegionServer - Available'].use ?= 'bp-service'
-            services['HBase RegionServer - Available'].check_command ?= has_percent 'HBase RegionServer - TCP', 1, 3, '$HOSTNAME$'
+            services['HBase RegionServer - Available'].check_command ?= bp_miss '20%', 'HBase RegionServer - TCP', '$HOSTNAME$'
             create_dependency 'HBase RegionServer - Available', 'Zookeeper Server - Available', name
           if 'hbase_rest' in host.modules
             services['HBase REST - Available'] ?= {}
@@ -929,21 +933,21 @@ This function is called at the end to normalize values
             services['HBase REST - Available'].hosts.push name
             services['HBase REST - Available'].servicegroups ?= ['hbase_rest']
             services['HBase REST - Available'].use ?= 'bp-service'
-            services['HBase REST - Available'].check_command ?= has_one 'HBase REST - WebService', '$HOSTNAME$'
+            services['HBase REST - Available'].check_command ?= bp_has_one 'HBase REST - WebService', '$HOSTNAME$'
           if 'hbase_thrift' in host.modules
             services['HBase Thrift - Available'] ?= {}
             services['HBase Thrift - Available'].hosts ?= []
             services['HBase Thrift - Available'].hosts.push name
             services['HBase Thrift - Available'].servicegroups ?= ['hbase_thrift']
             services['HBase Thrift - Available'].use ?= 'bp-service'
-            services['HBase Thrift - Available'].check_command ?= has_one 'HBase Thrift - TCP SSL', '$HOSTNAME$'
+            services['HBase Thrift - Available'].check_command ?= bp_has_one 'HBase Thrift - TCP SSL', '$HOSTNAME$'
           if 'hcatalog' in host.modules
             services['HCatalog - Available'] ?= {}
             services['HCatalog - Available'].hosts ?= []
             services['HCatalog - Available'].hosts.push name
             services['HCatalog - Available'].servicegroups ?= ['hcatalog']
             services['HCatalog - Available'].use ?= 'bp-service'
-            services['HCatalog - Available'].check_command ?= has_one 'HCatalog - TCP', '$HOSTNAME$'
+            services['HCatalog - Available'].check_command ?= bp_has_one 'HCatalog - TCP', '$HOSTNAME$'
             create_dependency 'Kafka Broker - Available', 'MySQL - Available', name
           if 'hiveserver2' in host.modules
             services['Hiveserver2 - Available'] ?= {}
@@ -951,21 +955,21 @@ This function is called at the end to normalize values
             services['Hiveserver2 - Available'].hosts.push name
             services['Hiveserver2 - Available'].servicegroups ?= ['hiveserver2']
             services['Hiveserver2 - Available'].use ?= 'bp-service'
-            services['Hiveserver2 - Available'].check_command ?= has_one 'Hiveserver2 - TCP SSL', '$HOSTNAME$'
+            services['Hiveserver2 - Available'].check_command ?= bp_has_one 'Hiveserver2 - TCP SSL', '$HOSTNAME$'
           if 'oozie_server' in host.modules
             services['Oozie Server - Available'] ?= {}
             services['Oozie Server - Available'].hosts ?= []
             services['Oozie Server - Available'].hosts.push name
             services['Oozie Server - Available'].servicegroups ?= ['oozie_server']
             services['Oozie Server - Available'].use ?= 'bp-service'
-            services['Oozie Server - Available'].check_command ?= has_one 'Oozie Server - WebUI', '$HOSTNAME$'
+            services['Oozie Server - Available'].check_command ?= bp_has_one 'Oozie Server - WebUI', '$HOSTNAME$'
           if 'kafka_broker' in host.modules
             services['Kafka Broker - Available'] ?= {}
             services['Kafka Broker - Available'].hosts ?= []
             services['Kafka Broker - Available'].hosts.push name
             services['Kafka Broker - Available'].servicegroups ?= ['kafka_broker']
             services['Kafka Broker - Available'].use ?= 'bp-service'
-            services['Kafka Broker - Available'].check_command ?= has_one 'Kafka Broker - TCPs', '$HOSTNAME$'
+            services['Kafka Broker - Available'].check_command ?= bp_miss 3, 'Kafka Broker - TCPs', '$HOSTNAME$'
             create_dependency 'Kafka Broker - Available', 'Zookeeper Server - Available', name
           if 'opentsdb' in host.modules
             services['OpenTSDB - Available'] ?= {}
@@ -973,7 +977,7 @@ This function is called at the end to normalize values
             services['OpenTSDB - Available'].hosts.push name
             services['OpenTSDB - Available'].servicegroups ?= ['opentsdb']
             services['OpenTSDB - Available'].use ?= 'bp-service'
-            services['OpenTSDB - Available'].check_command ?= has_one 'OpenTSDB - WebService', '$HOSTNAME$'
+            services['OpenTSDB - Available'].check_command ?= bp_has_one 'OpenTSDB - WebService', '$HOSTNAME$'
             create_dependency 'OpenTSDB - Available', 'HBase - Available', name
           if 'elasticsearch' in host.modules
             services['ElasticSearch - Available'] ?= {}
@@ -981,21 +985,21 @@ This function is called at the end to normalize values
             services['ElasticSearch - Available'].hosts.push name
             services['ElasticSearch - Available'].servicegroups ?= ['elasticsearch']
             services['ElasticSearch - Available'].use ?= 'bp-service'
-            services['ElasticSearch - Available'].check_command ?= has_quorum 'ElasticSearch - TCP', '$HOSTNAME$'
+            services['ElasticSearch - Available'].check_command ?= bp_has_quorum 'ElasticSearch - TCP', '$HOSTNAME$'
           if 'knox' in host.modules
             services['Knox - Available'] ?= {}
             services['Knox - Available'].hosts ?= []
             services['Knox - Available'].hosts.push name
             services['Knox - Available'].servicegroups ?= ['knox']
             services['Knox - Available'].use ?= 'bp-service'
-            services['Knox - Available'].check_command ?= has_quorum 'Knox - WebService', '$HOSTNAME$'
+            services['Knox - Available'].check_command ?= bp_has_quorum 'Knox - WebService', '$HOSTNAME$'
           if 'hue' in host.modules
             services['Hue - Available'] ?= {}
             services['Hue - Available'].hosts ?= []
             services['Hue - Available'].hosts.push name
             services['Hue - Available'].servicegroups ?= ['hue']
             services['Hue - Available'].use ?= 'bp-service'
-            services['Hue - Available'].check_command ?= has_quorum 'Hue - WebUI', '$HOSTNAME$'
+            services['Hue - Available'].check_command ?= bp_has_quorum 'Hue - WebUI', '$HOSTNAME$'
           services['Hadoop - CORE'] ?= {}
           services['Hadoop - CORE'].hosts ?= []
           services['Hadoop - CORE'].hosts.push name
@@ -1024,7 +1028,7 @@ This function is called at the end to normalize values
           services['Cluster Availability'].hosts ?= []
           services['Cluster Availability'].hosts.push name
           services['Cluster Availability'].use ?= 'bp-service'
-          services['Cluster Availability'].check_command ?= has_all '.*Available', '$HOSTNAME$'
+          services['Cluster Availability'].check_command ?= bp_has_all '.*Available', '$HOSTNAME$'
       # ServiceGroups
       for name, group of shinken.config.servicegroups
         group.alias ?= "#{name.charAt(0).toUpperCase()}#{name.slice 1}"
@@ -1091,18 +1095,11 @@ This function is called at the end to normalize values
     module.exports = ->
       {shinken} = @config.ryba
       init.call @
-      from_ryba.call @
-      if shinken.exports_dir
-        throw Error 'Invalid parameter: exports_dir should be false or a path' unless typeof shinken.exports_dir is 'string'
-        for exp in glob.sync "#{shinken.exports_dir}/*"
-          stat = fs.statSync exp
-          clustername = path.parse(exp).name
-          servers = []
-          if stat.isFile()
-            servers.push require exp
-          else
-            servers.push require k for k in glob.sync "#{exp}/*"
-          from_contexts.call @, servers, clustername
+      #from_ryba.call @
+      if shinken.cluster_conf_dirs?
+        shinken.cluster_conf_dirs = [shinken.cluster_conf_dirs] unless Array.isArray shinken.cluster_conf_dirs
+        for confdir in shinken.cluster_conf_dirs
+          from_contexts.call @, glob.sync(confdir).map((f) -> require f) 
       else
         from_contexts.call @
       normalize.call @
