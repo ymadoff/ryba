@@ -36,7 +36,7 @@ Example:
       ryba.hdfs.site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/_HOST@#{ryba.realm}"
       ryba.hdfs.site['dfs.journalnode.kerberos.principal'] = "HTTP/_HOST@#{ryba.realm}"
       ryba.hdfs.site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'
-      # ryba.hdfs.site['dfs.journalnode.edits.dir'] ?= ['file:///var/hdfs/edits']
+      # Recommandation is to ideally have dedicated disks to optmize fsyncs operation
       ryba.hdfs.site['dfs.journalnode.edits.dir'] ?= ['/var/hdfs/edits']
       ryba.hdfs.site['dfs.journalnode.edits.dir'] = ryba.hdfs.site['dfs.journalnode.edits.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.journalnode.edits.dir']
       # ryba.hdfs.site['dfs.namenode.shared.edits.dir'] ?= nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.namenode.shared.edits.dir']
