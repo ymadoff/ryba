@@ -4,43 +4,50 @@ The ambari server must be set in the configuration file.
 
     module.exports = header: 'Ambari Agent Install', timeout: -1, handler: ->
       {ambari_agent} = @config.ryba
-      {ambari_server} = @contexts('ryba/ambari/server')[0].config.ryba
+
+## Identities
+
+By default, the "ambari-agent" package does not create any identities.
+
+      @system.group ambari_agent.group
+      @system.user ambari_agent.user
 
 ## Package & Repository
 
 Declare the Ambari custom repository.
-Install Ambari server package.
+Install Ambari Agent package.
 
       @file.download
-        header: 'Ambari Server Repo'
-        source: ambari_server.repo
+        header: 'Repo'
+        if: ambari_agent.repo
+        source: ambari_agent.repo
         target: '/etc/yum.repos.d/ambari.repo'
       @system.execute
         cmd: "yum clean metadata; yum update -y"
         if: -> @status -1
       @service
-        header: 'Ambari Agent Startup'
+        header: 'Package'
         name: 'ambari-agent'
         startup: true
 
-## Ambari Agent Configure
+## Configure
 
       @file.ini
-        header: 'Ambari Agent Configure'
+        header: 'Configure'
         target: "#{ambari_agent.conf_dir}/ambari-agent.ini"
-        content: ambari_agent.ini
+        content: ambari_agent.config
         parse: misc.ini.parse_multi_brackets_multi_lines
         stringify: misc.ini.stringify_multi_brackets
         indent: ''
-        merge: true
         comment: '#'
+        merge: true
         backup: true
       @file
         header: 'Hostname Script'
-        target: ambari_agent.ini.agent['hostname_script']
+        target: ambari_agent.config.agent['hostname_script']
         content: """
-          #!/bin/sh
-          echo #{@config.host}
+        #!/bin/sh
+        echo #{@config.host}
         """
         mode: 0o751
 

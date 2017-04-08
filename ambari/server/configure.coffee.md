@@ -1,13 +1,29 @@
 
-## Configuration
+# Ambari Server Configuration
 
-Exemple:
+## Minimal Example
 
 ```json
-{ "ambari": {
-  "name": "big",
-  "username": process.env["HADOOP_USERNAME"],
-  "password": process.env["HADOOP_PASSWORD"],
+{ "ambari_server": {
+  "cluster_name": "mycluster",
+  "repo": "http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.5.0.3/ambari.repo"
+  "config": {
+    "client.security": "ldap",
+    "authentication.ldap.useSSL": true,
+    "authentication.ldap.primaryUrl": "master3.ryba:636",
+    "authentication.ldap.baseDn": "ou=users,dc=ryba",
+    "authentication.ldap.bindAnonymously": false,
+    "authentication.ldap.managerDn": "cn=admin,ou=users,dc=ryba",
+    "authentication.ldap.managerPassword": "XXX",
+    "authentication.ldap.usernameAttribute": "cn"
+} } }
+```
+
+## LDAP Example
+
+```json
+{ "ambari_server": {
+  "cluster_name": "mycluster",
   "config": {
     "client.security": "ldap",
     "authentication.ldap.useSSL": true,
@@ -21,98 +37,75 @@ Exemple:
 ```
 
 
-    module.exports  = ->
-      # Servers onfiguration
+    module.exports = ->
+      # Dependencies
+      [java_ctx] = @contexts('masson/commons/java').filter (ctx) => ctx.config.host is @config.host
+      [pg_ctx] = @contexts 'masson/commons/postgres/server'
+      [my_ctx] = @contexts 'masson/commons/mysql/server'
+      [maria_ctx] = @contexts 'masson/commons/mariadb/server'
+      {db_admin} = @config.ryba
+      # Init
       ambari_server = @config.ryba.ambari_server ?= {}
-      ambari_server.http ?= '/var/www/html'
-      ambari_server.repo ?= 'http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.4.2.0/ambari.repo'
-      ambari_server.conf_dir ?= '/etc/ambari-server/conf'
-      ambari_server.database ?= {}
-      ambari_server.database.password ?= 'ambari123'
-      ambari_server.database.engine ?= @config.ryba.db_admin.engine
-      @config.ryba.ambari_agent ?= {}
-      @config.ryba.ambari_agent.sudo ?= false
-      ambari_server.config ?= {}
-      ambari_server.config['ambari-server.user'] ?= 'root'
-      ambari_server.config['server.jdbc.user.passwd'] ?= '/etc/ambari-server/conf/password.dat'
-      ambari_server.config['server.jdbc.user.name'] ?= 'ambari'
-      ambari_server.config['server.jdbc.database'] ?= 'mysql'
-      ambari_server.config['server.jdbc.database_name'] ?= 'ambari'
-      cluster = @config.cluster ?= {}
-      cluster.name ?= "cluster-6vm"
+      throw Error "Required Option: ambari_server.cluster_name" unless ambari_server.cluster_name
+      throw Error "Required Option: ambari_server.db.password" unless ambari_server.db?.password
 
-      # ambari.java ?= null
-      ambari_server.java_home ?= '/usr/lib/jvm/java'
-    # ambari.local ?= 
-    #   '1.2.0':
-    #     'centos6,redhat6,oraclelinux6': [
-    #       baseurl: 'http://public-repo-1.hortonworks.com/HDP/centos6/1.x/GA/1.2.0'
-    #       repoid: 'HDP-1.3.0'
-    #       reponame: 'HDP'
-    #     ,
-    #       baseurl: 'HDP-epel'
-    #       repoid: 'HDP-epel'
-    #       reponame: '<![CDATA[http://mirrors.fedoraproject.org/mirrorlist?repo=epel-6&arch=$basearch]]>'
-    #     ]
-    #     'centos6,redhat5,oraclelinux5': [
-    #       baseurl: 'http://public-repo-1.hortonworks.com/HDP/centos5/1.x/GA/1.2.0'
-    #       repoid: 'HDP-1.3.0'
-    #       reponame: 'HDP'
-    #     ,
-    #       baseurl: 'HDP-epel'
-    #       repoid: 'HDP-epel'
-    #       reponame: '<![CDATA[http://mirrors.fedoraproject.org/mirrorlist?repo=epel-5&arch=$basearch]]>'
-    #     ]
-    #     'suse11,sles11': [
-    #       baseurl: 'http://public-repo-1.hortonworks.com/HDP/suse11/1.x/GA/1.2.0'
-    #       repoid: 'HDP-1.3.0'
-    #       reponame: 'HDP'
-    #     ]
-    #   '1.2.1':
-    #     'centos6,redhat6,oraclelinux6': [
-    #       baseurl: 'http://public-repo-1.hortonworks.com/HDP/centos6/1.x/GA/1.2.1'
-    #       repoid: 'HDP-1.3.0'
-    #       reponame: 'HDP'
-    #     ,
-    #       baseurl: 'HDP-epel'
-    #       repoid: 'HDP-epel'
-    #       reponame: '<![CDATA[http://mirrors.fedoraproject.org/mirrorlist?repo=epel-6&arch=$basearch]]>'
-    #     ]
-    #     'centos6,redhat5,oraclelinux5': [
-    #       baseurl: 'http://public-repo-1.hortonworks.com/HDP/centos5/1.x/GA/1.2.1'
-    #       repoid: 'HDP-1.3.0'
-    #       reponame: 'HDP'
-    #     ,
-    #       baseurl: 'HDP-epel'
-    #       repoid: 'HDP-epel'
-    #       reponame: '<![CDATA[http://mirrors.fedoraproject.org/mirrorlist?repo=epel-5&arch=$basearch]]>'
-    #     ]
-    #     'suse11,sles11': [
-    #       baseurl: 'http://public-repo-1.hortonworks.com/HDP/suse11/1.x/GA/1.2.1'
-    #       repoid: 'HDP-1.3.0'
-    #       reponame: 'HDP'
-    #     ]
-    #   '1.3.0':
-    #     'centos6,redhat6,oraclelinux6': [
-    #       baseurl: 'http://public-repo-1.hortonworks.com/HDP/centos6/1.x/GA/1.3.0.0'
-    #       repoid: 'HDP-1.3.0'
-    #       reponame: 'HDP'
-    #     ,
-    #       baseurl: 'HDP-epel'
-    #       repoid: 'HDP-epel'
-    #       reponame: '<![CDATA[http://mirrors.fedoraproject.org/mirrorlist?repo=epel-6&arch=$basearch]]>'
-    #     ]
-    #     'centos6,redhat5,oraclelinux5': [
-    #       baseurl: 'http://public-repo-1.hortonworks.com/HDP/centos5/1.x/GA/1.3.0.0'
-    #       repoid: 'HDP-1.3.0'
-    #       reponame: 'HDP'
-    #     ,
-    #       baseurl: 'HDP-epel'
-    #       repoid: 'HDP-epel'
-    #       reponame: '<![CDATA[http://mirrors.fedoraproject.org/mirrorlist?repo=epel-5&arch=$basearch]]>'
-    #     ]
-    #     'suse11,sles11': [
-    #       baseurl: 'http://public-repo-1.hortonworks.com/HDP/suse11/1.x/GA/1.3.0.0'
-    #       repoid: 'HDP-1.3.0'
-    #       reponame: 'HDP'
-    #     ]
+## Environnment
+
+      ambari_server.http ?= '/var/www/html'
+      ambari_server.repo ?= null
+      ambari_server.conf_dir ?= '/etc/ambari-server/conf'
+      # ambari_server.database ?= {}
+      # ambari_server.database.engine ?= @config.ryba.db_admin.engine
+      # ambari_server.database.password ?= null
+      ambari_server.sudo ?= false
+      ambari_server.java_home ?= java_ctx.config.java.java_home
+      ambari_server.admin ?= {}
+      ambari_server.admin_password ?= 'admin123'
+
+## Identities
+
+Note, there are no identities created by the Ambari package. Identities are only
+used in case the server and its agents run as sudoers.
+
+The non-root user you choose to run the Ambari Server should be part of the 
+Hadoop group. The default group name is "hadoop".
+
+      # Group
+      ambari_server.group = name: ambari_server.group if typeof ambari_server.group is 'string'
+      ambari_server.group ?= {}
+      ambari_server.group.name ?= 'ambari'
+      ambari_server.group.system ?= true
+      # User
+      ambari_server.user = name: ambari_server.user if typeof ambari_server.user is 'string'
+      ambari_server.user ?= {}
+      ambari_server.user.name ?= 'ambari'
+      ambari_server.user.system ?= true
+      ambari_server.user.comment ?= 'Ambari User'
+      ambari_server.user.home ?= "/var/lib/#{ambari_server.user.name}"
+      ambari_server.user.groups ?= ['hadoop']
+      ambari_server.user.gid = ambari_server.group.name
+
+## Configuration
+
+      ambari_server.config ?= {}
+      # ambari_server.config['ambari-server.user'] ?= 'root'
+      # ambari_server.config.server ?= {}
+      ambari_server.config['server.url_port'] ?= "8440"
+      ambari_server.config['server.secured_url_port'] ?= "8441"
+      ambari_server.config['client.api.port'] ?= "8080"
+
+## Database
+
+      ambari_server.supported_db_engines ?= ['mysql', 'mariadb', 'postgres']
+      if pg_ctx then ambari_server.db.engine ?= 'postgres'
+      else if maria_ctx then ambari_server.db.engine ?= 'mariadb'
+      else if my_ctx then ambari_server.db.engine ?= 'mysql'
+      else ambari_server.db.engine ?= 'derby'
+      Error 'Unsupported database engine' unless ambari_server.db.engine in ambari_server.supported_db_engines
+      ambari_server.db[k] ?= v for k, v of db_admin[ambari_server.db.engine]
+      ambari_server.db.database ?= 'ambari'
+      ambari_server.db.username ?= 'ambari'
+      ambari_server.config['server.jdbc.user.name'] = ambari_server.db.username
+      ambari_server.config['server.jdbc.database'] = ambari_server.db.engine
+      ambari_server.config['server.jdbc.user.passwd'] ?= '/etc/ambari-server/conf/password.dat'
+      ambari_server.config['server.jdbc.database_name'] ?= ambari_server.db.database

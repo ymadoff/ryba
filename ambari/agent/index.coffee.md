@@ -1,14 +1,14 @@
 # Ambari Client
 
 [Ambari-agent][Ambari-agent-install] on hosts enables the ambari server to be
-aware of the  hosts where Hadoop will be deployed.
-The ambari server must be installed before performing manual registration.
+aware of the  hosts where Hadoop will be deployed. The Ambari Server must be 
+installed before the agent registration.
 
 
     module.exports =
       use:
-        java: implicit: true, module: 'masson/commons/java'
-        ambari_server: 'ryba/ambari/server'
+        java: module: 'masson/commons/java', recommanded: true
+        ambari_server: 'ryba/ambari/server', required: true
       configure:
         'ryba/ambari/agent/configure'
       commands:

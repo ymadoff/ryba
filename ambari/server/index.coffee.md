@@ -7,13 +7,13 @@ manage and monitor a Hadoop cluster.
 
     module.exports =
       use:
-        java: implicit: true, module: 'masson/commons/java'
+        java: module: 'masson/commons/java', recommanded: true
         db_admin: implicit: true, module: 'ryba/commons/db_admin'
       configure: 'ryba/ambari/server/configure'
       commands:
         'install': [
           'ryba/ambari/server/install'
-          'ryba/ambari/server/start'
+          # 'ryba/ambari/server/start'
         ]
         'start': 'ryba/ambari/server/start'
         'stop': 'ryba/ambari/server/stop'
