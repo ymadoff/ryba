@@ -27,15 +27,13 @@ Trigger Phoenix tables creation.
           echo 'Phoenix tables now created'
           code=0
         fi
-        if ! hbase shell 2>/dev/null <<< "user_permission '@SYSTEM'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)'; then
-          hbase shell 2>/dev/null <<< "grant 'ryba', 'RWC', '@SYSTEM'"
+        if ! hbase shell 2>/dev/null <<< "user_permission '@SYSTEM'" | egrep 'ryba.* actions=(CREATE|READ|WRITE|ADMIN),(CREATE|READ|WRITE|ADMIN),(CREATE|READ|WRITE|ADMIN),(CREATE|READ|WRITE|ADMIN)'; then
+          hbase shell 2>/dev/null <<< "grant 'ryba', 'RWCA', '@SYSTEM'"
           code=0
         fi
         exit $code
         """
         code_skipped: 3
-      , ->
-        process.exit()
 
 ## Dependencies
 
