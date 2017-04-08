@@ -31,7 +31,7 @@ is added membership to the group hadoop to gain read access.
         header: 'HTTP JMX'
         cmd: mkcmd.test @, """
         host=`curl -s -k --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\\(.*\\)".*$/\\1/g'`
-        if [ "$host" != '#{@config.host}' ] ; then exit 1; fi
+        [ "$host" == '#{@config.host}' ] || [ "$host" == '#{@config.shortname}' ]
         """
 
 ## Dependencies
