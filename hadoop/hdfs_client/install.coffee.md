@@ -59,7 +59,7 @@ Update the "core-site.xml" configuration file with properties from the
         gid: hadoop_group.name
         backup: true
 
-      @call header: 'Jars', handler: ->
+      @call header: 'Jars', ->
         {core_jars} = @config.ryba
         core_jars = Object.keys(core_jars).map (k) -> core_jars[k]
         remote_files = null
@@ -88,7 +88,7 @@ Update the "core-site.xml" configuration file with properties from the
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, ->
         {hadoop_conf_dir, ssl, ssl_server, ssl_client} = @config.ryba
         ssl_client['ssl.client.truststore.location'] = "#{hadoop_conf_dir}/truststore"
         @hconfigure

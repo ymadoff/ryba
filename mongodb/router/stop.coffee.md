@@ -18,7 +18,7 @@ Stop the MongoDB Routing Server service.
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: @config.ryba.clean_logs
-        handler: ->
-          @system.execute
-            cmd: "rm #{router.config.logpath}"
-            code_skipped: 1
+      , ->
+        @system.execute
+          cmd: "rm #{router.config.logpath}"
+          code_skipped: 1

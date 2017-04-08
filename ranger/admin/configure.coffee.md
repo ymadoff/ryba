@@ -180,7 +180,7 @@ on the same host than `ryba/ranger/admin` module.
               keystore: solr["#{ranger.admin.solr_type}"]['ssl_trustore_path']
               storepass: solr["#{ranger.admin.solr_type}"]['ssl_keystore_pwd']
               caname: "hadoop_root_ca"
-              handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
+            , -> @call 'ryba/ranger/admin/solr_bootstrap'
           break;
         when 'cloud'
           throw Error 'No Solr Cloud Server configure' unless sc_ctxs.length > 0
@@ -197,7 +197,7 @@ on the same host than `ryba/ranger/admin` module.
             .after
               type: ['service','start']
               name: 'solr'
-              handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
+            , -> @call 'ryba/ranger/admin/solr_bootstrap'
           break;
         when 'cloud_docker'
           throw Error 'No Solr Cloud Server configured' unless scd_ctxs.length > 0 or ranger.admin.cluster_name?
@@ -243,7 +243,7 @@ on the same host than `ryba/ranger/admin` module.
                 .after
                   type: ['docker','compose','up']
                   target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
-                  handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
+                , -> @call 'ryba/ranger/admin/solr_bootstrap'
             #Search for a cloud_docker cluster find in solr.cloud_docker.clusters
           ranger.admin.install['audit_solr_port'] ?= ranger.admin.cluster_config.port
           ranger.admin.cluster_config['ranger'] ?= {}

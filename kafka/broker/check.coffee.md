@@ -12,7 +12,7 @@
 
 Make sure the broker is listening. The default port is "9092".
 
-      @call header: 'Check TCP', label_true: 'CHECKED', handler: ->
+      @call header: 'Check TCP', label_true: 'CHECKED', ->
         for protocol in kafka.broker.protocols
           @system.execute
             cmd: "echo > /dev/tcp/#{@config.host}/#{kafka.broker.ports[protocol]}"

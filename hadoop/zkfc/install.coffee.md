@@ -34,7 +34,7 @@
 Install the "hadoop-hdfs-zkfc" service, symlink the rc.d startup script
 in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         @service
           name: 'hadoop-hdfs-zkfc'
         @hdp_select
@@ -52,7 +52,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
 ## Configure
 
-      @call header: 'Configure', timeout: -1, handler: ->
+      @call header: 'Configure', timeout: -1, ->
         @system.mkdir
           target: "#{zkfc.conf_dir}"
         @hconfigure
@@ -99,7 +99,7 @@ is stored as "/etc/security/keytabs/zkfc.service.keytab".
 The Jaas file is registered as an Java property inside 'hadoop-env.sh' and is
 stored as "/etc/hadoop/conf/zkfc.jaas"
 
-      @call header: 'Kerberos', handler: ->
+      @call header: 'Kerberos', ->
         zkfc_principal = zkfc.principal.replace '_HOST', @config.host
         nn_principal = hdfs.nn.site['dfs.namenode.kerberos.principal'].replace '_HOST', @config.host
         @krb5.addprinc krb5,
@@ -148,7 +148,7 @@ command as an example:
 setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7KankRXQ=:cdrwa
 ```
 
-      @call header: 'ZK Auth and ACL', handler: ->
+      @call header: 'ZK Auth and ACL', ->
         acls = []
         # acls.push 'world:anyone:r'
         jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
@@ -198,54 +198,54 @@ inserted if ALL users or the HDFS user access is denied.
       @call
         header: 'SSH Fencing'
         # if: -> @contexts('ryba/hadoop/hdfs_nn').length > 1
-        handler: ->
-          @system.mkdir
-            target: "#{hdfs.user.home}/.ssh"
-            uid: hdfs.user.name
-            gid: hadoop_group.name
-            mode: 0o700
-          @file.download
-            source: "#{ssh_fencing.private_key}"
-            target: "#{hdfs.user.home}/.ssh/id_rsa"
-            uid: hdfs.user.name
-            gid: hadoop_group.name
-            mode: 0o600
-          @file.download
-            source: "#{ssh_fencing.public_key}"
-            target: "#{hdfs.user.home}/.ssh/id_rsa.pub"
-            uid: hdfs.user.name
-            gid: hadoop_group.name
-            mode: 0o644
-          @call (_, callback) ->
-            fs.readFile "#{ssh_fencing.public_key}", (err, content) =>
+      , ->
+        @system.mkdir
+          target: "#{hdfs.user.home}/.ssh"
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          mode: 0o700
+        @file.download
+          source: "#{ssh_fencing.private_key}"
+          target: "#{hdfs.user.home}/.ssh/id_rsa"
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          mode: 0o600
+        @file.download
+          source: "#{ssh_fencing.public_key}"
+          target: "#{hdfs.user.home}/.ssh/id_rsa.pub"
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          mode: 0o644
+        @call (_, callback) ->
+          fs.readFile "#{ssh_fencing.public_key}", (err, content) =>
+            return callback err if err
+            @file
+              target: "#{hdfs.user.home}/.ssh/authorized_keys"
+              content: content
+              append: true
+              uid: hdfs.user.name
+              gid: hadoop_group.name
+              mode: 0o600
+            , (err, written) =>
               return callback err if err
-              @file
-                target: "#{hdfs.user.home}/.ssh/authorized_keys"
-                content: content
-                append: true
-                uid: hdfs.user.name
-                gid: hadoop_group.name
-                mode: 0o600
-              , (err, written) =>
+              @fs.readFile '/etc/security/access.conf', 'utf8', (err, source) =>
                 return callback err if err
-                @fs.readFile '/etc/security/access.conf', 'utf8', (err, source) =>
-                  return callback err if err
-                  content = []
-                  exclude = ///^\-\s?:\s?(ALL|#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
-                  include = ///^\+\s?:\s?(#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
-                  included = false
-                  for line, i in source = source.split /\r\n|[\n\r\u0085\u2028\u2029]/g
-                    if match = include.exec line
-                      included = true # we shall also check if the ip/fqdn match in origin
-                    if not included and match = exclude.exec line
-                      nn_hosts = @contexts('ryba/hadoop/hdfs_nn').map (ctx) -> ctx.config.host
-                      content.push "+ : #{hdfs.user.name} : #{nn_hosts.join ','}"
-                    content.push line
-                  return callback null, false if content.length is source.length
-                  @file
-                    target: '/etc/security/access.conf'
-                    content: content.join '\n'
-                  .then callback
+                content = []
+                exclude = ///^\-\s?:\s?(ALL|#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
+                include = ///^\+\s?:\s?(#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
+                included = false
+                for line, i in source = source.split /\r\n|[\n\r\u0085\u2028\u2029]/g
+                  if match = include.exec line
+                    included = true # we shall also check if the ip/fqdn match in origin
+                  if not included and match = exclude.exec line
+                    nn_hosts = @contexts('ryba/hadoop/hdfs_nn').map (ctx) -> ctx.config.host
+                    content.push "+ : #{hdfs.user.name} : #{nn_hosts.join ','}"
+                  content.push line
+                return callback null, false if content.length is source.length
+                @file
+                  target: '/etc/security/access.conf'
+                  content: content.join '\n'
+                .then callback
 
 ## HA Auto Failover
 

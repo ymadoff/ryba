@@ -23,76 +23,76 @@ Wait for the HBase master to be started.
 
       @call 
         if: -> ranger_ctx?
-        handler: ->
-          {install} = ranger_ctx.config.ryba.ranger.hbase_plugin
-          policy_name = "Ranger-Ryba-HBase-Policy-#{@config.host}"
-          hbase_policy =
-            "name": "#{policy_name}"
-            "service": "#{install['REPOSITORY_NAME']}"
-            "resources":
-              "column":
-                "values": ["*"]
-                "isExcludes": false
-                "isRecursive": false
-              "column-family":
-                "values": ["*"]
-                "isExcludes": false
-                "isRecursive": false
-              "table":
-                "values": [
-                  "#{hbase.client.test.namespace}:#{hbase.client.test.table}",
-                  "#{hbase.client.test.namespace}:check_#{@config.shortname}_test_splits",
-                  "#{hbase.client.test.namespace}:check_#{@config.shortname}_ha"
-                  ]
-                "isExcludes": false
-                "isRecursive": false
-            "repositoryName": "#{install['REPOSITORY_NAME']}"
-            "repositoryType": "hbase"
-            "isEnabled": "true",
-            "isAuditEnabled": true,
-            'tableType': 'Inclusion',
-            'columnType': 'Inclusion',
-            'policyItems': [
-                "accesses": [
-                  'type': 'read'
-                  'isAllowed': true
-                ,
-                  'type': 'write'
-                  'isAllowed': true
-                ,
-                  'type': 'create'
-                  'isAllowed': true
-                ,
-                  'type': 'admin'
-                  'isAllowed': true
-                ],
-                'users': ['hbase', "#{user.name}"]
-                'groups': []
-                'conditions': []
-                'delegateAdmin': true
-              ]
-          @call once: true, 'ryba/ranger/admin/wait'
-          @wait.execute
-            header: 'Wait HBase Ranger repository'
-            cmd: """
-              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
-              -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
-            """
-            code_skipped: 22
-          @system.execute
-            header: 'Ranger Ryba Policy'
-            cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST \
-              -d '#{JSON.stringify hbase_policy}' \
-              -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
-            """
-            unless_exec: """
-              curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
-              -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
-            """
+      , ->
+        {install} = ranger_ctx.config.ryba.ranger.hbase_plugin
+        policy_name = "Ranger-Ryba-HBase-Policy-#{@config.host}"
+        hbase_policy =
+          "name": "#{policy_name}"
+          "service": "#{install['REPOSITORY_NAME']}"
+          "resources":
+            "column":
+              "values": ["*"]
+              "isExcludes": false
+              "isRecursive": false
+            "column-family":
+              "values": ["*"]
+              "isExcludes": false
+              "isRecursive": false
+            "table":
+              "values": [
+                "#{hbase.client.test.namespace}:#{hbase.client.test.table}",
+                "#{hbase.client.test.namespace}:check_#{@config.shortname}_test_splits",
+                "#{hbase.client.test.namespace}:check_#{@config.shortname}_ha"
+                ]
+              "isExcludes": false
+              "isRecursive": false
+          "repositoryName": "#{install['REPOSITORY_NAME']}"
+          "repositoryType": "hbase"
+          "isEnabled": "true",
+          "isAuditEnabled": true,
+          'tableType': 'Inclusion',
+          'columnType': 'Inclusion',
+          'policyItems': [
+              "accesses": [
+                'type': 'read'
+                'isAllowed': true
+              ,
+                'type': 'write'
+                'isAllowed': true
+              ,
+                'type': 'create'
+                'isAllowed': true
+              ,
+                'type': 'admin'
+                'isAllowed': true
+              ],
+              'users': ['hbase', "#{user.name}"]
+              'groups': []
+              'conditions': []
+              'delegateAdmin': true
+            ]
+        @call once: true, 'ryba/ranger/admin/wait'
+        @wait.execute
+          header: 'Wait HBase Ranger repository'
+          cmd: """
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+          """
+          code_skipped: 22
+        @system.execute
+          header: 'Ranger Ryba Policy'
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST \
+            -d '#{JSON.stringify hbase_policy}' \
+            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+          """
+          unless_exec: """
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+          """
 
 ## Shell
 
@@ -143,7 +143,7 @@ namespaces are prefixed with an '@' character.
 
 Note, we are re-using the namespace created above.
 
-      @call header: 'Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Shell', timeout: -1, label_true: 'CHECKED', ->
         @wait.execute
           cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.client.test.namespace}:#{hbase.client.test.table}'\" | grep 'Table #{hbase.client.test.namespace}:#{hbase.client.test.table} does exist'"
         @system.execute
@@ -161,7 +161,7 @@ Note, we are re-using the namespace created above.
 
 ## Check MapReduce
 
-      @call header: 'MapReduce', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'MapReduce', timeout: -1, label_true: 'CHECKED', ->
         @system.execute
           cmd: mkcmd.test @, """
             hdfs dfs -rm -skipTrash check-#{@config.host}-hbase-mapred
@@ -173,7 +173,7 @@ Note, we are re-using the namespace created above.
 
 ## Check Splits
 
-      @call header: 'Splits', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Splits', timeout: -1, label_true: 'CHECKED', ->
         {force_check} = @config.ryba
         table = "#{hbase.client.test.namespace}:check_#{@config.shortname}_test_splits"
         @system.execute
@@ -217,7 +217,7 @@ Note, we are re-using the namespace created above.
 
 This check is only executed if more than two HBase Master are declared.
 
-      @call header: 'Check HA', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Check HA', timeout: -1, label_true: 'CHECKED', ->
         return unless hbase_ctxs.length > 1
         table = "#{hbase.client.test.namespace}:check_#{@config.shortname}_ha"
         @system.execute

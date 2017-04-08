@@ -31,7 +31,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Remove default config files
 
-      @call header: 'Clean Install', handler: ->
+      @call header: 'Clean Install', ->
         @system.remove target: '/etc/shinken/realms/all.cfg'
         @system.remove target: '/etc/shinken/contacts/nagiosadmin.cfg'
         @system.remove target: '/etc/shinken/services/linux_disks.cfg'
@@ -41,9 +41,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Modules
 
-      @call header: 'Modules', handler: ->
+      @call header: 'Modules', ->
         installmod = (name, mod) =>
-          @call unless_exec: "shinken inventory | grep #{name}", handler: ->
+          @call unless_exec: "shinken inventory | grep #{name}", ->
             @file.download
               target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
@@ -65,7 +65,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ### Shinken Config
 
-      @call header: 'Shinken Config', handler: ->
+      @call header: 'Shinken Config', ->
         for service in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
           @file.render
             target: "/etc/shinken/#{service}s/#{service}-master.cfg"
@@ -93,7 +93,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ### Modules Config
 
-      @call header: 'Modules Config', handler: ->
+      @call header: 'Modules Config', ->
         config_mod = (name, mod) =>
           @file.render
             target: "/etc/shinken/modules/#{mod.config_file}"
@@ -115,7 +115,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Objects config
 
-      @call header: 'Objects Config', handler: ->
+      @call header: 'Objects Config', ->
         # Un-templated objects
         ## Some commands need the lists of brokers (for their livestatus module)
         brokers = @contexts('ryba/shinken/broker').map( (ctx) -> ctx.config.host ).join ','
@@ -148,7 +148,9 @@ Objects config
 
 ### Services Config
 
-      @call header: 'Ryba Services Config', handler: ->
+TODO: explain why this is commented or simply remove
+
+      # @call header: 'Ryba Services Config', ->
         # @file.render
         #   target: '/etc/shinken/services/hadoop-services.cfg'
         #   source: "#{__dirname}/resources/hadoop-services.cfg.j2"

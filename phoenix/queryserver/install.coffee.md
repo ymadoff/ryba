@@ -44,7 +44,7 @@ We use the SPNEGO keytab, so we let hadoop/core handle principal & keytab
 
 ## Layout
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: phoenix.pid_dir
           uid: phoenix.user.name
@@ -60,7 +60,7 @@ We use the SPNEGO keytab, so we let hadoop/core handle principal & keytab
 
 ## Service
 
-      @call header: 'Service', handler: (options) ->
+      @call header: 'Service', (options) ->
         @service.init
           header: 'Init Script'
           target: '/etc/init.d/phoenix-queryserver'

@@ -18,7 +18,7 @@ Install the Ranger user Sync package and set it to the latest version. Note, we
 select the "kafka-broker" hdp directory. There is no "kafka-consumer"
 directories.
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         hdp_current_version = null
         @call ( options, callback) =>
           @system.execute
@@ -33,7 +33,7 @@ directories.
         @hdp_select
           name: 'ranger-usersync'
 
-      @call header: 'Layout', handler: (options)->
+      @call header: 'Layout', (options)->
         @system.mkdir
           target: ranger.usersync.conf_dir
         @system.mkdir
@@ -61,18 +61,18 @@ directories.
 #
 #     module.exports.push
 #       header: 'Ranger Admin IPTables',
-#       handler: ->
-#         {ranger} = @config.ryba
-#         return unless @config.iptables.action is 'start'
-#         @tools.iptables
-#           rules: [
-#             { chain: 'INPUT', jump: 'ACCEPT', dport: ranger.admin.site['ranger.service.http.port'], protocol: 'tcp', state: 'NEW', comment: "Ranger Admin HTTP WEBUI" }
-#             { chain: 'INPUT', jump: 'ACCEPT', dport: ranger.admin.site['ranger.service.https.port'], protocol: 'tcp', state: 'NEW', comment: "Ranger Admin HTTPS WEBUI" }
-#           ]
+#      , ->
+#       {ranger} = @config.ryba
+#       return unless @config.iptables.action is 'start'
+#       @tools.iptables
+#         rules: [
+#           { chain: 'INPUT', jump: 'ACCEPT', dport: ranger.admin.site['ranger.service.http.port'], protocol: 'tcp', state: 'NEW', comment: "Ranger Admin HTTP WEBUI" }
+#           { chain: 'INPUT', jump: 'ACCEPT', dport: ranger.admin.site['ranger.service.https.port'], protocol: 'tcp', state: 'NEW', comment: "Ranger Admin HTTPS WEBUI" }
+#         ]
 
 # ## Ranger ranger-usersync Driver
 #
-#     module.exports.push header: 'Ranger Admin Driver', handler: ->
+#     module.exports.push header: 'Ranger Admin Driver', ->
 #       {ranger} = @config.ryba
 #       @system.link
 #         source: '/usr/share/java/mysql-connector-java.jar'

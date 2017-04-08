@@ -72,7 +72,7 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
 Install the Sqoop package following the [HDP instructions][install].
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         @service
           name: 'sqoop'
         @hdp_select
@@ -101,11 +101,11 @@ the Sqoop library folder.
       @call
         header: 'Database Connector'
         if: -> @config.ryba.sqoop.libs.length
-        handler: ->
-          for lib in  @config.ryba.sqoop.libs
-            @file.download
-              source: lib
-              target: "/usr/hdp/current/sqoop-client/lib/#{path.basename lib}"
+      , ->
+        for lib in  @config.ryba.sqoop.libs
+          @file.download
+            source: lib
+            target: "/usr/hdp/current/sqoop-client/lib/#{path.basename lib}"
 
 ## Check
 

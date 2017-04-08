@@ -8,7 +8,7 @@ have usecase for it yet.
 This installation also found inspiration from the 
 [cloudera hbase setup in secure mode][hbase-configuration].
 
-    module.exports =  header: 'HBase Thrift Install',  handler: ->
+    module.exports =  header: 'HBase Thrift Install', handler: ->
       {hbase} = @config.ryba
 
 ## Register
@@ -48,23 +48,9 @@ hbase:x:492:
       @system.group hbase.group
       @system.user hbase.user
 
-
-### Kerberos
-
-    #  module.exports.push header: 'Kerberos', handler: ->
-    #    {hadoop_group, hbase, realm} = @config.ryba
-    #    krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-    #    @krb5.addprinc krb5,
-    #      principal: hbase.site['hbase.thrift.kerberos.principal'].replace '_HOST', @config.host
-    #      randkey: true
-    #      keytab: hbase.site['hbase.thrift.keytab.file']
-    #      uid: hbase.user.name
-    #      gid: hadoop_group.name
-
-
 ## HBase Thrift Server Layout
 
-      @call header: 'Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, ->
         @system.mkdir
           target: hbase.thrift.pid_dir
           uid: hbase.user.name
@@ -133,7 +119,7 @@ Environment passed to the HBase Rest Server before it starts.
 
 ##  Hbase-Thrift Service
 
-      @call header: 'Service', handler: (options) ->
+      @call header: 'Service', (options) ->
         @service
           name: 'hbase-thrift'
         @hdp_select

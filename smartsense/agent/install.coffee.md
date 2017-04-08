@@ -29,7 +29,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
 
 ## Layout
 
-      @call header: 'Layout Directories', handler: ->
+      @call header: 'Layout Directories', ->
         @system.mkdir
           target: smartsense.agent.log_dir
           uid: smartsense.user.name
@@ -48,7 +48,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
 
 ## Setup
 
-      @call header: 'Setup Execution', timeout: -1, handler: ->
+      @call header: 'Setup Execution', timeout: -1, ->
         @file.ini
           header: 'HST Agent ini file'
           target: "#{smartsense.agent.conf_dir}/hst-server.ini"

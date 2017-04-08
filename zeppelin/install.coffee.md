@@ -38,7 +38,7 @@ It's the  host' port server map from the container
 Installs SSL certificates for Zeppelin. Creates trustore et keystore
 SSL only required for the server
 
-    # module.exports.push header: 'JKS stores', handler: ->
+    # module.exports.push header: 'JKS stores', ->
     #  {ssl, ssl_server, ssl_client, zeppelin} = @config.ryba
     #  tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
     #  modified = false
@@ -146,7 +146,7 @@ TODO: remove download and write and replace it with a template
 
 Load Zeppelin docker image from local host
 
-      @call header: 'Import', timeout: -1, handler: ->
+      @call header: 'Import', timeout: -1, ->
         @file.download
           source: "#{@config.nikita.cache_dir}/zeppelin.tar"
           target: "/tmp/zeppelin.tar" # add versioning

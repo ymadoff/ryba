@@ -42,7 +42,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @call header: 'IPTables', handler: ->
+      @call header: 'IPTables', ->
         return unless @config.iptables.action is 'start'
         @tools.iptables
           rules: [
@@ -70,7 +70,7 @@ Install Atlas packages
 
 ## Layout && Directories
 
-      @call header: 'Layout Directories', handler: (options) ->
+      @call header: 'Layout Directories', (options) ->
         @system.mkdir
           target: atlas.log_dir
           uid: atlas.user.name
@@ -139,65 +139,65 @@ Install Atlas packages
       @call
         if: -> @status(-3) or @status(-4)
         header: 'Generate Credentials SSL provider file'
-        handler: (options, callback) ->
-          @options.ssh.shell (err, stream) =>
-            stream.write 'if /usr/hdp/current/atlas-client/bin/cputil.py ;then exit 0; else exit 1;fi\n'
-            data = ''
-            error = exit = null
-            stream.on 'data', (data, extended) =>
-              data = data.toString()
-              switch
-                when /Please enter the full path to the credential provider:/.test data
-                  options.log "prompt: #{data}"
-                  options.log "writing: #{atlas.application.properties['cert.stores.credential.provider.path'].split('jceks://file')[1]}\n"
-                  stream.write "#{atlas.application.properties['cert.stores.credential.provider.path'].split('jceks://file')[1]}\n"
-                  data = ''
-                when /Please enter the password value for keystore.password:/.test data
-                  options.log "prompt: #{data}"
-                  options.log "write: #{atlas.keystore_password}"
-                  stream.write "#{atlas.keystore_password}\n"
-                  data = ''
-                when /Please enter the password value for keystore.password again:/.test data
-                  options.log "prompt: #{data}"
-                  options.log "write: #{atlas.keystore_password}"
-                  stream.write "#{atlas.keystore_password}\n"
-                  data = ''
-                when /Please enter the password value for truststore.password:/.test data
-                  options.log "prompt: #{data}"
-                  options.log "write: #{atlas.truststore_password}"
-                  stream.write "#{atlas.truststore_password}\n"
-                  data = ''
-                when /Please enter the password value for truststore.password again:/.test data
-                  options.log "prompt: #{data}"
-                  options.log "write: #{atlas.truststore_password}"
-                  stream.write "#{atlas.truststore_password}\n"
-                  data = ''
-                when /Please enter the password value for password:/.test data
-                  options.log "prompt: #{data}"
-                  options.log "write: #{atlas.serverkey_password}"
-                  stream.write "#{atlas.serverkey_password}\n"
-                  data = ''
-                when /Please enter the password value for password again:/.test data
-                  options.log "prompt: #{data}"
-                  options.log "write: #{atlas.serverkey_password}"
-                  stream.write "#{atlas.serverkey_password}\n"
-                  data = ''
-                when /Entry for keystore.password already exists/.test data
-                  stream.write "y\n"
-                  data = ''
-                when /Entry for truststore.password already exists/.test data
-                  stream.write "y\n"
-                  data = ''
-                when /Entry for password already exists/.test data
-                  stream.write "y\n"
-                  data = ''
-                when /Exception in thread.*/.test data
-                  error = new Error data
-                  stream.end 'exit\n' unless exit
-                  exit = true
-            stream.on 'exit', =>
-              return callback error if error
-              callback null, true
+      , (options, callback) ->
+        @options.ssh.shell (err, stream) =>
+          stream.write 'if /usr/hdp/current/atlas-client/bin/cputil.py ;then exit 0; else exit 1;fi\n'
+          data = ''
+          error = exit = null
+          stream.on 'data', (data, extended) =>
+            data = data.toString()
+            switch
+              when /Please enter the full path to the credential provider:/.test data
+                options.log "prompt: #{data}"
+                options.log "writing: #{atlas.application.properties['cert.stores.credential.provider.path'].split('jceks://file')[1]}\n"
+                stream.write "#{atlas.application.properties['cert.stores.credential.provider.path'].split('jceks://file')[1]}\n"
+                data = ''
+              when /Please enter the password value for keystore.password:/.test data
+                options.log "prompt: #{data}"
+                options.log "write: #{atlas.keystore_password}"
+                stream.write "#{atlas.keystore_password}\n"
+                data = ''
+              when /Please enter the password value for keystore.password again:/.test data
+                options.log "prompt: #{data}"
+                options.log "write: #{atlas.keystore_password}"
+                stream.write "#{atlas.keystore_password}\n"
+                data = ''
+              when /Please enter the password value for truststore.password:/.test data
+                options.log "prompt: #{data}"
+                options.log "write: #{atlas.truststore_password}"
+                stream.write "#{atlas.truststore_password}\n"
+                data = ''
+              when /Please enter the password value for truststore.password again:/.test data
+                options.log "prompt: #{data}"
+                options.log "write: #{atlas.truststore_password}"
+                stream.write "#{atlas.truststore_password}\n"
+                data = ''
+              when /Please enter the password value for password:/.test data
+                options.log "prompt: #{data}"
+                options.log "write: #{atlas.serverkey_password}"
+                stream.write "#{atlas.serverkey_password}\n"
+                data = ''
+              when /Please enter the password value for password again:/.test data
+                options.log "prompt: #{data}"
+                options.log "write: #{atlas.serverkey_password}"
+                stream.write "#{atlas.serverkey_password}\n"
+                data = ''
+              when /Entry for keystore.password already exists/.test data
+                stream.write "y\n"
+                data = ''
+              when /Entry for truststore.password already exists/.test data
+                stream.write "y\n"
+                data = ''
+              when /Entry for password already exists/.test data
+                stream.write "y\n"
+                data = ''
+              when /Exception in thread.*/.test data
+                error = new Error data
+                stream.end 'exit\n' unless exit
+                exit = true
+          stream.on 'exit', =>
+            return callback error if error
+            callback null, true
       @system.chown
         target: "#{credential_dir}/#{credential_name}"
         uid: atlas.user.name
@@ -372,99 +372,99 @@ Grant Permission to atlas for its titan' tables through ranger or from hbase she
       @call 
         if: -> ranger_admin?
         header: 'HBase Atlas Permissions'
-        handler: ->
-          {install} = ranger_admin.config.ryba.ranger.hbase_plugin
-          policy_name = "Atlas-Titan-to-HBase-policy"
-          hbase_policy =
-            "name": "#{policy_name}"
-            "service": "#{install['REPOSITORY_NAME']}"
-            "resources":
-              "column":
-                "values": ["*"]
-                "isExcludes": false
-                "isRecursive": false
-              "column-family":
-                "values": ["*"]
-                "isExcludes": false
-                "isRecursive": false
-              "table":
-                "values": [
-                  "#{atlas.application.properties['atlas.graph.storage.hbase.table']}",
-                  "#{atlas.application.properties['atlas.audit.hbase.tablename']}"
-                  ]
-                "isExcludes": false
-                "isRecursive": false
-            "repositoryName": "#{install['REPOSITORY_NAME']}"
-            "repositoryType": "hbase"
-            "isEnabled": "true",
-            "isAuditEnabled": true,
-            'tableType': 'Inclusion',
-            'columnType': 'Inclusion',
-            'policyItems': [
-            		"accesses": [
-            			'type': 'read'
-            			'isAllowed': true
-                ,
-            			'type': 'write'
-            			'isAllowed': true
-            		,
-            			'type': 'create'
-            			'isAllowed': true
-            		,
-            			'type': 'admin'
-            			'isAllowed': true
-            		],
-            		'users': ["#{atlas.user.name}"]
-            		'groups': []
-            		'conditions': []
-            		'delegateAdmin': true
-              ]
-          @call once: true, 'ryba/ranger/admin/wait'
-          @wait.execute
-            header: 'Wait HBase Ranger repository'
-            cmd: """
-              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
-            """
-            code_skipped: 22
-          @system.execute
-            cmd: """
-              curl --fail -H "Content-Type: application/json"   -k -X POST \ 
-              -d '#{JSON.stringify atlas.ranger_user}' -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/secure/users\"
-            """
-            unless_exec: """
-              curl --fail -H "Content-Type: application/json"   -k -X GET \ 
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/users/userName/#{atlas.ranger_user.name}\"
-            """
-          @system.execute
-            header: 'Ranger Ryba Policy'
-            cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST \
-              -d '#{JSON.stringify hbase_policy}' \
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
-            """
-            unless_exec: """
-              curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
-            """
+      , ->
+        {install} = ranger_admin.config.ryba.ranger.hbase_plugin
+        policy_name = "Atlas-Titan-to-HBase-policy"
+        hbase_policy =
+          "name": "#{policy_name}"
+          "service": "#{install['REPOSITORY_NAME']}"
+          "resources":
+            "column":
+              "values": ["*"]
+              "isExcludes": false
+              "isRecursive": false
+            "column-family":
+              "values": ["*"]
+              "isExcludes": false
+              "isRecursive": false
+            "table":
+              "values": [
+                "#{atlas.application.properties['atlas.graph.storage.hbase.table']}",
+                "#{atlas.application.properties['atlas.audit.hbase.tablename']}"
+                ]
+              "isExcludes": false
+              "isRecursive": false
+          "repositoryName": "#{install['REPOSITORY_NAME']}"
+          "repositoryType": "hbase"
+          "isEnabled": "true",
+          "isAuditEnabled": true,
+          'tableType': 'Inclusion',
+          'columnType': 'Inclusion',
+          'policyItems': [
+          		"accesses": [
+          			'type': 'read'
+          			'isAllowed': true
+              ,
+          			'type': 'write'
+          			'isAllowed': true
+          		,
+          			'type': 'create'
+          			'isAllowed': true
+          		,
+          			'type': 'admin'
+          			'isAllowed': true
+          		],
+          		'users': ["#{atlas.user.name}"]
+          		'groups': []
+          		'conditions': []
+          		'delegateAdmin': true
+            ]
+        @call once: true, 'ryba/ranger/admin/wait'
+        @wait.execute
+          header: 'Wait HBase Ranger repository'
+          cmd: """
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+          """
+          code_skipped: 22
+        @system.execute
+          cmd: """
+            curl --fail -H "Content-Type: application/json"   -k -X POST \ 
+            -d '#{JSON.stringify atlas.ranger_user}' -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/secure/users\"
+          """
+          unless_exec: """
+            curl --fail -H "Content-Type: application/json"   -k -X GET \ 
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/users/userName/#{atlas.ranger_user.name}\"
+          """
+        @system.execute
+          header: 'Ranger Ryba Policy'
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST \
+            -d '#{JSON.stringify hbase_policy}' \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+          """
+          unless_exec: """
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+          """
       @call
         unless: -> ranger_admin?
         header: 'HBase Atlas Permissions'
-        handler: ->
-          @system.execute
-            header: 'Grant Permissions'
-            unless_exec: mkcmd.hbase @, "hbase shell 2>/dev/null <<< \"user_permission '@#{atlas.application.namespace}'\" |  egrep \"^\\s(#{atlas.user.name})\\s*(#{atlas.user.name}).*\\[Permission: actions=(READ|EXEC|WRITE|CREATE|ADMIN|,){9}\\]$\""
-            cmd: mkcmd.hbase @, """
-              hbase shell 2>/dev/null <<-CMD
-                grant '#{atlas.user.name}', 'RWCA', '@#{atlas.application.namespace}'
-              CMD
-            """
-            trap: true
+      , ->
+        @system.execute
+          header: 'Grant Permissions'
+          unless_exec: mkcmd.hbase @, "hbase shell 2>/dev/null <<< \"user_permission '@#{atlas.application.namespace}'\" |  egrep \"^\\s(#{atlas.user.name})\\s*(#{atlas.user.name}).*\\[Permission: actions=(READ|EXEC|WRITE|CREATE|ADMIN|,){9}\\]$\""
+          cmd: mkcmd.hbase @, """
+            hbase shell 2>/dev/null <<-CMD
+              grant '#{atlas.user.name}', 'RWCA', '@#{atlas.application.namespace}'
+            CMD
+          """
+          trap: true
 
 ## Setup Credentials File
 Convert the user_creds object into a file of credentials. See [how to generate][atlas-credential-file] atlas
@@ -488,45 +488,38 @@ credential based on file.
         old_lines = []
         new_lines = []
         content = ''
-        @call
-          header: 'Read Current Credential'
-          handler: (_, callback )  ->
-            fs.readFile @options.ssh, atlas.application.properties['atlas.authentication.method.file.filename'], 'utf8', (err, content) ->
-              return callback null, true if err and err.code is 'ENOENT'
-              return callback err if err
-              old_lines = string.lines content
-              return if old_lines.length > 0 then callback null, true else callback null, false
-        @call 
-          if: -> @status -1
-          header: 'Merge user credentials'
-          handler: ->
-            for line in old_lines
-              name = line.split(':')[0]
-              new_lines.push unless name in Object.keys(atlas.user_creds)#keep track of old user if not present in current config
-        @call 
-          header: 'Generate credential file'
-          handler: ->
-            @each atlas.user_creds, (options, callback) ->
-              name = options.key
-              user = options.value
-              line = "#{user.name}=#{user.group}"
-              @system.execute
-                header: 'Generate new credential'
-                cmd: "echo -n '#{user.password}' | sha256sum"
-              ,(err, status, stdout) ->
-                throw err if err
-                [match] = /[a-zA-Z0-9]*/.exec stdout.trim()
-                new_lines.push "#{line}::#{match}"
-              @then callback
-            @call ->
-              @file
-                content: new_lines.join "/n"
-                target: atlas.application.properties['atlas.authentication.method.file.filename']
-                mode: 0o740
-                eof: true
-                backup: true
-                uid: atlas.user.name
-                gid: atlas.user.name
+        @call header: 'Read Current Credential', (_, callback )  ->
+          fs.readFile @options.ssh, atlas.application.properties['atlas.authentication.method.file.filename'], 'utf8', (err, content) ->
+            return callback null, true if err and err.code is 'ENOENT'
+            return callback err if err
+            old_lines = string.lines content
+            return if old_lines.length > 0 then callback null, true else callback null, false
+        @call header: 'Merge user credentials', if: (-> @status -1), ->
+          for line in old_lines
+            name = line.split(':')[0]
+            new_lines.push unless name in Object.keys(atlas.user_creds)#keep track of old user if not present in current config
+        @call header: 'Generate credential file', ->
+          @each atlas.user_creds, (options, callback) ->
+            name = options.key
+            user = options.value
+            line = "#{user.name}=#{user.group}"
+            @system.execute
+              header: 'Generate new credential'
+              cmd: "echo -n '#{user.password}' | sha256sum"
+            ,(err, status, stdout) ->
+              throw err if err
+              [match] = /[a-zA-Z0-9]*/.exec stdout.trim()
+              new_lines.push "#{line}::#{match}"
+            @then callback
+          @call ->
+            @file
+              content: new_lines.join "/n"
+              target: atlas.application.properties['atlas.authentication.method.file.filename']
+              mode: 0o740
+              eof: true
+              backup: true
+              uid: atlas.user.name
+              gid: atlas.user.name
 
 ## Kafka Layout
 Create the kafka topics needed by Atlas, if the property `atlas.notification.create.topics`
@@ -537,209 +530,209 @@ kakfa client become an implicit dependance. Its properties can be used.
         header: "Kafka Topic Layout"
         retry: 3
         if: atlas.application.properties['atlas.notification.create.topics'] is 'false'
-        handler: ->
-          ks_ctxs = @contexts 'ryba/kafka/broker'
-          zoo_connect = atlas.application.properties['atlas.kafka.zookeeper.connect']
-          topics = atlas.application.properties['atlas.notification.topics'].split ','
-          for topic in topics
-            [ATLAS_HOOK_TOPIC,ATLAS_ENTITIES_TOPIC] = topics
-            group_id = null
-            switch topic
-              when ATLAS_HOOK_TOPIC then group_id = atlas.application.properties['atlas.kafka.hook.group.id']
-              when ATLAS_ENTITIES_TOPIC then group_id = atlas.application.properties['atlas.kafka.entities.group.id']
-            @system.execute
-              header: "Create #{topic} (Kerberos)"
-              if: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
-              cmd: mkcmd.kafka @, """
-                /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-                  --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
-                  --topic #{topic}
-                """
-              unless_exec: mkcmd.kafka @, """
-                /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
-                --zookeeper #{zoo_connect} | grep #{topic}
-                """
-            @system.execute
-              header: "Create #{topic} (Simple)"
-              unless: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
-              cmd: """
-                /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-                  --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
-                  --topic #{topic}
-                """
-              unless_exec: """
-                /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
-                --zookeeper #{zoo_connect} | grep #{topic}
-                """
+      , ->
+        ks_ctxs = @contexts 'ryba/kafka/broker'
+        zoo_connect = atlas.application.properties['atlas.kafka.zookeeper.connect']
+        topics = atlas.application.properties['atlas.notification.topics'].split ','
+        for topic in topics
+          [ATLAS_HOOK_TOPIC,ATLAS_ENTITIES_TOPIC] = topics
+          group_id = null
+          switch topic
+            when ATLAS_HOOK_TOPIC then group_id = atlas.application.properties['atlas.kafka.hook.group.id']
+            when ATLAS_ENTITIES_TOPIC then group_id = atlas.application.properties['atlas.kafka.entities.group.id']
+          @system.execute
+            header: "Create #{topic} (Kerberos)"
+            if: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
+            cmd: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+                --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
+                --topic #{topic}
+              """
+            unless_exec: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+              --zookeeper #{zoo_connect} | grep #{topic}
+              """
+          @system.execute
+            header: "Create #{topic} (Simple)"
+            unless: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
+            cmd: """
+              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+                --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
+                --topic #{topic}
+              """
+            unless_exec: """
+              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+              --zookeeper #{zoo_connect} | grep #{topic}
+              """
 
 ### Add Ranger ACL
 
-            @call header: 'KafKa Topic ACL (Ranger)', if: ranger_admin?, handler: ->
-              {install} = ranger_admin.config.ryba.ranger.kafka_plugin
-              policy_name = "atlas-metadata-server-#{@config.host}"
-              atlas_protocol = atlas.application.properties['atlas.kafka.security.protocol']
-              hive_protocol = hive_ctx.config.ryba.hive.server2.atlas.application.properties['atlas.kafka.security.protocol']
-              users = ["#{atlas.user.name}"]
-              users.push "#{hive_ctx.config.ryba.hive.user.name}" if hive_protocol in ['SASL_PLAINTEXT','SASL_SSL'] and atlas.hive_bridge_enabled
-              users.push 'ANONYMOUS' if (atlas_protocol in ['PLAINTEXT','SSL']) or (hive_protocol in ['PLAINTEXT','SSL'])
-              kafka_policy =
-                service: "#{install['REPOSITORY_NAME']}"
-                name: policy_name
-                description: "Atlas MetaData Server ACL"
-                isAuditEnabled: true
-                resources:
-                  topic:
-                    values: topics
-                    isExcludes: false
-                    isRecursive: false
-                'policyItems': [
-                    "accesses": [
-                      'type': 'publish'
-                      'isAllowed': true
-                    ,
-                      'type': 'consume'
-                      'isAllowed': true
-                    ,
-                      'type': 'configure'
-                      'isAllowed': true
-                    ,
-                      'type': 'describe'
-                      'isAllowed': true
-                    ,
-                      'type': 'create'
-                      'isAllowed': true
-                    ,
-                      'type': 'delete'
-                      'isAllowed': true
-                    ,
-                      'type': 'kafka_admin'
-                      'isAllowed': true
-                    ],
-                    'users': users
-                    'groups': []
-                    'conditions': []
-                    'delegateAdmin': true
-                  ]
-              @wait.execute
-                header: 'Wait Ranger Kafka Plugin'
-                cmd: """
-                  curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
-                  -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-                  \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
-                """
-                code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
-              @system.execute
-                header: 'Add policy request'
-                cmd: """
-                  curl --fail -H "Content-Type: application/json" -k -X POST \
-                  -d '#{JSON.stringify kafka_policy}' \
-                  -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-                  \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
-                """
-                unless_exec: """
-                  curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
-                  -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-                  \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
-                """
-              @wait
-                time: 10000
-                if: -> @status -1
+          @call header: 'KafKa Topic ACL (Ranger)', if: ranger_admin?, ->
+            {install} = ranger_admin.config.ryba.ranger.kafka_plugin
+            policy_name = "atlas-metadata-server-#{@config.host}"
+            atlas_protocol = atlas.application.properties['atlas.kafka.security.protocol']
+            hive_protocol = hive_ctx.config.ryba.hive.server2.atlas.application.properties['atlas.kafka.security.protocol']
+            users = ["#{atlas.user.name}"]
+            users.push "#{hive_ctx.config.ryba.hive.user.name}" if hive_protocol in ['SASL_PLAINTEXT','SASL_SSL'] and atlas.hive_bridge_enabled
+            users.push 'ANONYMOUS' if (atlas_protocol in ['PLAINTEXT','SSL']) or (hive_protocol in ['PLAINTEXT','SSL'])
+            kafka_policy =
+              service: "#{install['REPOSITORY_NAME']}"
+              name: policy_name
+              description: "Atlas MetaData Server ACL"
+              isAuditEnabled: true
+              resources:
+                topic:
+                  values: topics
+                  isExcludes: false
+                  isRecursive: false
+              'policyItems': [
+                  "accesses": [
+                    'type': 'publish'
+                    'isAllowed': true
+                  ,
+                    'type': 'consume'
+                    'isAllowed': true
+                  ,
+                    'type': 'configure'
+                    'isAllowed': true
+                  ,
+                    'type': 'describe'
+                    'isAllowed': true
+                  ,
+                    'type': 'create'
+                    'isAllowed': true
+                  ,
+                    'type': 'delete'
+                    'isAllowed': true
+                  ,
+                    'type': 'kafka_admin'
+                    'isAllowed': true
+                  ],
+                  'users': users
+                  'groups': []
+                  'conditions': []
+                  'delegateAdmin': true
+                ]
+            @wait.execute
+              header: 'Wait Ranger Kafka Plugin'
+              cmd: """
+                curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+                -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+                \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+              """
+              code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
+            @system.execute
+              header: 'Add policy request'
+              cmd: """
+                curl --fail -H "Content-Type: application/json" -k -X POST \
+                -d '#{JSON.stringify kafka_policy}' \
+                -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+                \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+              """
+              unless_exec: """
+                curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+                -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+                \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+              """
+            @wait
+              time: 10000
+              if: -> @status -1
 
 ### Add Simple ACL
 Need to put ACL, even when Ranger is not configured.
 Atlas and Hive users needs Authorization to topics.
 The commands a divided per user, as the hive bridge is not mandatory.
 
-            @system.execute
-              header: 'KafKa Topic ACL Atlas User (Simple)'
-              cmd: mkcmd.kafka @, """
-                /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-                  --add --allow-principal User:#{atlas.user.name}  --group #{group_id} \
-                  --operation All --topic #{topic}
-                """
-              unless_exec: mkcmd.kafka @, """
-                /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
-                  --authorizer-properties zookeeper.connect=#{zoo_connect}  \
-                  --topic #{topic} | grep 'User:#{atlas.user.name} has Allow permission for operations: Write from hosts: *'
-                """
-            @system.execute
-              header: 'KafKa Topic ACL Hive User (Simple)'
-              if: atlas.hive_bridge_enabled
-              cmd: mkcmd.kafka @, """
-                /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-                  --add --allow-principal User:#{hive_ctx.config.ryba.hive.user.name}  --group #{group_id} \
-                  --operation All --topic #{topic}
-                """
-              unless_exec: mkcmd.kafka @, """
-                /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
-                  --authorizer-properties zookeeper.connect=#{zoo_connect}  \
-                  --topic #{topic} | grep 'User:#{hive_ctx.config.ryba.hive.user.name} has Allow permission for operations: Write from hosts: *'
-                """
+          @system.execute
+            header: 'KafKa Topic ACL Atlas User (Simple)'
+            cmd: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add --allow-principal User:#{atlas.user.name}  --group #{group_id} \
+                --operation All --topic #{topic}
+              """
+            unless_exec: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+                --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+                --topic #{topic} | grep 'User:#{atlas.user.name} has Allow permission for operations: Write from hosts: *'
+              """
+          @system.execute
+            header: 'KafKa Topic ACL Hive User (Simple)'
+            if: atlas.hive_bridge_enabled
+            cmd: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add --allow-principal User:#{hive_ctx.config.ryba.hive.user.name}  --group #{group_id} \
+                --operation All --topic #{topic}
+              """
+            unless_exec: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+                --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+                --topic #{topic} | grep 'User:#{hive_ctx.config.ryba.hive.user.name} has Allow permission for operations: Write from hosts: *'
+              """
 
 ### Add Ranger Solr ACL
 
       @call
         header: 'Titan Solr ACL (Ranger)'
         if: ranger_admin? and atlas.ranger_solr_plugin
-        handler: ->
-          {install} = ranger_admin.config.ryba.ranger.solr_plugins[atlas.solr_cluster_name]
-          policy_name = "atlas-metadata-server-#{@config.host}"
-          users = ["#{atlas.user.name}"]
-          solr_policy =
-            service: "#{atlas.solr_cluster_name}"
-            name: policy_name
-            description: "Atlas MetaData Server ACL"
-            isAuditEnabled: true
-            resources:
-              collection:
-                values: [
-                  'vertex_index'
-                  'edge_index'
-                  'fulltext_index'
-                ]
-            'policyItems': [
-                "accesses": [
-                  'type': 'query'
-                  'isAllowed': true
-                ,
-                  'type': 'update'
-                  'isAllowed': true
-                ,
-                  'type': 'others'
-                  'isAllowed': true
-                ,
-                  'type': 'solr_admin'
-                  'isAllowed': true
-                ],
-                'users': users
-                'groups': []
-                'conditions': []
-                'delegateAdmin': true
+      , ->
+        {install} = ranger_admin.config.ryba.ranger.solr_plugins[atlas.solr_cluster_name]
+        policy_name = "atlas-metadata-server-#{@config.host}"
+        users = ["#{atlas.user.name}"]
+        solr_policy =
+          service: "#{atlas.solr_cluster_name}"
+          name: policy_name
+          description: "Atlas MetaData Server ACL"
+          isAuditEnabled: true
+          resources:
+            collection:
+              values: [
+                'vertex_index'
+                'edge_index'
+                'fulltext_index'
               ]
-          @wait.execute
-            header: 'Wait Ranger Solr Plugin'
-            cmd: """
-              curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
-            """
-            code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
-          @execute
-            header: 'Add policy request'
-            cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST \
-              -d '#{JSON.stringify solr_policy}' \
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
-            """
-            unless_exec: """
-              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
-            """
-          @wait
-            time: 10000
-            if: -> @status -1
+          'policyItems': [
+              "accesses": [
+                'type': 'query'
+                'isAllowed': true
+              ,
+                'type': 'update'
+                'isAllowed': true
+              ,
+                'type': 'others'
+                'isAllowed': true
+              ,
+                'type': 'solr_admin'
+                'isAllowed': true
+              ],
+              'users': users
+              'groups': []
+              'conditions': []
+              'delegateAdmin': true
+            ]
+        @wait.execute
+          header: 'Wait Ranger Solr Plugin'
+          cmd: """
+            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+          """
+          code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
+        @execute
+          header: 'Add policy request'
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST \
+            -d '#{JSON.stringify solr_policy}' \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+          """
+          unless_exec: """
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+          """
+        @wait
+          time: 10000
+          if: -> @status -1
 
 ## Oozie Share Lib 
 Populates the Oozie directory with the Atlas server JAR files.
@@ -747,43 +740,39 @@ Populates the Oozie directory with the Atlas server JAR files.
       # Server: import certificates, private and public keys to hosts with a server
       @call
         if: (@contexts('ryba/oozie/server').length > 0) and (@contexts('ryba/hive/server2').length > 0)
-        handler: ->
-          user = @contexts('ryba/oozie/server')[0].config.ryba.oozie.user.name
-          sharelib = ''
-          @system.execute
-            header: 'Discover Oozie Sharelib latest version'
-            cmd: mkcmd.hdfs @, """
-              hdfs dfs -ls  '/user/oozie/share/lib' | awk '{ print $8 }' | tail -n1
-            """
-          , (err, executed, stdout, stderr) ->
+      , ->
+        user = @contexts('ryba/oozie/server')[0].config.ryba.oozie.user.name
+        sharelib = ''
+        @system.execute
+          header: 'Discover Oozie Sharelib latest version'
+          cmd: mkcmd.hdfs @, """
+            hdfs dfs -ls  '/user/oozie/share/lib' | awk '{ print $8 }' | tail -n1
+          """
+        , (err, executed, stdout, stderr) ->
+          throw err if err
+          sharelib = stdout.trim()
+          throw Error 'No Oozie Sharelib installed' if (sharelib.length is 0)
+          return 
+        @call header: 'Upload Atlas Jars to Oozie ShareLib', (_, callback) ->
+          @fs.readdir '/usr/hdp/current/atlas-client/hook/hive/atlas-hive-plugin-impl/', (err, files) =>
             throw err if err
-            sharelib = stdout.trim()
-            throw Error 'No Oozie Sharelib installed' if (sharelib.length is 0)
-            return 
-          @call
-            header: 'Upload Atlas Jars to Oozie ShareLib'
-            handler: (_, callback) ->
-              @fs.readdir '/usr/hdp/current/atlas-client/hook/hive/atlas-hive-plugin-impl/', (err, files) =>
-                throw err if err
-                @each files, (options) =>
-                  @system.execute
-                    retry: 2
-                    cmd: mkcmd.hdfs @, """
-                      hdfs dfs -put /usr/hdp/current/atlas-client/hook/hive/atlas-hive-plugin-impl/#{options.key} \
-                      #{sharelib}/hive/
-                    """
-                    unless_exec: mkcmd.hdfs @, "hdfs dfs -stat #{sharelib}/hive/#{options.key}"
-                  @system.execute
-                    retry: 2
-                    if: -> @status -1
-                    cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user}:#{user} #{sharelib}/hive/#{options.key}"
-                @then callback
+            @each files, (options) =>
+              @system.execute
+                retry: 2
+                cmd: mkcmd.hdfs @, """
+                  hdfs dfs -put /usr/hdp/current/atlas-client/hook/hive/atlas-hive-plugin-impl/#{options.key} \
+                  #{sharelib}/hive/
+                """
+                unless_exec: mkcmd.hdfs @, "hdfs dfs -stat #{sharelib}/hive/#{options.key}"
+              @system.execute
+                retry: 2
+                if: -> @status -1
+                cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user}:#{user} #{sharelib}/hive/#{options.key}"
+            @then callback
 
-## Ranger Kafka Plugin Install
+## Ranger Atlas Plugin Install
 
-      @call
-        if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: 'ryba/ranger/plugins/atlas/install'
+      @call if: -> @contexts('ryba/ranger/admin').length > 0, 'ryba/ranger/plugins/atlas/install'
 
 ## Dependencies
 

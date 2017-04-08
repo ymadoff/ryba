@@ -38,7 +38,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-hdfs-secondarynamenode" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', handler: ->
+      @call header: 'Service', ->
         @service
           name: 'hadoop-hdfs-secondarynamenode'
         @hdp_select
@@ -61,7 +61,7 @@ script inside "/etc/init.d" and activate it on startup.
           cmd: "service hadoop-hdfs-secondarynamenode restart"
           if: -> @status -4
 
-      @call header: 'Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, ->
         @system.mkdir
           target: for dir in hdfs.site['dfs.namenode.checkpoint.dir'].split ','
             if dir.indexOf('file://') is 0

@@ -18,7 +18,7 @@ This commands checks if falcons works as required.
 
 Follow the [Hortonworks Data Pipelines example][dpe].
 
-      @call header: 'Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', ->
         cluster_path = "#{user.home}/check_falcon_#{@config.shortname}/cluster.xml"
         feed_path = "#{user.home}/check_falcon_#{@config.shortname}/feed.xml"
         process_path = "#{user.home}/check_falcon_#{@config.shortname}/process.xml"

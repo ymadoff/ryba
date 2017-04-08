@@ -97,7 +97,7 @@ is not present on HDFS.
 Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security)
 for more information.
 
-      @call header: 'WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call header: 'WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
         is_ha = nn_ctxs.length > 1
         protocol = if hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
         nameservice = if is_ha then ".#{@config.ryba.hdfs.nn.site['dfs.nameservices']}" else ''

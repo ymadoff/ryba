@@ -11,7 +11,7 @@ Start the Shinken Poller service.
 
 Start the docker executors (normal and admin)
 
-      @call header: 'Docker Executor', handler: ->
+      @call header: 'Docker Executor', ->
         @docker_start
           container: 'poller-executor'
         @docker_exec

@@ -25,12 +25,12 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @call header: 'IPTables', handler: ->
-        return unless @config.iptables.action is 'start'
-        @tools.iptables
-          rules: [
-            { chain: 'INPUT', jump: 'ACCEPT', dport: solr.single.port, protocol: 'tcp', state: 'NEW', comment: "Solr Server #{protocol}" }
-          ]
+      @tools.iptables
+        header: 'IPTables'
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: solr.single.port, protocol: 'tcp', state: 'NEW', comment: "Solr Server #{protocol}" }
+        ]
+        unless @config.iptables.action is 'start'
 
 ## Users and Groups
 
@@ -49,38 +49,40 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         gid: solr.group.name
 
 ## Packages
+
 Ryba support installing solr from apache official release or HDP Search repos.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         @call 
           if:  solr.single.source is 'HDP'
-          handler: ->
-            @service
-              name: 'lucidworks-hdpsearch'
-            @system.chown
-              if: solr.single.source is 'HDP'
-              target: '/opt/lucidworks-hdpsearch'
-              uid: solr.user.name
-              gid: solr.group.name
+        , ->
+          @service
+            name: 'lucidworks-hdpsearch'
+          @system.chown
+            if: solr.single.source is 'HDP'
+            target: '/opt/lucidworks-hdpsearch'
+            uid: solr.user.name
+            gid: solr.group.name
         @call
           if: solr.single.source isnt 'HDP'
-          handler: ->
-            @file.download
-              source: solr.single.source
-              target: tmp_archive_location
-            @system.mkdir 
-              target: solr.single.install_dir
-            @tools.extract
-              source: tmp_archive_location
-              target: solr.single.install_dir
-              preserve_owner: false
-              strip: 1
-            @system.link 
-              source: solr.single.install_dir
-              target: solr.single.latest_dir
+        , ->
+          @file.download
+            source: solr.single.source
+            target: tmp_archive_location
+          @system.mkdir 
+            target: solr.single.install_dir
+          @tools.extract
+            source: tmp_archive_location
+            target: solr.single.install_dir
+            preserve_owner: false
+            strip: 1
+          @system.link 
+            source: solr.single.install_dir
+            target: solr.single.latest_dir
 
+## Configuration
 
-      @call header: 'Configuration', handler: ->
+      @call header: 'Configuration', ->
         @system.link 
           source: "#{solr.single.latest_dir}/conf"
           target: solr.single.conf_dir
@@ -102,7 +104,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
 
 ## Layout
 
-      @call header: 'Solr Layout', timeout: -1, handler: (options) ->
+      @call header: 'Solr Layout', timeout: -1, (options) ->
         @system.mkdir
           target: solr.single.pid_dir
           uid: solr.user.name
@@ -140,7 +142,7 @@ Create HDFS solr user and its home directory
 
 ## Config
 
-      @call header: 'Configure', handler: ->
+      @call header: 'Configure', ->
         solr.single.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
         solr.single.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of solr.single.auth_opts
         writes = for k,v of solr.single.env

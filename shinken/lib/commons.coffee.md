@@ -11,7 +11,7 @@
 
 ## Commons Packages
 
-      @call header: 'Commons Packages', handler: ->
+      @call header: 'Commons Packages', ->
         @service name: 'python'
         @service name: 'python-pip'
         @service name: 'libcurl-devel'
@@ -20,7 +20,7 @@
 
 ## Layout
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: '/etc/shinken/packs'
         @system.mkdir

@@ -84,50 +84,50 @@ in communication using the particular protocol.
         header: 'JKS stores'
         retry: 0
         if: -> @config.ryba.spark.conf['spark.ssl.enabled'] is 'true'
-        handler: ->
-         tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
-         @file.download
-            source: ssl.cacert
-            target: "#{tmp_location}_cacert"
-            shy: true
-         @file.download
-            source: ssl.cert
-            target: "#{tmp_location}_cert"
-            shy: true
-         @file.download
-            source: ssl.key
-            target: "#{tmp_location}_key"
-            shy: true
-         # Client: import certificate to all hosts
-         @java.keystore_add
-            keystore: spark.conf['spark.ssl.trustStore']
-            storepass: spark.conf['spark.ssl.trustStorePassword']
-            caname: "hadoop_spark_ca"
-            cacert: "#{tmp_location}_cacert"
-         # Server: import certificates, private and public keys to hosts with a server
-         @java.keystore_add
-            keystore: spark.conf['spark.ssl.trustStore']
-            storepass: spark.conf['spark.ssl.trustStorePassword']
-            caname: "hadoop_spark_ca"
-            cacert: "#{tmp_location}_cacert"
-            key: "#{tmp_location}_key"
-            cert: "#{tmp_location}_cert"
-            keypass: spark.conf['spark.ssl.keyPassword']
-            name: @config.shortname
-         @java.keystore_add
-            keystore: spark.conf['spark.ssl.keyStore']
-            storepass: spark.conf['spark.ssl.keyStorePassword']
-            caname: "hadoop_spark_ca"
-            cacert: "#{tmp_location}_cacert"
-         @system.remove
-            target: "#{tmp_location}_cacert"
-            shy: true
-         @system.remove
-            target: "#{tmp_location}_cert"
-            shy: true
-         @system.remove
-            target: "#{tmp_location}_key"
-            shy: true
+      , ->
+       tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
+       @file.download
+          source: ssl.cacert
+          target: "#{tmp_location}_cacert"
+          shy: true
+       @file.download
+          source: ssl.cert
+          target: "#{tmp_location}_cert"
+          shy: true
+       @file.download
+          source: ssl.key
+          target: "#{tmp_location}_key"
+          shy: true
+       # Client: import certificate to all hosts
+       @java.keystore_add
+          keystore: spark.conf['spark.ssl.trustStore']
+          storepass: spark.conf['spark.ssl.trustStorePassword']
+          caname: "hadoop_spark_ca"
+          cacert: "#{tmp_location}_cacert"
+       # Server: import certificates, private and public keys to hosts with a server
+       @java.keystore_add
+          keystore: spark.conf['spark.ssl.trustStore']
+          storepass: spark.conf['spark.ssl.trustStorePassword']
+          caname: "hadoop_spark_ca"
+          cacert: "#{tmp_location}_cacert"
+          key: "#{tmp_location}_key"
+          cert: "#{tmp_location}_cert"
+          keypass: spark.conf['spark.ssl.keyPassword']
+          name: @config.shortname
+       @java.keystore_add
+          keystore: spark.conf['spark.ssl.keyStore']
+          storepass: spark.conf['spark.ssl.keyStorePassword']
+          caname: "hadoop_spark_ca"
+          cacert: "#{tmp_location}_cacert"
+       @system.remove
+          target: "#{tmp_location}_cacert"
+          shy: true
+       @system.remove
+          target: "#{tmp_location}_cert"
+          shy: true
+       @system.remove
+          target: "#{tmp_location}_key"
+          shy: true
 
 ## Spark Configuration files
 
@@ -137,7 +137,7 @@ Set [Spark configuration][spark-conf] variables
 The spark.logEvent.enabled property is set to true to enable the log to be available after the job
 has finished (logs are only available in yarn-cluster mode). 
 
-      @call header: 'Configure',  handler: ->
+      @call header: 'Configure', ->
         hdp_current_version = null
         hadoop_conf_dir = '/usr/hdp/current/hadoop-client/conf'
         @system.execute

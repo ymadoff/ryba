@@ -56,31 +56,31 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
 
       @call
         header: 'Command'
-        handler: ->
-          {kinit} = @config.krb5
-          {active_nn_host, nameservice, core_site, hdfs, nagios} = @config.ryba
-          protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-          nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
-          if nn_ctxs.length is 1
-            [nn_ctx] = nn_ctxs
-            nn_host = nn_ctx.config.host
-            nn_port = nn_ctx.config.ryba.hdfs.site['dfs.namenode.https-address'].split(':')[1]
-          else
-            nn_host = active_nn_host
-            active_nn_ctx = nn_ctxs.filter( (nn_ctx) -> nn_ctx.config.host is active_nn_host)[0]
-            shortname = active_nn_ctx.config.shortname
-            nn_port = active_nn_ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
-          cmd = "php /usr/lib64/nagios/plugins/check_hdfs_capacity.php"
-          cmd += " -h #{nn_host}"
-          cmd += " -p #{nn_port}"
-          cmd += " -w 80%"
-          cmd += " -c 90%"
-          cmd += " -k #{nagios.keytab}"
-          cmd += " -r #{nagios.principal}"
-          cmd += " -t #{kinit}"
-          cmd += " -e #{if core_site['hadoop.security.authentication'] is 'kerberos' then 'true' else 'false'}"
-          cmd += " -s #{if protocol is 'https' then 'true' else 'false'}"
-          @system.execute cmd
+      , ->
+        {kinit} = @config.krb5
+        {active_nn_host, nameservice, core_site, hdfs, nagios} = @config.ryba
+        protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+        nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
+        if nn_ctxs.length is 1
+          [nn_ctx] = nn_ctxs
+          nn_host = nn_ctx.config.host
+          nn_port = nn_ctx.config.ryba.hdfs.site['dfs.namenode.https-address'].split(':')[1]
+        else
+          nn_host = active_nn_host
+          active_nn_ctx = nn_ctxs.filter( (nn_ctx) -> nn_ctx.config.host is active_nn_host)[0]
+          shortname = active_nn_ctx.config.shortname
+          nn_port = active_nn_ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+        cmd = "php /usr/lib64/nagios/plugins/check_hdfs_capacity.php"
+        cmd += " -h #{nn_host}"
+        cmd += " -p #{nn_port}"
+        cmd += " -w 80%"
+        cmd += " -c 90%"
+        cmd += " -k #{nagios.keytab}"
+        cmd += " -r #{nagios.principal}"
+        cmd += " -t #{kinit}"
+        cmd += " -e #{if core_site['hadoop.security.authentication'] is 'kerberos' then 'true' else 'false'}"
+        cmd += " -s #{if protocol is 'https' then 'true' else 'false'}"
+        @system.execute cmd
 
 ## Dependencies
 

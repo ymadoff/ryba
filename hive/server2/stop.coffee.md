@@ -21,7 +21,7 @@ su -l hive -c "kill `cat /var/run/hive-server2/hive-server2.pid`"
         header: 'Stop Clean Logs'
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
-        handler: ->
-          @system.execute
-            cmd: "rm #{hive.server2.log_dir}/*"
-            code_skipped: 1
+      , ->
+        @system.execute
+          cmd: "rm #{hive.server2.log_dir}/*"
+          code_skipped: 1

@@ -29,9 +29,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Modules
 
-      @call header: 'Modules', handler: ->
+      @call header: 'Modules', ->
         installmod = (name, mod) =>
-          @call unless_exec: "shinken inventory | grep #{name}", handler: ->
+          @call unless_exec: "shinken inventory | grep #{name}", ->
             @file.download
               target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
@@ -48,4 +48,3 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               shy: true
           for subname, submod of mod.modules then installmod subname, submod
         for name, mod of receiver.modules then installmod name, mod
-

@@ -11,21 +11,24 @@ su -l hbase -c "/usr/hdp/current/hbase-master/bin/hbase-daemon.sh --config /etc/
 
 The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-master.pid".
 
+## Service
+
     module.exports = header: 'HBase Master Stop', label_true: 'STOPPED', handler: ->
       {hbase} = @config.ryba
-      @call header: 'Service',  handler: ->
-        @service.stop 'hbase-master'
+      @service.stop
+        header: 'Service'
+        name: 'hbase-master'
 
-## Stop Clean Logs
+## Clean Logs
 
       @call  
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
-        handler: ->        
-          @system.execute
-            cmd: "rm #{hbase.master.log_dir}/*-master-*"
-            code_skipped: 1
-          @system.execute
-            cmd: "rm #{hbase.master.log_dir}/gc.log-*"
-            code_skipped: 1
+      , ->
+        @system.execute
+          cmd: "rm #{hbase.master.log_dir}/*-master-*"
+          code_skipped: 1
+        @system.execute
+          cmd: "rm #{hbase.master.log_dir}/gc.log-*"
+          code_skipped: 1

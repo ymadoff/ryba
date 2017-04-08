@@ -48,7 +48,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-yarn-nodemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Packages', handler: (options) ->
+      @call header: 'Packages', (options) ->
         @service
           name: 'hadoop-yarn-nodemanager'
         @hdp_select
@@ -74,34 +74,34 @@ inside "/etc/init.d" and activate it on startup.
         @call
           if: yarn.site['spark.shuffle.service.enabled'] is 'true'
           header: 'Spark Worker Shuffle Package'
-          handler: ->
-            @service
-              name: 'spark_*-yarn-shuffle'
-            @system.execute
-              cmd: """
-                file_lib=`ls /usr/hdp/current/spark-client/lib/* | grep yarn-shuffle.jar`
-                file_aux=`ls /usr/hdp/current/spark-client/aux/* | grep yarn-shuffle.jar`
-                file=''
-                if [ -f "$file_lib" ] ; 
-                  then file=$file_lib ; 
-                else if [ -f "$file_aux" ] ; 
-                  then file=$file_aux ; 
-                fi;
-                name=`basename $file`
-                target="/usr/hdp/current/hadoop-yarn-nodemanager/lib/${name}"
-                source=`readlink $target`
-                if [ "$source" == "$file" ] ;
-                  then exit 3 ;
-                  else
-                    rm -f $target;
-                    ln -s $file $target;
-                    exit 0;
-                    fi;
-                fi;
-                """
-              code_skipped: 3
+        , ->
+          @service
+            name: 'spark_*-yarn-shuffle'
+          @system.execute
+            cmd: """
+              file_lib=`ls /usr/hdp/current/spark-client/lib/* | grep yarn-shuffle.jar`
+              file_aux=`ls /usr/hdp/current/spark-client/aux/* | grep yarn-shuffle.jar`
+              file=''
+              if [ -f "$file_lib" ] ; 
+                then file=$file_lib ; 
+              else if [ -f "$file_aux" ] ; 
+                then file=$file_aux ; 
+              fi;
+              name=`basename $file`
+              target="/usr/hdp/current/hadoop-yarn-nodemanager/lib/${name}"
+              source=`readlink $target`
+              if [ "$source" == "$file" ] ;
+                then exit 3 ;
+                else
+                  rm -f $target;
+                  ln -s $file $target;
+                  exit 0;
+                  fi;
+              fi;
+              """
+            code_skipped: 3
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: "#{yarn.nm.conf_dir}"
         @system.mkdir
@@ -146,10 +146,10 @@ SSH connection to the node to gather the memory and CPU informations.
       @call
         header: 'Capacity Planning'
         unless: yarn.site['yarn.nodemanager.resource.memory-mb'] and yarn.site['yarn.nodemanager.resource.cpu-vcores']
-        handler: ->
-          # diskNumber = yarn.site['yarn.nodemanager.local-dirs'].length
-          yarn.site['yarn.nodemanager.resource.memory-mb'] ?= Math.round @meminfo.MemTotal / 1024 / 1024 * .8
-          yarn.site['yarn.nodemanager.resource.cpu-vcores'] ?= @cpuinfo.length
+      , ->
+        # diskNumber = yarn.site['yarn.nodemanager.local-dirs'].length
+        yarn.site['yarn.nodemanager.resource.memory-mb'] ?= Math.round @meminfo.MemTotal / 1024 / 1024 * .8
+        yarn.site['yarn.nodemanager.resource.cpu-vcores'] ?= @cpuinfo.length
 
 ## Configure
 
@@ -177,7 +177,7 @@ SSH connection to the node to gather the memory and CPU informations.
         target: "#{yarn.nm.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local: true
-      @call header: 'YARN Env', handler: ->
+      @call header: 'YARN Env', ->
         yarn.nm.java_opts += " -D#{k}=#{v}" for k, v of yarn.nm.opts 
         @file.render
           header: 'YARN Env'
@@ -217,7 +217,7 @@ The parent directory must be owned by root or it will print: "Caused by:
 ExitCodeException exitCode=24: File File /etc/hadoop/conf must be owned by root,
 but is owned by 2401"
 
-      @call header: 'Container Executor', handler: ->
+      @call header: 'Container Executor', ->
         ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
         ce = '/usr/hdp/current/hadoop-yarn-nodemanager/bin/container-executor'
         @system.chown
@@ -241,7 +241,7 @@ but is owned by 2401"
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, ->
         ssl_client['ssl.client.truststore.location'] = "#{yarn.nm.conf_dir}/truststore"
         ssl_server['ssl.server.keystore.location'] = "#{yarn.nm.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{yarn.nm.conf_dir}/truststore"
@@ -300,36 +300,36 @@ on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (ma
       @call
         header: 'Cgroups Layout YARN Mounting'
         if: -> yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
-        handler: ->
-          @service
-            name: 'libcgroup'
-          # .execute
-          #   cmd: 'mount -t cgroup -o cpu cpu /cgroup'
-          #   code_skipped: 32
-          @system.mkdir
-            target: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
-            mode: 0o1777
-            parent: true
+      , ->
+        @service
+          name: 'libcgroup'
+        # .execute
+        #   cmd: 'mount -t cgroup -o cpu cpu /cgroup'
+        #   code_skipped: 32
+        @system.mkdir
+          target: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
+          mode: 0o1777
+          parent: true
       @call
         header: 'Cgroups Layout Configuration'
         unless: -> yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
-        handler: (options) ->
-          hierarchy = yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= "/#{ryba.yarn.user.name}"
-          @system.cgroups
-            target: '/etc/cgconfig.d/yarn.cgconfig.conf'
-            merge: false
-            groups: yarn.cgroup
-          @service.restart
-            name: 'cgconfig'
-            if: -> @status -1
-          @call (options) ->
-            yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] = options.store['nikita:cgroups:mount']
-            @hconfigure
-              header: 'YARN Site'
-              target: "#{yarn.nm.conf_dir}/yarn-site.xml"
-              properties: yarn.site
-              merge: true
-              backup: true
+      , (options) ->
+        hierarchy = yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= "/#{ryba.yarn.user.name}"
+        @system.cgroups
+          target: '/etc/cgconfig.d/yarn.cgconfig.conf'
+          merge: false
+          groups: yarn.cgroup
+        @service.restart
+          name: 'cgconfig'
+          if: -> @status -1
+        @call (options) ->
+          yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] = options.store['nikita:cgroups:mount']
+          @hconfigure
+            header: 'YARN Site'
+            target: "#{yarn.nm.conf_dir}/yarn-site.xml"
+            properties: yarn.site
+            merge: true
+            backup: true
 
 ## Ulimit
 
@@ -377,9 +377,9 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
 
       @call
         if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: ->
-          @call -> @config.ryba.yarn_plugin_is_master = false
-          @call 'ryba/ranger/plugins/yarn/install'
+      , ->
+        @call -> @config.ryba.yarn_plugin_is_master = false
+        @call 'ryba/ranger/plugins/yarn/install'
 
 ## Dependencies
 

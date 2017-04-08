@@ -62,7 +62,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: spark.history.pid_dir
           uid: spark.user.name

@@ -35,7 +35,7 @@
 
 ## Check HDFS Workflow
 
-      @call header: 'Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call header: 'Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
@@ -97,7 +97,7 @@
 
 ## Check MapReduce Workflow
 
-      @call header: 'Check MapReduce', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call header: 'Check MapReduce', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
@@ -201,7 +201,7 @@
 
 ## Check Pig Workflow
 
-      @call header: 'Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call header: 'Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
@@ -334,7 +334,7 @@
 #   <end name="end"/>
 # </workflow-app>
 
-      @call skip: true, header: 'Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call skip: true, header: 'Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
@@ -448,52 +448,52 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
       @call
         header: 'Check Policies (Ranger)'
         if: ranger_admin?
-        handler: ->
-          {install} = ranger_admin.config.ryba.ranger.hive_plugin
-          dbs = []
-          for hs2_ctx in hs2_ctxs
-            dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
+      , ->
+        {install} = ranger_admin.config.ryba.ranger.hive_plugin
+        dbs = []
+        for hs2_ctx in hs2_ctxs
           dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
-          # use v1 policy api (old style) from ranger to have an example
-          hive_policy =
-            "policyName": "Ranger-Ryba-HIVE-Policy-#{@config.host}"
-            "repositoryName": "#{install['REPOSITORY_NAME']}"
-            "repositoryType":"hive"
-            "description": 'Ryba check hive policy'
-            "databases": "#{dbs.join ','}"
-            'tables': '*'
-            "columns": "*"
-            "udfs": ""
-            'tableType': 'Inclusion'
-            'columnType': 'Inclusion'
-            'isEnabled': true
-            'isAuditEnabled': true
-            "permMapList": [{
-              "userList": ["#{user.name}"],
-              "permList": ["all"]
-            }]
-          @wait.execute
-            cmd: """
-              curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
-            """
-            code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
-          @system.execute
-            cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST \
-              -d '#{JSON.stringify hive_policy}' \
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/api/policy\"
-            """
-            unless_exec: """
-              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
-              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy-#{@config.host}\"
-            """
-            code_skippe: 22
+        dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
+        # use v1 policy api (old style) from ranger to have an example
+        hive_policy =
+          "policyName": "Ranger-Ryba-HIVE-Policy-#{@config.host}"
+          "repositoryName": "#{install['REPOSITORY_NAME']}"
+          "repositoryType":"hive"
+          "description": 'Ryba check hive policy'
+          "databases": "#{dbs.join ','}"
+          'tables': '*'
+          "columns": "*"
+          "udfs": ""
+          'tableType': 'Inclusion'
+          'columnType': 'Inclusion'
+          'isEnabled': true
+          'isAuditEnabled': true
+          "permMapList": [{
+            "userList": ["#{user.name}"],
+            "permList": ["all"]
+          }]
+        @wait.execute
+          cmd: """
+            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+          """
+          code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
+        @system.execute
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST \
+            -d '#{JSON.stringify hive_policy}' \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/api/policy\"
+          """
+          unless_exec: """
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy-#{@config.host}\"
+          """
+          code_skippe: 22
 
-      @call header: 'Check Hive2 Workflow (No ZK)', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call header: 'Check Hive2 Workflow (No ZK)', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
@@ -624,7 +624,7 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
             unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d #{workflow_dir}/result"
 ## Check Spark Workflow
 
-      @call header: 'Check Spark', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call header: 'Check Spark', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]

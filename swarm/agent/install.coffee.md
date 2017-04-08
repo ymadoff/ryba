@@ -1,7 +1,7 @@
 
 # Install Swarm Manager Node
     
-    module.exports = header: 'Swarm Manager Install',  handler: ->
+    module.exports = header: 'Swarm Manager Install', handler: ->
       {swarm} = @config.ryba
       tmp_dir  = swarm.tmp_dir ?= "/var/tmp/ryba/swarm"
       swarm_ctxs = @contexts 'ryba/swarm/manager'
@@ -28,7 +28,7 @@
 Ryba install official docker/swarm image.
 Try to pull the image first, or upload from cache if not pull possible.
 
-      @call header: 'Download Container', handler: ->
+      @call header: 'Download Container', ->
         exists = false
         @docker.checksum
           image: swarm.image
@@ -56,7 +56,7 @@ Try to pull the image first, or upload from cache if not pull possible.
 ## Docker Engine starting options
 Same logic that `masson/commons/docker`, but add the swarm starting options.
 
-      @call header: 'Daemon Option', handler: (options) ->
+      @call header: 'Daemon Option', (options) ->
         other_opts = @config.docker.other_opts
         other_args = swarm.other_args
         opts = []

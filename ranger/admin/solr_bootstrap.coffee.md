@@ -7,7 +7,6 @@
       [zk_connect,zk_node] = cluster_config.zk_urls.split '/'
       mode = if ranger.admin.solr_type is 'single' then 'standalone' else ranger.admin.solr_type
       tmp_dir = if mode is 'standalone' then "#{solr.user.home}" else '/tmp'
-      return unless ['standalone','cloud','cloud_docker'].indexOf ranger?.admin?.solr_type > -1
       
 ## Dependencies
 
@@ -39,40 +38,40 @@ solr apache version.
       @call  
         if: -> mode is 'standalone'
         header: 'Ranger Collection Solr Standalone'
-        handler: ->
-          @file.download
-            source: "#{__dirname}/../resources/solr/admin-extra.html"
-            target: "#{tmp_dir}/ranger_audits/admin-extra.html"
-          @file.download
-            source: "#{__dirname}/../resources/solr/admin-extra.menu-bottom.html"
-            target: "#{tmp_dir}/ranger_audits/admin-extra.menu-bottom.html"
-          @file.download
-            source: "#{__dirname}/../resources/solr/admin-extra.menu-top.html"
-            target: "#{tmp_dir}/ranger_audits/admin-extra.menu-top.html"
-          @file.download
-            source: "#{__dirname}/../resources/solr/elevate.xml"
-            target: "#{tmp_dir}/ranger_audits/conf/elevate.xml" #remove conf if solr/cloud
-          @file.download
-            source: "#{__dirname}/../resources/solr/managed-schema"
-            target: "#{tmp_dir}/ranger_audits/managed-schema"
-          @file.render
-            source: "#{__dirname}/../resources/solr/solrconfig.xml"
-            target: "#{tmp_dir}/ranger_audits/solrconfig.xml"
-            local: true
-            context:
-              retention_period: ranger.admin.retention
+      , ->
+        @file.download
+          source: "#{__dirname}/../resources/solr/admin-extra.html"
+          target: "#{tmp_dir}/ranger_audits/admin-extra.html"
+        @file.download
+          source: "#{__dirname}/../resources/solr/admin-extra.menu-bottom.html"
+          target: "#{tmp_dir}/ranger_audits/admin-extra.menu-bottom.html"
+        @file.download
+          source: "#{__dirname}/../resources/solr/admin-extra.menu-top.html"
+          target: "#{tmp_dir}/ranger_audits/admin-extra.menu-top.html"
+        @file.download
+          source: "#{__dirname}/../resources/solr/elevate.xml"
+          target: "#{tmp_dir}/ranger_audits/conf/elevate.xml" #remove conf if solr/cloud
+        @file.download
+          source: "#{__dirname}/../resources/solr/managed-schema"
+          target: "#{tmp_dir}/ranger_audits/managed-schema"
+        @file.render
+          source: "#{__dirname}/../resources/solr/solrconfig.xml"
+          target: "#{tmp_dir}/ranger_audits/solrconfig.xml"
+          local: true
+          context:
+            retention_period: ranger.admin.retention
       @call
-        if: -> (mode is 'cloud_docker') or (mode is 'cloud')
-        handler: ->
-          # @file.download
-          #   source: "#{__dirname}/../resources/solr/admin-extra.html"
-          #   target: "#{tmp_dir}/ranger_audits/conf/admin-extra.html"
-          # @file.download
-          #   source: "#{__dirname}/../resources/solr/admin-extra.menu-bottom.html"
-          #   target: "#{tmp_dir}/ranger_audits/conf/admin-extra.menu-bottom.html"
-          # @file.download
-          #   source: "#{__dirname}/../resources/solr/admin-extra.menu-top.html"
-          #   target: "#{tmp_dir}/ranger_audits/conf/admin-extra.menu-top.html"
+        if: -> mode in ['cloud_docker', 'cloud']
+      , ->
+        # @file.download
+        #   source: "#{__dirname}/../resources/solr/admin-extra.html"
+        #   target: "#{tmp_dir}/ranger_audits/conf/admin-extra.html"
+        # @file.download
+        #   source: "#{__dirname}/../resources/solr/admin-extra.menu-bottom.html"
+        #   target: "#{tmp_dir}/ranger_audits/conf/admin-extra.menu-bottom.html"
+        # @file.download
+        #   source: "#{__dirname}/../resources/solr/admin-extra.menu-top.html"
+        #   target: "#{tmp_dir}/ranger_audits/conf/admin-extra.menu-top.html"
         @file.download
           source: "#{__dirname}/../resources/solr/managed-schema"
           target: "#{tmp_dir}/ranger_audits/conf/managed-schema"
@@ -80,8 +79,7 @@ solr apache version.
           source: "#{__dirname}/../resources/solr/solrconfig.xml"
           target: "#{tmp_dir}/ranger_audits/conf/solrconfig.xml"
           local: true
-          context:
-            retention_period: ranger.admin.retention
+          context: retention_period: ranger.admin.retention
       @file.download
         if: -> (mode is 'cloud_docker')
         source: "#{__dirname}/../resources/solr/elevate.xml"
@@ -133,54 +131,50 @@ Note: Compatible with every version of docker available at this time.
         if: ranger.admin.solr_type is 'cloud_docker'
         header:'Create Ranger Collection (cloud_docker)'
         retry: 2 #needed whensolr node are slow to start
-        handler: ->
-          @connection.wait
-            host: cluster_config['master']
-            port: cluster_config['port']
-          @docker.exec
-            container: cluster_config.master_container_runtime_name
-            cmd: "/usr/solr-cloud/current/bin/solr healthcheck -c ranger_audits"
-            code_skipped: [1,126]
-          @docker.exec
-            unless: -> @status -1
-            container: cluster_config.master_container_runtime_name
-            cmd: """
-              /usr/solr-cloud/current/bin/solr create_collection -c ranger_audits \
-              -shards #{@contexts('ryba/solr/cloud_docker').length}  \
-              -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
-              -d /ranger_audits
-            """
-          @call
-            header: 'Create Users and Permissions'
-            if: cluster_config.security.authentication['class'] is 'solr.BasicAuthPlugin'
-            handler: ->
-              @call
-                header: 'Create Users'
-                handler: ->
-                  url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authentication"
-                  cmd = 'curl --fail --insecure'
-                  cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
-                  for user in ranger.admin.solr_users
-                    @system.execute
-                      cmd: """
-                        #{cmd} \
-                        #{url} -H 'Content-type:application/json' \
-                        -d '#{JSON.stringify('set-user':"#{user.name}":"#{user.secret}")}'
-                      """
-              @call 
-                header: 'Set ACL Users'
-                handler: ->
-                  url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authorization"
-                  cmd = 'curl --fail --insecure'
-                  cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
-                  for user in cluster_config.ranger.solr_users
-                    new_role = "#{user.name}": ['read','update','admin']
-                    @system.execute
-                      cmd: """
-                        #{cmd} \
-                        #{url} -H 'Content-type:application/json' \
-                        -d '#{JSON.stringify('set-user-role': new_role )}'
-                      """
+      , ->
+        @connection.wait
+          host: cluster_config['master']
+          port: cluster_config['port']
+        @docker.exec
+          container: cluster_config.master_container_runtime_name
+          cmd: "/usr/solr-cloud/current/bin/solr healthcheck -c ranger_audits"
+          code_skipped: [1,126]
+        @docker.exec
+          unless: -> @status -1
+          container: cluster_config.master_container_runtime_name
+          cmd: """
+            /usr/solr-cloud/current/bin/solr create_collection -c ranger_audits \
+            -shards #{@contexts('ryba/solr/cloud_docker').length}  \
+            -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
+            -d /ranger_audits
+          """
+        @call
+          header: 'Create Users and Permissions'
+          if: cluster_config.security.authentication['class'] is 'solr.BasicAuthPlugin'
+        , ->
+          @call header: 'Create Users', ->
+            url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authentication"
+            cmd = 'curl --fail --insecure'
+            cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
+            for user in ranger.admin.solr_users
+              @system.execute
+                cmd: """
+                  #{cmd} \
+                  #{url} -H 'Content-type:application/json' \
+                  -d '#{JSON.stringify('set-user':"#{user.name}":"#{user.secret}")}'
+                """
+          @call header: 'Set ACL Users', ->
+            url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authorization"
+            cmd = 'curl --fail --insecure'
+            cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
+            for user in cluster_config.ranger.solr_users
+              new_role = "#{user.name}": ['read','update','admin']
+              @system.execute
+                cmd: """
+                  #{cmd} \
+                  #{url} -H 'Content-type:application/json' \
+                  -d '#{JSON.stringify('set-user-role': new_role )}'
+                """
 
 ## Zookeeper Znode ACL
 

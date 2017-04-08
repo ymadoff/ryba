@@ -61,7 +61,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Layout log Hue
 
-      @call header: 'Layout', timeout: -1, handler:  ->
+      @call header: 'Layout', timeout: -1,  ->
         @system.mkdir
           target: hue_docker.log_dir
           uid: hue_docker.user.name
@@ -83,7 +83,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
-      @call header: 'Hive Site', handler: ->
+      @call header: 'Hive Site', ->
         [hive_ctx] = @contexts 'ryba/hive/server2'
         if hive_ctx?
           {hive} = hive_ctx.config.ryba
@@ -106,7 +106,7 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
 Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 
-      @call header: 'HBase Site', handler: ->
+      @call header: 'HBase Site', ->
         [hbase_ctx] = @contexts 'ryba/hbase/thrift'
         if hbase_ctx?
           {hbase} = hbase_ctx.config.ryba
@@ -152,7 +152,7 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is
 the default database while mysql is the recommanded choice.
 
-      @call header: 'Hue Docker Database', handler: ->
+      @call header: 'Hue Docker Database', ->
         switch hue_docker.ini.desktop.database.engine
           when 'mysql'
             {engine, host, user, password, name} = hue_docker.ini.desktop.database
@@ -214,7 +214,7 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any
 changes.
 
-      @call header: 'SSL Server', handler: ->
+      @call header: 'SSL Server', ->
         return unless hue_docker.ssl
         @file.download
           source: ssl.cert
@@ -248,7 +248,7 @@ changes.
 Install Hue server docker container.
 It uses local checksum if provided to upload or not.
 
-      @call header: 'Upload Container', timeout: -1, retry:3, handler: (options)  ->
+      @call header: 'Upload Container', timeout: -1, retry:3, (options)  ->
         tmp = hue_docker.image_dir
         md5 = hue_docker.md5 ?= true
         @docker.checksum

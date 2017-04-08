@@ -14,7 +14,7 @@
 Creates a configuration file. Always load this file in Gremlin REPL !
 Check the configuration file (current.properties).
 
-      @call header: 'Check Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Check Shell', timeout: -1, label_true: 'CHECKED', ->
         config = {}
         config[k] = v for k, v of titan.config
         config['storage.hbase.table'] = 'titan-test'

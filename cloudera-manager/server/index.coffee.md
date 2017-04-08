@@ -26,7 +26,7 @@ or the [cloudera cdh repo][Cloudera-cdh-repo].
             ssh: null
             distrib: @config.cloudera_manager.distrib
             services: @config.cloudera_manager.distrib
-            handler: 'ryba/cloudera-manager/server/prepare'
+          , 'ryba/cloudera-manager/server/prepare'
         'start':
           'ryba/cloudera-manager/server/start'
         'stop':

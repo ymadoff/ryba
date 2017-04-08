@@ -111,7 +111,7 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is 
 the default database while mysql is the recommanded choice.
 
-      @call header: 'Database', handler: ->
+      @call header: 'Database', ->
         {hue, db_admin} = @config.ryba
         switch hue.ini.desktop.database.engine
           when 'mysql'
@@ -152,7 +152,7 @@ the "security_enabled" property set to "true".
 
 ## SSL Client
 
-      @call header: 'SSL Client', handler: ->
+      @call header: 'SSL Client', ->
         hue.ca_bundle = '' unless hue.ssl.client_ca
         @file
           target: "#{hue.ca_bundle}"
@@ -174,7 +174,7 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any 
 changes.
 
-      @call header: 'SSL Server', handler: ->
+      @call header: 'SSL Server', ->
         @file.download
           source: hue.ssl.certificate
           target: "#{hue.conf_dir}/cert.pem"
@@ -204,7 +204,7 @@ changes.
 
 In the current version "2.5.1", the HTML of the banner is escaped.
 
-      @call header: 'Fix Banner', handler: ->
+      @call header: 'Fix Banner', ->
         @file
           target: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
           match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'

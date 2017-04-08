@@ -13,7 +13,7 @@
 
 # Packages
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         @system.execute
           header: 'Setup Execution'
           shy:true
@@ -48,29 +48,29 @@ we execute this task using the rest api.
       @call 
         if: @contexts('ryba/kafka/broker')[0].config.host is @config.host 
         header: 'Ranger Kafka Repository'
-        handler:  ->
-          @system.execute
-            unless_exec: """
-              curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
-              -u admin:#{password} \"#{ranger.kafka_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}\"
-            """
-            cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.kafka_plugin.service_repo}' \
-              -u admin:#{password} \"#{ranger.kafka_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
-            """
-          @krb5.addprinc krb5,
-            if: ranger.kafka_plugin.principal
-            header: 'Ranger Kafka Principal'
-            principal: ranger.kafka_plugin.principal
-            randkey: true
-            password: ranger.kafka_plugin.password
-          @system.execute
-            header: 'Ranger Audit HDFS Layout'
-            cmd: mkcmd.hdfs @, """
-              hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
-              hdfs dfs -chown -R #{kafka.user.name}:#{kafka.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
-              hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
-            """
+      , ->
+        @system.execute
+          unless_exec: """
+            curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
+            -u admin:#{password} \"#{ranger.kafka_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}\"
+          """
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.kafka_plugin.service_repo}' \
+            -u admin:#{password} \"#{ranger.kafka_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
+          """
+        @krb5.addprinc krb5,
+          if: ranger.kafka_plugin.principal
+          header: 'Ranger Kafka Principal'
+          principal: ranger.kafka_plugin.principal
+          randkey: true
+          password: ranger.kafka_plugin.password
+        @system.execute
+          header: 'Ranger Audit HDFS Layout'
+          cmd: mkcmd.hdfs @, """
+            hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
+            hdfs dfs -chown -R #{kafka.user.name}:#{kafka.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
+            hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
+          """
 
 # Plugin Scripts 
 

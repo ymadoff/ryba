@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-      @call header: 'Packages', timeout: -1, handler: (options) ->
+      @call header: 'Packages', timeout: -1, (options) ->
         @service name: 'knox'
         @hdp_select name: 'knox-server'
         # Fix autogen of master secret
@@ -88,7 +88,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 We do not edit knox-env.sh because environnement variables are directly set
 in the gateway.sh service script.
 
-      @call header: 'Env', handler: ->
+      @call header: 'Env', ->
         knox.env.app_log_opts += " -D#{k}=#{v}" for k,v of knox.log4jopts
         @file
           header: 'Env'
@@ -101,7 +101,7 @@ in the gateway.sh service script.
 
 ## Kerberos
 
-      @call header: 'Kerberos', handler: ->
+      @call header: 'Kerberos', ->
         @krb5.addprinc krb5,
           principal: knox.krb5_user.principal
           randkey: true
@@ -125,7 +125,7 @@ in the gateway.sh service script.
 
 ## Topologies
 
-      @call header: 'Topologies', handler: ->
+      @call header: 'Topologies', ->
         for nameservice, topology of knox.topologies
           doc = builder.create 'topology', version: '1.0', encoding: 'UTF-8'
           gateway = doc.ele 'gateway' if topology.providers?
@@ -169,27 +169,25 @@ in the gateway.sh service script.
       @call
         header: 'Create Keystore'
         unless_exists: '/usr/hdp/current/knox-server/data/security/master'
-        handler: (options, callback) ->
-          @options.ssh.shell (err, stream) =>
-            stream.write "su -l #{knox.user.name} -c '/usr/hdp/current/knox-server/bin/knoxcli.sh create-master'\n"
-            stream.on 'data', (data, extended) ->
-              if /Enter master secret/.test data then stream.write "#{knox.ssl.storepass}\n"
-              if /Master secret is already present on disk/.test data then callback null, false
-              else if /Master secret has been persisted to disk/.test data then callback null, true
-            stream.on 'exit', -> callback Error 'Exit before end'
+      , (options, callback) ->
+        @options.ssh.shell (err, stream) =>
+          stream.write "su -l #{knox.user.name} -c '/usr/hdp/current/knox-server/bin/knoxcli.sh create-master'\n"
+          stream.on 'data', (data, extended) ->
+            if /Enter master secret/.test data then stream.write "#{knox.ssl.storepass}\n"
+            if /Master secret is already present on disk/.test data then callback null, false
+            else if /Master secret has been persisted to disk/.test data then callback null, true
+          stream.on 'exit', -> callback Error 'Exit before end'
 
-      @call
-        header: 'Store Password'
-        handler: ->
-          # Create alias to store password used in topology
-          for alias,password of knox.realm_passwords then do (alias,password) => 
-            nameservice=alias.split("-")[0]
-            @system.execute
-              cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias #{alias} --cluster #{nameservice} --value #{password}"
+      @call header: 'Store Password', ->
+        # Create alias to store password used in topology
+        for alias,password of knox.realm_passwords then do (alias,password) => 
+          nameservice=alias.split("-")[0]
+          @system.execute
+            cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias #{alias} --cluster #{nameservice} --value #{password}"
 
 ## SSL
 
-      @call header: 'SSL Server', handler: ->
+      @call header: 'SSL Server', ->
         tmp_location = "/var/tmp/ryba/knox_ssl"
         @file.download
           source: knox.ssl.cacert
@@ -255,7 +253,7 @@ client to connect to openldap.
 
       @call
         if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: 'ryba/ranger/plugins/knox/install'
+      , 'ryba/ranger/plugins/knox/install'
 
 ## Dependencies
 

@@ -20,7 +20,7 @@ Validate Spark installation with Pi-example in yarn-cluster mode.
 The yarn cluster mode makes the driver part of the spark submitted program to run inside yarn.
 In this mode the driver is the yarn application master (running inside yarn).
 
-      @call header: 'Check Yarn Cluster', timeout: -1, label_true: 'CHECKED', handler:->
+      @call header: 'Check Yarn Cluster', timeout: -1, label_true: 'CHECKED', ->
         file_check = "check-#{@config.shortname}-spark-cluster"
         applicationId = null
         @system.execute
@@ -69,7 +69,7 @@ In this mode the driver is the spark master running outside yarn.
 For current version 1.4.1 of spark (HDP-2.3.2.0), when running in yarn-client mode, the spark
 driver does not copy metrics.properties file as it should. This is fixed in version 1.5.2. at least.
 
-      @call header: 'Check Yarn Client', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Check Yarn Client', timeout: -1, label_true: 'CHECKED', ->
         file_check = "check-#{@config.shortname}-spark-client"
         applicationId = null
         @system.execute
@@ -101,7 +101,7 @@ driver does not copy metrics.properties file as it should. This is fixed in vers
 Test spark-shell, in yarn-client mode. Spark-shell supports onyl local[*] mode and
 yarn-client mode, not yarn-cluster.
 
-      @call header: 'Check Shell (No SQL)', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Check Shell (No SQL)', timeout: -1, label_true: 'CHECKED', ->
         file_check = "check-#{@config.shortname}-spark-shell-scala"
         directory = "check-#{@config.shortname}-spark_shell_scala"
         db = "check_#{@config.shortname}_spark_shell_scala"
@@ -125,7 +125,7 @@ yarn-client mode, not yarn-cluster.
 Executes hive queries to check communication with Hive.
 Creating database from SparkSql is not supported for now.
 
-      @call header: 'Check Shell (Hive SQL)', timeout: -1,label_true: 'CHECKED', handler: ->
+      @call header: 'Check Shell (Hive SQL)', timeout: -1,label_true: 'CHECKED', ->
         return unless @contexts('ryba/hive/server2').length
         dir_check = "check-#{@config.shortname}-spark-shell-scala-sql"
         directory = "check-#{@config.shortname}-spark_shell_scala-sql"
@@ -177,7 +177,7 @@ Creating database from SparkSql is not supported for now.
 
 ## Spark Shell Python
 
-      @call header: 'Check Shell Python', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Check Shell Python', timeout: -1, label_true: 'CHECKED', ->
         file_check = "check-#{@config.shortname}-spark-shell-python"
         directory = "check-#{@config.shortname}-spark_shell_python"
         db = "check_#{@config.shortname}_spark_shell_python"

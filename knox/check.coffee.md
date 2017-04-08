@@ -18,7 +18,7 @@ The external client displays: {"Path":"/user/gopher"}
 
 curl -fiku hdfs:hdfs123 "https://front1.ryba:8443/gateway/torval/webhdfs/v1/?op=GETHOMEDIRECTORY"
 
-      @call header: 'WebHDFS', handler: ->
+      @call header: 'WebHDFS', ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.webhdfs?)
         for tp in topologies
           @system.execute
@@ -33,7 +33,7 @@ The host displays: {"supportedVersions":["v1"],"version":"v1"}
 At an external client, enter `curl -ku user:password https://$gateway-host:$gateway_port/$gateway/$cluster_name/webhcat/v1/version`.
 The external client displays: {"supportedVersions":["v1"],"version":"v1"}
 
-      @call header: 'WebHCat', handler: ->
+      @call header: 'WebHCat', ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.webhcat)
         for tp in topologies
           @system.execute
@@ -50,7 +50,7 @@ At an external client, enter `curl -ku user:password http://$gateway-host:$gatew
 The external client displays:
 rest 0.0.2 JVM: Oracle Corporation 1.7.0_51-24.45-b08 OS: Linux 3.8.0-29-generic amd64 Server: jetty/6.1.26 Jersey: 1.8.
 
-      @call header: 'WebHBase', handler: ->
+      @call header: 'WebHBase', ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.webhcat)
         for tp in topologies
           @system.execute
@@ -67,7 +67,7 @@ At an external client, enter `curl -ku user:password https://$gateway-host:$gate
 The external client displays:
 {"buildVersion":"4.0.0.2.1.1.0-302"}
 
-      @call header: 'Oozie', handler: ->
+      @call header: 'Oozie', ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.oozie)
         for tp in topologies
           @system.execute
@@ -81,7 +81,7 @@ Both of the following URLs return an authentication error, which users can safel
 At the gateway host, enter `curl --negotiate -u : http://$hive-host:10001/cliservice`.
 At an external client, enter `curl -ku user:password https://$gateway-host:$gateway_port/$gateway/$cluster_name/hive/cliservice`/
 
-      @call header: 'HiveServer2', handler: ->
+      @call header: 'HiveServer2', ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.hive)
         for tp in topologies
           @system.execute

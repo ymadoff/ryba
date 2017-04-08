@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @call header: 'IPTables', handler: ->
+      @call header: 'IPTables', ->
         @tools.iptables
           rules: [
             { chain: 'INPUT', jump: 'ACCEPT', dport: shard.config.net.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB Shard Server port" }
@@ -24,7 +24,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-      @call header: 'Users & Groups', handler: ->
+      @call header: 'Users & Groups', ->
         @system.group mongodb.group
         @system.user mongodb.user
 
@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install mongod-org-server containing packages for a mongod service. We render the init scripts
 in order to rendered configuration file with custom properties.
 
-      @call header: 'Packages', timeout: -1, handler: (options) ->
+      @call header: 'Packages', timeout: -1, (options) ->
         @service name: 'mongodb-org-server'
         @service name: 'mongodb-org-shell'
         @service name: 'mongodb-org-tools'
@@ -41,7 +41,7 @@ in order to rendered configuration file with custom properties.
           @call
             header: 'RPM'
             if: -> (os.type in ['redhat','centos'])
-            handler: ->
+          , ->
               switch os.release[0]
                 when '6'
                   @service.init
@@ -70,7 +70,7 @@ in order to rendered configuration file with custom properties.
 
 Create dir where the mongod-shard-server stores its metadata
 
-      @call header: 'Layout',  handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: '/var/lib/mongodb'
           uid: mongodb.user.name
@@ -93,7 +93,7 @@ Create dir where the mongod-shard-server stores its metadata
 
 Configuration file for mongodb sharding server.
 
-      @call header: 'Configure', handler: ->
+      @call header: 'Configure', ->
         @file.yaml
           target: "#{mongodb.shard.conf_dir}/mongod.conf"
           content: mongodb.shard.config
@@ -111,7 +111,7 @@ Configuration file for mongodb sharding server.
 Mongod service requires to have in a single file the private key and the certificate
 with pem file. So we append to the file the private key and certficate.
 
-      @call header: 'SSL', handler: ->
+      @call header: 'SSL', ->
         @file.download
           source: ssl.cacert
           target: "#{mongodb.shard.conf_dir}/cacert.pem"
@@ -145,7 +145,7 @@ with pem file. So we append to the file the private key and certficate.
 
 ## Kerberos
 
-      @call header: 'Kerberos Admin', handler: ->
+      @call header: 'Kerberos Admin', ->
         @krb5.addprinc krb5,
           principal: "#{mongodb.shard.config.security.sasl.serviceName}"#/#{@config.host}@#{realm}"
           password: mongodb.shard.sasl_password

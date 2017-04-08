@@ -51,15 +51,15 @@
         .after
           type: ['hconfigure']
           target: "#{nm_ctx.config.ryba.yarn.nm.conf_dir}/yarn-site.xml"
-          handler: (options, callback) ->
-            @tools.iptables
-              ssh: options.ssh
-              header: 'Hadoop Mapred Ranger openging'
-              rules: [
-                { chain: 'INPUT', jump: 'ACCEPT', dport: mapred.site['yarn.app.mapreduce.am.job.client.port-range'].replace('-',':'), protocol: 'tcp', state: 'NEW', comment: "Mapred client Port Range" }
-              ]
-              if: nm_ctx.config.iptables.action is 'start'
-            @then callback
+        , (options, callback) ->
+          @tools.iptables
+            ssh: options.ssh
+            header: 'Hadoop Mapred Ranger openging'
+            rules: [
+              { chain: 'INPUT', jump: 'ACCEPT', dport: mapred.site['yarn.app.mapreduce.am.job.client.port-range'].replace('-',':'), protocol: 'tcp', state: 'NEW', comment: "Mapred client Port Range" }
+            ]
+            if: nm_ctx.config.iptables.action is 'start'
+          @then callback
       mapred.site['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
       # Deprecated properties
       mapred.site['mapreduce.cluster.local.dir'] = null # Now "yarn.nodemanager.local-dirs"

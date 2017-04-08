@@ -26,7 +26,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @call header: 'IPTables', handler: ->
+      @call header: 'IPTables', ->
         return unless @config.iptables.action is 'start'
         @tools.iptables
           rules: [
@@ -52,36 +52,37 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Packages
 Ryba support installing solr from apache official release or HDP Search repos.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         @call 
           if:  solr.cloud.source is 'HDP'
-          handler: ->
-            @service
-              name: 'lucidworks-hdpsearch'
-            @system.chown
-              if: solr.cloud.source is 'HDP'
-              target: '/opt/lucidworks-hdpsearch'
-              uid: solr.user.name
-              gid: solr.group.name
+        , ->
+          @service
+            name: 'lucidworks-hdpsearch'
+          @system.chown
+            if: solr.cloud.source is 'HDP'
+            target: '/opt/lucidworks-hdpsearch'
+            uid: solr.user.name
+            gid: solr.group.name
         @call
           if: solr.cloud.source isnt 'HDP'
-          handler: ->
-            @file.download
-              source: solr.cloud.source
-              target: tmp_archive_location
-            @system.mkdir 
-              target: solr.cloud.install_dir
-            @tools.extract
-              source: tmp_archive_location
-              target: solr.cloud.install_dir
-              preserve_owner: false
-              strip: 1
-            @system.link 
-              source: solr.cloud.install_dir
-              target: solr.cloud.latest_dir
+        , ->
+          @file.download
+            source: solr.cloud.source
+            target: tmp_archive_location
+          @system.mkdir 
+            target: solr.cloud.install_dir
+          @tools.extract
+            source: tmp_archive_location
+            target: solr.cloud.install_dir
+            preserve_owner: false
+            strip: 1
+          @system.link 
+            source: solr.cloud.install_dir
+            target: solr.cloud.latest_dir
 
+## Configuration
 
-      @call header: 'Configuration', handler: (options) ->
+      @call header: 'Configuration', (options) ->
         @system.link 
           source: "#{solr.cloud.latest_dir}/conf"
           target: solr.cloud.conf_dir
@@ -124,7 +125,7 @@ has to be fixe to use jdk 1.8.
 
 ## Layout
 
-      @call header: 'Solr Layout', timeout: -1, handler: ->
+      @call header: 'Solr Layout', timeout: -1, ->
         @system.mkdir
           target: solr.cloud.pid_dir
           uid: solr.user.name
@@ -145,21 +146,21 @@ has to be fixe to use jdk 1.8.
 ## SOLR HDFS Layout
 Create HDFS solr user and its home directory
 
-      @call 
-        if: solr.cloud.hdfs?
-        handler: ->
-          @hdfs_mkdir
-            if: @config.host is @contexts('ryba/solr/cloud')[0].config.host
-            header: 'HDFS Layout'
-            target: "/user/#{solr.user.name}"
-            user: solr.user.name
-            group: solr.user.name
-            mode: 0o0775
-            krb5_user: @config.ryba.hdfs.krb5_user
+      @hdfs_mkdir
+        header: 'HDFS Layout'
+        if: [
+          solr.cloud.hdfs?
+          @config.host is @contexts('ryba/solr/cloud')[0].config.host
+        ]
+        target: "/user/#{solr.user.name}"
+        user: solr.user.name
+        group: solr.user.name
+        mode: 0o0775
+        krb5_user: @config.ryba.hdfs.krb5_user
 
 ## Config
 
-      @call header: 'Configure', handler: ->
+      @call header: 'Configure', ->
         solr.cloud.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
         solr.cloud.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of solr.cloud.auth_opts
         writes = for k,v of solr.cloud.env

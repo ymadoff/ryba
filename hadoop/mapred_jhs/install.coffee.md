@@ -51,7 +51,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-mapreduce-historyserver" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', handler: (options) ->
+      @call header: 'Service', (options) ->
         @service
           name: 'hadoop-mapreduce-historyserver'
         @hdp_select
@@ -78,7 +78,7 @@ script inside "/etc/init.d" and activate it on startup.
 
 Create the log and pid directories.
 
-      @call header: 'Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, ->
         {mapred, hadoop_group} = @config.ryba
         @system.mkdir
           target: "#{mapred.log_dir}"
@@ -179,7 +179,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, ->
         ssl_client['ssl.client.truststore.location'] = "#{mapred.jhs.conf_dir}/truststore"
         ssl_server['ssl.server.keystore.location'] = "#{mapred.jhs.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{mapred.jhs.conf_dir}/truststore"

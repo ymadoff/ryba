@@ -24,16 +24,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         @service name: 'shinken-broker'
         @service name: 'python-requests'
         @service name: 'python-arrow'
 
 ## WebUI Dependencies
 
-      @call header: 'Install WebUI Dependencies', if: 'webui2' in broker.config.modules, handler: ->
+      @call header: 'Install WebUI Dependencies', if: 'webui2' in broker.config.modules, ->
         install_dep = (k, v) => 
-          @call unless_exec: "pip list | grep #{k}", handler: ->
+          @call unless_exec: "pip list | grep #{k}", ->
             @file.download
               source: v.url
               target: "#{shinken.build_dir}/##{v.archive}.tar.gz"
@@ -52,9 +52,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Shinken Modules
 
-      @call header: 'Modules', handler: ->
+      @call header: 'Modules', ->
         installmod = (name, mod) =>
-          @call unless_exec: "shinken inventory | grep #{name}", handler: ->
+          @call unless_exec: "shinken inventory | grep #{name}", ->
             @file.download
               target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
@@ -77,7 +77,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Fix the hierarchical view in WebUI.
 Could also be natively corrected in the next shinken version. (actually 2.4)
 
-      @call header: 'Fix Groups View', handler: ->
+      @call header: 'Fix Groups View', ->
         for object in  ['host', 'service']
           @file
             target: "/usr/lib/python2.7/site-packages/shinken/objects/#{object}group.py"

@@ -48,7 +48,7 @@ hbase:x:492:
 
 ## HBase Regionserver Layout
 
-      @call header: 'Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, ->
         @system.mkdir
           target: hbase.rs.pid_dir
           uid: hbase.user.name
@@ -70,7 +70,7 @@ hbase:x:492:
 Install the "hbase-regionserver" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', timeout: -1, handler: (options) ->
+      @call header: 'Service', timeout: -1, (options) ->
         @service
           name: 'hbase-regionserver'
         @hdp_select
@@ -144,7 +144,7 @@ RegionServer, and HBase client host machines.
 
 Environment passed to the RegionServer before it starts.
 
-      @call header: 'HBase Env', handler: ->
+      @call header: 'HBase Env', ->
         hbase.rs.java_opts += " -D#{k}=#{v}" for k, v of hbase.rs.opts
         @file.render
           target: "#{hbase.rs.conf_dir}/hbase-env.sh"
@@ -209,9 +209,9 @@ Enable stats collection in Ganglia and Graphite
 
       @call
         if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: ->
-          @call -> @config.ryba.hbase_plugin_is_master = false
-          @call 'ryba/ranger/plugins/hbase/install'
+      , ->
+        @call -> @config.ryba.hbase_plugin_is_master = false
+        @call 'ryba/ranger/plugins/hbase/install'
 
 # Module dependencies
 

@@ -21,7 +21,7 @@ Check status using JMX
 Check REPL (rexster-console.sh). It is not equivalent to Titan REPL, as it use the
 binary protocol RexPro.
 
-      #@call header: 'RexPro', skip: true, label_true: 'CHECKED', handler: ->
+      #@call header: 'RexPro', skip: true, label_true: 'CHECKED', ->
 
 ## Check REST
 

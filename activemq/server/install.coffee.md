@@ -59,7 +59,7 @@ Write startup script to /etc/init.d/activemq
 
 ## Layout directories
 
-      @call header: 'Layout', timeout: -1, handler:  ->
+      @call header: 'Layout', timeout: -1, ->
         @system.mkdir
           target: activemq.log_dir
           uid: activemq.user.name
@@ -74,7 +74,7 @@ Write startup script to /etc/init.d/activemq
 ## Package
 Install the ActiveMQ server.
 
-      @call header: 'Download Container', handler: ->
+      @call header: 'Download Container', ->
         exists = false
         @docker.checksum
           image: 'activemq'

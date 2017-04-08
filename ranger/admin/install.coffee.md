@@ -21,7 +21,7 @@ Install the Ranger Policy Manager package and set it to the latest version. Note
 select the "kafka-broker" hdp directory. There is no "kafka-consumer"
 directories.
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         @service.install
           name: 'ranger-admin'
         @hdp_select
@@ -62,7 +62,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Ranger Databases
 
-      @call header: 'DB Setup',  handler:  ->
+      @call header: 'DB Setup', ->
         {db_admin} = @config.ryba
         switch ranger.admin.install['DB_FLAVOR'].toLowerCase()
           when 'mysql'
@@ -153,36 +153,36 @@ to allow user to create none-determisitic functions.
       @call
         header: 'Configure SSL'
         if: (ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true')
-        handler: ->
-          @java.keystore_add
-            header: 'SSL'
-            keystore: ranger.admin.site['ranger.service.https.attrib.keystore.file']
-            storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
-            caname: "hadoop_root_ca"
-            cacert: "#{ssl.cacert}"
-            key: "#{ssl.key}"
-            cert: "#{ssl.cert}"
-            keypass: 'ryba123'
-            name: ranger.admin.site['ranger.service.https.attrib.keystore.keyalias']
-            local: true
-          @java.keystore_add
-            keystore: ranger.admin.site['ranger.service.https.attrib.keystore.file']
-            storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
-            caname: "hadoop_root_ca"
-            cacert: "#{ssl.cacert}"
-            local: true
-          @java.keystore_add
-            keystore: '/usr/java/latest/jre/lib/security/cacerts'
-            storepass: 'changeit'
-            caname: "hadoop_root_ca"
-            cacert: "#{ssl.cacert}"
-            local: true
-          @hconfigure
-            header: 'Admin site'
-            target: '/etc/ranger/admin/conf/ranger-admin-site.xml'
-            properties: ranger.admin.site
-            merge: true
-            backup: true
+      , ->
+        @java.keystore_add
+          header: 'SSL'
+          keystore: ranger.admin.site['ranger.service.https.attrib.keystore.file']
+          storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          key: "#{ssl.key}"
+          cert: "#{ssl.cert}"
+          keypass: 'ryba123'
+          name: ranger.admin.site['ranger.service.https.attrib.keystore.keyalias']
+          local: true
+        @java.keystore_add
+          keystore: ranger.admin.site['ranger.service.https.attrib.keystore.file']
+          storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          local: true
+        @java.keystore_add
+          keystore: '/usr/java/latest/jre/lib/security/cacerts'
+          storepass: 'changeit'
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          local: true
+        @hconfigure
+          header: 'Admin site'
+          target: '/etc/ranger/admin/conf/ranger-admin-site.xml'
+          properties: ranger.admin.site
+          merge: true
+          backup: true
 
 ## Ranger Admin Principal
 

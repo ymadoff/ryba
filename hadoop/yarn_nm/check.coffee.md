@@ -6,7 +6,7 @@
 
       @call once: true, 'ryba/hadoop/yarn_nm/wait'
 
-      @call header: 'FS Permissions', handler: ->
+      @call header: 'FS Permissions', ->
         log_dirs = yarn.site['yarn.nodemanager.log-dirs'].split ','
         local_dirs = yarn.site['yarn.nodemanager.local-dirs'].split ','
         cmds = []

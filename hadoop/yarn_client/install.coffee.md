@@ -12,14 +12,14 @@
       # @call
       #   header: 'Users & Groups'
       #   if: -> @config.ryba.resourcemanager or @config.ryba.nodemanager
-      #   handler: ->
-      #     {yarn, hadoop_group} = @config.ryba
-      #     @system.execute
-      #       cmd: "useradd #{yarn.user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop YARN service\""
-      #       code: 0
-      #       code_skipped: 9
+      #  ,->
+      #   {yarn, hadoop_group} = @config.ryba
+      #   @system.execute
+      #     cmd: "useradd #{yarn.user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop YARN service\""
+      #     code: 0
+      #     code_skipped: 9
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         @service
           name: 'hadoop'
         @service
@@ -27,7 +27,7 @@
         @service
           name: 'hadoop-client'
 
-      @call header: 'Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, ->
         pid_dir = yarn.pid_dir.replace '$USER', yarn.user.name
         @system.mkdir
           target: "#{yarn.log_dir}/#{yarn.user.name}"

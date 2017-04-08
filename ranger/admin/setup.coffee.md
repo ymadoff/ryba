@@ -9,7 +9,7 @@
 ## Web UI Admin Account
 Modify admin account password. By default the login:pwd  is `admin:admin`.
 
-      @call header: 'Ranger Admin Account', handler:  ->
+      @call header: 'Ranger Admin Account', ->
         @connection.wait
           host: @config.host
           port: port
@@ -36,7 +36,7 @@ Requires `admin` user to have `ROLE_SYS_ADMIN`.
 Method to check is user account already exit is not identical base on user source.
 Indeed usersource to 1 means external user and so unknown password.
 
-      @call header: 'Ranger Admin Manager Users Accounts', handler: ->
+      @call header: 'Ranger Admin Manager Users Accounts', ->
         for name, user of ranger.users
           @system.execute
             if: user.userSource is 0

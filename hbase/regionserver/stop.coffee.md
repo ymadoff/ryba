@@ -23,10 +23,10 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-regionserver.pid".
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
-        handler: ->
-          @system.execute
-            cmd: "rm #{hbase.rs.log_dir}/*-regionserver-*"
-            code_skipped: 1
-          @system.execute
-            cmd: "rm #{hbase.rs.log_dir}/gc.log-*"
-            code_skipped: 1
+      , ->
+        @system.execute
+          cmd: "rm #{hbase.rs.log_dir}/*-regionserver-*"
+          code_skipped: 1
+        @system.execute
+          cmd: "rm #{hbase.rs.log_dir}/gc.log-*"
+          code_skipped: 1

@@ -28,7 +28,7 @@ The Hive HCatalog require the database server to be started. The Hive Server2
 require the HDFS Namenode to be started. Both of them will need to functionnal
 HDFS server to answer queries.
 
-      @call header: 'Wait DB', timeout: -1, label_true: 'READY', handler: ->
+      @call header: 'Wait DB', timeout: -1, label_true: 'READY', ->
         @connection.wait jdbc.addresses
 
       @service.start

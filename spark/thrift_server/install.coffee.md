@@ -59,7 +59,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Layout
 Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log/spark
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: spark.thrift.pid_dir
           uid: spark.user.name
@@ -91,7 +91,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 
 ## Spark Conf
 
-      @call header: 'Spark Configuration', handler: ->
+      @call header: 'Spark Configuration', ->
         @file.render
           destination : "#{spark.thrift.conf_dir}/spark-env.sh"
           source: "#{__dirname}/../resources/spark-env.sh.j2"
@@ -136,7 +136,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 
 ## Hive Client Conf
 
-      @call header:'Hive Client Conf', handler: ->
+      @call header:'Hive Client Conf', ->
         @system.copy
           target: "#{spark.thrift.conf_dir}/hive-site.xml"
           source: '/etc/hive/conf/hive-site.xml'
@@ -154,50 +154,50 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
       @call
         header: 'SSL'
         if: -> spark.thrift.hive_site['hive.server2.use.SSL'] is 'true'
-        handler: ->
-          tmp_location = "/var/tmp/ryba/ssl"
-          @file.download
-            source: ssl.cacert
-            target: "#{tmp_location}/#{path.basename ssl.cacert}"
-            mode: 0o0600
-            shy: true
-          @file.download
-            source: ssl.cert
-            target: "#{tmp_location}/#{path.basename ssl.cert}"
-            mode: 0o0600
-            shy: true
-          @file.download
-            source: ssl.key
-            target: "#{tmp_location}/#{path.basename ssl.key}"
-            mode: 0o0600
-            shy: true
-          @java.keystore_add
-            keystore: spark.thrift.hive_site['hive.server2.keystore.path']
-            storepass: spark.thrift.hive_site['hive.server2.keystore.password']
-            caname: "hive_root_ca"
-            cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-            key: "#{tmp_location}/#{path.basename ssl.key}"
-            cert: "#{tmp_location}/#{path.basename ssl.cert}"
-            keypass: spark.thrift.hive_site['hive.server2.keystore.password']
-            name: @config.shortname
-          # @java.keystore_add
-          #   keystore: hive.site['hive.server2.keystore.path']
-          #   storepass: hive.site['hive.server2.keystore.password']
-          #   caname: "hadoop_root_ca"
-          #   cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-          @system.remove
-            target: "#{tmp_location}/#{path.basename ssl.cacert}"
-            shy: true
-          @system.remove
-            target: "#{tmp_location}/#{path.basename ssl.cert}"
-            shy: true
-          @system.remove
-            target: "#{tmp_location}/#{path.basename ssl.key}"
-            shy: true
-          @service
-            srv_name: 'spark-thrift-server'
-            action: 'restart'
-            if: -> @status()
+      , ->
+        tmp_location = "/var/tmp/ryba/ssl"
+        @file.download
+          source: ssl.cacert
+          target: "#{tmp_location}/#{path.basename ssl.cacert}"
+          mode: 0o0600
+          shy: true
+        @file.download
+          source: ssl.cert
+          target: "#{tmp_location}/#{path.basename ssl.cert}"
+          mode: 0o0600
+          shy: true
+        @file.download
+          source: ssl.key
+          target: "#{tmp_location}/#{path.basename ssl.key}"
+          mode: 0o0600
+          shy: true
+        @java.keystore_add
+          keystore: spark.thrift.hive_site['hive.server2.keystore.path']
+          storepass: spark.thrift.hive_site['hive.server2.keystore.password']
+          caname: "hive_root_ca"
+          cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+          key: "#{tmp_location}/#{path.basename ssl.key}"
+          cert: "#{tmp_location}/#{path.basename ssl.cert}"
+          keypass: spark.thrift.hive_site['hive.server2.keystore.password']
+          name: @config.shortname
+        # @java.keystore_add
+        #   keystore: hive.site['hive.server2.keystore.path']
+        #   storepass: hive.site['hive.server2.keystore.password']
+        #   caname: "hadoop_root_ca"
+        #   cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+        @system.remove
+          target: "#{tmp_location}/#{path.basename ssl.cacert}"
+          shy: true
+        @system.remove
+          target: "#{tmp_location}/#{path.basename ssl.cert}"
+          shy: true
+        @system.remove
+          target: "#{tmp_location}/#{path.basename ssl.key}"
+          shy: true
+        @service
+          srv_name: 'spark-thrift-server'
+          action: 'restart'
+          if: -> @status()
 
 ## Log4j 
 

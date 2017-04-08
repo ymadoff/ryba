@@ -68,7 +68,7 @@ inside "/etc/init.d" and activate it on startup.
 The server is not activated on startup because they endup as zombies if HDFS
 isnt yet started.
 
-      @call header: 'Service', handler: (options) ->
+      @call header: 'Service', (options) ->
         @service
           name: 'hive'
         @service
@@ -148,7 +148,7 @@ Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 Create the directories to store the logs and pid information. The properties
 "ryba.hive.server2.log\_dir" and "ryba.hive.server2.pid\_dir" may be modified.
 
-      @call header: 'Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, ->
         @system.mkdir
           target: hive.server2.log_dir
           uid: hive.user.name
@@ -165,27 +165,27 @@ Create the directories to store the logs and pid information. The properties
       @call
         header: 'Client SSL'
         if: -> @config.ryba.hive.server2.site['hive.server2.use.SSL'] is 'true'
-        handler: ->
-          @java.keystore_add
-            keystore: hive.server2.site['hive.server2.keystore.path']
-            storepass: hive.server2.site['hive.server2.keystore.password']
-            caname: "hive_root_ca"
-            cacert: ssl.cacert
-            key: ssl.key
-            cert: ssl.cert
-            keypass: ssl_server['ssl.server.keystore.keypassword']
-            name: @config.shortname
-            local: true
-          # @java.keystore_add
-          #   keystore: hive.server2.site['hive.server2.keystore.path']
-          #   storepass: hive.server2.site['hive.server2.keystore.password']
-          #   caname: "hadoop_root_ca"
-          #   cacert: ssl.cacert
-          #   local: true
-          @service
-            srv_name: 'hive-server2'
-            action: 'restart'
-            if: -> @status()
+      , ->
+        @java.keystore_add
+          keystore: hive.server2.site['hive.server2.keystore.path']
+          storepass: hive.server2.site['hive.server2.keystore.password']
+          caname: "hive_root_ca"
+          cacert: ssl.cacert
+          key: ssl.key
+          cert: ssl.cert
+          keypass: ssl_server['ssl.server.keystore.keypassword']
+          name: @config.shortname
+          local: true
+        # @java.keystore_add
+        #   keystore: hive.server2.site['hive.server2.keystore.path']
+        #   storepass: hive.server2.site['hive.server2.keystore.password']
+        #   caname: "hadoop_root_ca"
+        #   cacert: ssl.cacert
+        #   local: true
+        @service
+          srv_name: 'hive-server2'
+          action: 'restart'
+          if: -> @status()
 
 ## Kerberos
 
@@ -209,8 +209,8 @@ Create the directories to store the logs and pid information. The properties
 
       @call
         if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: ->
-          @call 'ryba/ranger/plugins/hiveserver2/install'
+      , ->
+        @call 'ryba/ranger/plugins/hiveserver2/install'
 
 ## Dependencies
 

@@ -47,7 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-yarn-timelineserver" service, symlink the rc.d startup script
 in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
-      @call header: 'Service', handler: (options) ->
+      @call header: 'Service', (options) ->
         @service
           name: 'hadoop-yarn-timelineserver'
         @hdp_select
@@ -72,7 +72,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
 # Layout
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: "#{yarn.ats.conf_dir}"
         @system.mkdir
@@ -154,7 +154,7 @@ See:
 
 Note, this is not documented anywhere and might not be considered as a best practice.
 
-      @call header: 'HDFS layout', timeout: -1, handler: ->
+      @call header: 'HDFS layout', timeout: -1, ->
         return unless yarn.site['yarn.timeline-service.generic-application-history.store-class'] is "org.apache.hadoop.yarn.server.applicationhistoryservice.FileSystemApplicationHistoryStore"
         dir = yarn.site['yarn.timeline-service.fs-history-store.uri']
         @wait.execute
@@ -169,7 +169,7 @@ Note, this is not documented anywhere and might not be considered as a best prac
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, ->
         ssl_client['ssl.client.truststore.location'] = "#{yarn.ats.conf_dir}/truststore"
         ssl_server['ssl.server.keystore.location'] = "#{yarn.ats.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{yarn.ats.conf_dir}/truststore"

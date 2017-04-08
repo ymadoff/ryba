@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @call header: 'IPTables', handler: ->
+      @call header: 'IPTables', ->
         @tools.iptables
           rules: [
             { chain: 'INPUT', jump: 'ACCEPT', dport: configsrv.config.net.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB Config Server port" }
@@ -24,7 +24,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-      @call header: 'Users & Groups', handler: ->
+      @call header: 'Users & Groups', ->
         @system.group mongodb.group
         @system.user mongodb.user
 
@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install mongodb-org-server containing packages for a mongod service. We render the init scripts
 in order to rendered configuration file with custom properties.
 
-      @call header: 'Packages', timeout: -1, handler: (options) ->
+      @call header: 'Packages', timeout: -1, (options) ->
         @service name: 'mongodb-org-server'
         @service name: 'mongodb-org-shell'
         @service name: 'mongodb-org-tools'
@@ -41,39 +41,39 @@ in order to rendered configuration file with custom properties.
           @call
             header: 'RPM'
             if: -> (os.type in ['redhat','centos'])
-            handler: ->
-              switch os.release[0]
-                when '6'
-                  @service.init
-                    source: "#{__dirname}/../resources/mongod-config-server.j2"
-                    target: '/etc/init.d/mongod-config-server'
-                    context: @config
-                    mode: 0o0750
-                    local: true
-                    eof: true
-                  break;
-                when '7'
-                  @service.init
-                    source: "#{__dirname}/../resources/mongod-config-server-redhat-7.j2"
-                    target: '/usr/lib/systemd/system/mongod-config-server.service'
-                    context: @config
-                    mode: 0o0640
-                    local: true
-                    eof: true
-                  @system.tmpfs
-                    mount: mongodb.configsrv.pid_dir
-                    uid: mongodb.user.name
-                    gid: mongodb.group.name
-                    perm: '0750'
-                  @service.startup
-                    name: 'mongod-config-server'
+          , ->
+            switch os.release[0]
+              when '6'
+                @service.init
+                  source: "#{__dirname}/../resources/mongod-config-server.j2"
+                  target: '/etc/init.d/mongod-config-server'
+                  context: @config
+                  mode: 0o0750
+                  local: true
+                  eof: true
+                break;
+              when '7'
+                @service.init
+                  source: "#{__dirname}/../resources/mongod-config-server-redhat-7.j2"
+                  target: '/usr/lib/systemd/system/mongod-config-server.service'
+                  context: @config
+                  mode: 0o0640
+                  local: true
+                  eof: true
+                @system.tmpfs
+                  mount: mongodb.configsrv.pid_dir
+                  uid: mongodb.user.name
+                  gid: mongodb.group.name
+                  perm: '0750'
+                @service.startup
+                  name: 'mongod-config-server'
 
 
 ## Layout
 
 Create dir where the mongodb-config-server stores its metadata
 
-      @call header: 'Layout',  handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: '/var/lib/mongodb'
           uid: mongodb.user.name
@@ -96,7 +96,7 @@ Create dir where the mongodb-config-server stores its metadata
 
 Configuration file for mongodb config server.
 
-      @call header: 'Configure', handler: ->
+      @call header: 'Configure', ->
         @file.yaml
           target: "#{mongodb.configsrv.conf_dir}/mongod.conf"
           content: mongodb.configsrv.config
@@ -114,7 +114,7 @@ Configuration file for mongodb config server.
 Mongod service requires to have in a single file the private key and the certificate
 with pem file. So we append to the file the private key and certficate.
 
-      @call header: 'SSL', handler: ->
+      @call header: 'SSL', ->
         @file.download
           source: ssl.cacert
           target: "#{mongodb.configsrv.conf_dir}/cacert.pem"

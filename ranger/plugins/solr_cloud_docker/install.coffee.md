@@ -39,69 +39,69 @@
       @call
         if: solr_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
         header: 'Solr ranger plugin audit to HDFS'
-        handler: ->
-          @system.mkdir
-            target: solr_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
-            uid: solr.user.name
-            gid: hadoop_group.name
-            mode: 0o0750
-          @call
-            if: @contexts('ryba/ranger/admin')[0].config.ryba.ranger.plugins.hdfs_enabled
-          , ->
-            hdfs_target_dir = solr_plugin.install['XAAUDIT.HDFS.HDFS_DIR']
-            policy_name = "solr-ranger-plugin-audit-#{options.solr_cluster.name}"
-            solr_policy =
-              name: policy_name
-              service: "#{hdfs_plugin.install['REPOSITORY_NAME']}"
-              repositoryType:"hdfs"
-              description: "Solr audit log policy for cluster: #{options.solr_cluster.name}"
-              isEnabled: true
-              isAuditEnabled: true
-              resources:
-                path:
-                  isRecursive: 'true'
-                  values: [hdfs_target_dir]
-                  isExcludes: false
-              policyItems: [{
-                users: ["#{solr.user.name}"]
-                groups: []
-                delegateAdmin: true
-                accesses:[
-                    "isAllowed": true
-                    "type": "read"
-                ,
-                    "isAllowed": true
-                    "type": "write"
-                ,
-                    "isAllowed": true
-                    "type": "execute"
-                ]
-                conditions: []
-                }]
-            @system.execute
-              cmd: """
-                curl --fail -H "Content-Type: application/json" -k -X POST \
-                -d '#{JSON.stringify solr_policy}' \
-                -u admin:#{password} \
-                \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
-              """
-              unless_exec: """
-                curl --fail -H \"Content-Type: application/json\" -k -X GET  \
-                -u admin:#{password} \
-                \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/#{policy_name}\"
-              """
-              code_skipped: 22
-            @hdfs_mkdir
-              header: 'Ranger Solr Layout'
-              target: "#{hdfs_target_dir}"
-              mode: 0o750
-              user: solr.user.name
-              group: solr.user.name
-              unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{hdfs_target_dir}"
+      , ->
+        @system.mkdir
+          target: solr_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
+          uid: solr.user.name
+          gid: hadoop_group.name
+          mode: 0o0750
+        @call
+          if: @contexts('ryba/ranger/admin')[0].config.ryba.ranger.plugins.hdfs_enabled
+        , ->
+          hdfs_target_dir = solr_plugin.install['XAAUDIT.HDFS.HDFS_DIR']
+          policy_name = "solr-ranger-plugin-audit-#{options.solr_cluster.name}"
+          solr_policy =
+            name: policy_name
+            service: "#{hdfs_plugin.install['REPOSITORY_NAME']}"
+            repositoryType:"hdfs"
+            description: "Solr audit log policy for cluster: #{options.solr_cluster.name}"
+            isEnabled: true
+            isAuditEnabled: true
+            resources:
+              path:
+                isRecursive: 'true'
+                values: [hdfs_target_dir]
+                isExcludes: false
+            policyItems: [{
+              users: ["#{solr.user.name}"]
+              groups: []
+              delegateAdmin: true
+              accesses:[
+                  "isAllowed": true
+                  "type": "read"
+              ,
+                  "isAllowed": true
+                  "type": "write"
+              ,
+                  "isAllowed": true
+                  "type": "execute"
+              ]
+              conditions: []
+              }]
+          @system.execute
+            cmd: """
+              curl --fail -H "Content-Type: application/json" -k -X POST \
+              -d '#{JSON.stringify solr_policy}' \
+              -u admin:#{password} \
+              \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+            """
+            unless_exec: """
+              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+              -u admin:#{password} \
+              \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+            """
+            code_skipped: 22
+          @hdfs_mkdir
+            header: 'Ranger Solr Layout'
+            target: "#{hdfs_target_dir}"
+            mode: 0o750
+            user: solr.user.name
+            group: solr.user.name
+            unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{hdfs_target_dir}"
 
 # Packages
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         @system.execute
           header: 'Setup Execution Version'
           shy:true
@@ -129,16 +129,16 @@ we execute this task using the rest api.
 
       @call 
         header: "Repository creation"
-        handler:  ->
-          @system.execute
-            unless_exec: """
-              curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
-              -u admin:#{password} \"#{solr_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{solr_plugin.install['REPOSITORY_NAME']}\"
-            """
-            cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify solr_plugin.service_repo}' \
-              -u admin:#{password} \"#{solr_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
-            """
+      , ->
+        @system.execute
+          unless_exec: """
+            curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
+            -u admin:#{password} \"#{solr_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{solr_plugin.install['REPOSITORY_NAME']}\"
+          """
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify solr_plugin.service_repo}' \
+            -u admin:#{password} \"#{solr_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
+          """
 
 # Plugin Scripts 
 The execution of the ranger-solr-plugin-enable script,  slightly differs from other plugins.
@@ -170,77 +170,77 @@ loads the lib directory found in the `SOLR_HOME`.
         mode: 0o0750
       @call
         header: 'Enable Solr Plugin'
-        handler: (options, callback) ->
-          files = ['ranger-solr-audit.xml','ranger-solr-security.xml','ranger-policymgr-ssl.xml']
-          sources_props = {}
-          current_props = {}
-          files_exists = {}
-          @system.execute
-            cmd: """
-              echo '' | keytool -list \
-              -storetype jceks \
-              -keystore /etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
-            """
-            code_skipped: 1
-          @call 
-            if: -> @status -1 #do not need this if the cred.jceks file is not provisioned
-            handler: ->
-              @each files, (options, cb) ->
-                file = options.key
-                target = "#{solr_plugin.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/#{file}"
-                @fs.exists target, (err, exists) ->
-                  return cb err if err
-                  return cb() unless exists
-                  files_exists["#{file}"] = exists
-                  properties.read options.ssh, target , (err, props) ->
-                    return cb err if err
-                    sources_props["#{file}"] = props
-                    cb()
-          @system.execute
-            header: 'Script Execution'
-            cmd: """
-              if /usr/hdp/#{version}/ranger-solr-plugin/enable-solr-plugin.sh ;
-              then exit 0 ;
-              else exit 1 ;
-              fi;
-            """
-          @hconfigure
-            header: 'Fix ranger-solr-security conf'
-            target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/ranger-solr-security.xml"
-            merge: true
-            properties:
-              'ranger.plugin.solr.policy.rest.ssl.config.file': "/usr/solr-cloud/current/server/solr-webapp/webapp/WEB-INF/classes/ranger-policymgr-ssl.xml"
-          @chown
-            header: 'Fix Permissions'
-            target: "/etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}/.cred.jceks.crc"
-            uid: solr.user.name
-            gid: solr.group.name
-          @hconfigure
-            header: 'JAAS Properties for solr'
-            target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/ranger-solr-audit.xml"
-            merge: true
-            properties: solr_plugin.audit
+      , (options, callback) ->
+        files = ['ranger-solr-audit.xml','ranger-solr-security.xml','ranger-policymgr-ssl.xml']
+        sources_props = {}
+        current_props = {}
+        files_exists = {}
+        @system.execute
+          cmd: """
+            echo '' | keytool -list \
+            -storetype jceks \
+            -keystore /etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
+          """
+          code_skipped: 1
+        @call 
+          if: -> @status -1 #do not need this if the cred.jceks file is not provisioned
+        , ->
           @each files, (options, cb) ->
             file = options.key
-            target = "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/#{file}"
+            target = "#{solr_plugin.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/#{file}"
             @fs.exists target, (err, exists) ->
-              return callback err if err
+              return cb err if err
+              return cb() unless exists
+              files_exists["#{file}"] = exists
               properties.read options.ssh, target , (err, props) ->
                 return cb err if err
-                current_props["#{file}"] = props
+                sources_props["#{file}"] = props
                 cb()
-          @call
-            header: 'Compare Current Config Files'
-            shy: true
-            handler: ->
-              for file in files
-                #do not need to go further if the file did not exist
-                return callback null, true unless sources_props["#{file}"]?
-                for prop, value of current_props["#{file}"]
-                  return callback null, true unless value is sources_props["#{file}"][prop]
-                for prop, value of sources_props["#{file}"]
-                  return callback null, true unless value is current_props["#{file}"][prop]
-                return callback null, false
+        @system.execute
+          header: 'Script Execution'
+          cmd: """
+            if /usr/hdp/#{version}/ranger-solr-plugin/enable-solr-plugin.sh ;
+            then exit 0 ;
+            else exit 1 ;
+            fi;
+          """
+        @hconfigure
+          header: 'Fix ranger-solr-security conf'
+          target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/ranger-solr-security.xml"
+          merge: true
+          properties:
+            'ranger.plugin.solr.policy.rest.ssl.config.file': "/usr/solr-cloud/current/server/solr-webapp/webapp/WEB-INF/classes/ranger-policymgr-ssl.xml"
+        @chown
+          header: 'Fix Permissions'
+          target: "/etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}/.cred.jceks.crc"
+          uid: solr.user.name
+          gid: solr.group.name
+        @hconfigure
+          header: 'JAAS Properties for solr'
+          target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/ranger-solr-audit.xml"
+          merge: true
+          properties: solr_plugin.audit
+        @each files, (options, cb) ->
+          file = options.key
+          target = "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/#{file}"
+          @fs.exists target, (err, exists) ->
+            return callback err if err
+            properties.read options.ssh, target , (err, props) ->
+              return cb err if err
+              current_props["#{file}"] = props
+              cb()
+        @call
+          header: 'Diff'
+          shy: true
+        , ->
+          for file in files
+            #do not need to go further if the file did not exist
+            return callback null, true unless sources_props["#{file}"]?
+            for prop, value of current_props["#{file}"]
+              return callback null, true unless value is sources_props["#{file}"][prop]
+            for prop, value of sources_props["#{file}"]
+              return callback null, true unless value is current_props["#{file}"][prop]
+            return callback null, false
       @system.copy
         source: '/etc/hadoop/conf/core-site.xml'
         target: "#{solr_cluster.config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes/core-site.xml"

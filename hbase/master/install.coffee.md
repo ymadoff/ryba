@@ -49,7 +49,7 @@ hbase:x:492:
 
 ## HBase Master Layout
 
-      @call header: 'Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, ->
         @system.mkdir
           target: hbase.master.pid_dir
           uid: hbase.user.name
@@ -71,7 +71,7 @@ hbase:x:492:
 Install the "hbase-master" service, symlink the rc.d startup script inside
 "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', timeout: -1, handler: (options) ->
+      @call header: 'Service', timeout: -1, (options) ->
         @service
           name: 'hbase-master'
         @hdp_select
@@ -115,7 +115,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
 
 Environment passed to the Master before it starts.
       
-      @call header: 'HBase Env', handler: ->
+      @call header: 'HBase Env', ->
         hbase.master.java_opts += " -D#{k}=#{v}" for k, v of hbase.master.opts
         @file.render
           target: "#{hbase.master.conf_dir}/hbase-env.sh"
@@ -207,7 +207,7 @@ Enable stats collection in Ganglia and Graphite
         backup: true
         mode: 0o640
 
-      # @call header: 'SSL', retry: 0, handler: ->
+      # @call header: 'SSL', retry: 0, ->
       #   {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
       #   ssl_client['ssl.client.truststore.location'] = "#{hbase.conf_dir}/truststore"
       #   ssl_server['ssl.server.keystore.location'] = "#{hbase.conf_dir}/keystore"
@@ -264,10 +264,10 @@ principal.
 
       @call
         if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: ->
-          @call -> @config.ryba.hbase_plugin_is_master = true
-          @call 'ryba/ranger/plugins/hbase/install'
-          @call -> @config.ryba.hbase_plugin_is_master = false
+      , ->
+        @call -> @config.ryba.hbase_plugin_is_master = true
+        @call 'ryba/ranger/plugins/hbase/install'
+        @call -> @config.ryba.hbase_plugin_is_master = false
 
 # Dependencies
 

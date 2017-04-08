@@ -23,7 +23,7 @@ environmental variables. For example, HDP declare its version as
 
 Install the oozie client package. This package doesn't create any user and group.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         @service
           name: 'oozie-client'
         @hdp_select
@@ -73,7 +73,7 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -delete -noprompt -alias
 keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -file master3_cert.pem
 ```
 
-      @call header: 'Client SSL', handler: ->
+      @call header: 'Client SSL', ->
         tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
         @file.download
           source: ssl.cacert

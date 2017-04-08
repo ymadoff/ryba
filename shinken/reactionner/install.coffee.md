@@ -10,26 +10,26 @@
       @call
         header: 'SSH'
         if: -> @config.ryba.shinken.reactionner.ssh?.private_key? and @config.ryba.shinken.reactionner.ssh?.public_key?
-        handler: ->
-          @system.mkdir
-            target: "#{user.home}/.ssh"
-            mode: 0o700
-            uid: user.name
-            gid: user.gid
-          @file
-            target: "#{user.home}/.ssh/id_rsa"
-            content: reactionner.ssh.private_key
-            eof: true
-            mode: 0o600
-            uid: user.name
-            gid: user.gid
-          @file
-            target: "#{user.home}/.ssh/id_rsa.pub"
-            content: reactionner.ssh.public_key
-            eof: true
-            mode: 0o644
-            uid: user.name
-            gid: user.gid
+      , ->
+        @system.mkdir
+          target: "#{user.home}/.ssh"
+          mode: 0o700
+          uid: user.name
+          gid: user.gid
+        @file
+          target: "#{user.home}/.ssh/id_rsa"
+          content: reactionner.ssh.private_key
+          eof: true
+          mode: 0o600
+          uid: user.name
+          gid: user.gid
+        @file
+          target: "#{user.home}/.ssh/id_rsa.pub"
+          content: reactionner.ssh.public_key
+          eof: true
+          mode: 0o644
+          uid: user.name
+          gid: user.gid
 
 ## IPTables
 
@@ -57,9 +57,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Modules
 
-      @call header: 'Modules', handler: ->
+      @call header: 'Modules', ->
         installmod = (name, mod) =>
-          @call unless_exec: "shinken inventory | grep #{name}", handler: ->
+          @call unless_exec: "shinken inventory | grep #{name}", ->
             @file.download
               target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source

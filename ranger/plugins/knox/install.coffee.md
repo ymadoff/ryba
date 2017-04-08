@@ -12,7 +12,7 @@
 
 # Packages
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         @system.execute
           header: 'Setup Execution'
           shy:true
@@ -48,7 +48,7 @@ we execute this task using the rest api.
       @call 
         if: @contexts('ryba/knox')[0].config.host is @config.host 
         header: 'Ranger Knox Repository'
-        handler:  ->
+      , ->
           @system.execute
             unless_exec: """
               curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 

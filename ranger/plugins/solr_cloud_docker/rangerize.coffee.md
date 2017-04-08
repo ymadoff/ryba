@@ -154,25 +154,25 @@ which does need it.
       context.before
         type: ['file','yaml']
         target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
-        handler: (_, callback) ->
-          solr_plugin.hdp_current_version = null
-          context.system.execute
-            cmd:  "hdp-select versions | tail -1"
-            header: 'configure mounts'
-          , (err, executed, stdout, stderr) ->
-            return callback err if err
-            solr_plugin.hdp_current_version = stdout.trim() if executed
-            mounts = [
-              "/etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}:/etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}"
-              '/etc/hadoop/conf:/etc/hadoop/conf'
-              "#{cluster_config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes:/usr/solr-cloud/current/server/solr-webapp/webapp/WEB-INF/classes"
-              "/usr/hdp/#{solr_plugin.hdp_current_version}/ranger-solr-plugin:/usr/hdp/#{solr_plugin.hdp_current_version}/ranger-solr-plugin"
-            ]
-            for name, service of cluster_config.service_def
-              for mount in mounts
-                service.volumes.push mount unless service.volumes.indexOf(mount) isnt -1
-          context.call 'ryba/ranger/plugins/solr_cloud_docker/install', solr_cluster: {config: cluster_config, name: name, host_config: host_config}
-          context.then callback
+      , (_, callback) ->
+        solr_plugin.hdp_current_version = null
+        context.system.execute
+          cmd:  "hdp-select versions | tail -1"
+          header: 'configure mounts'
+        , (err, executed, stdout, stderr) ->
+          return callback err if err
+          solr_plugin.hdp_current_version = stdout.trim() if executed
+          mounts = [
+            "/etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}:/etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}"
+            '/etc/hadoop/conf:/etc/hadoop/conf'
+            "#{cluster_config.conf_dir}/server/solr-webapp/webapp/WEB-INF/classes:/usr/solr-cloud/current/server/solr-webapp/webapp/WEB-INF/classes"
+            "/usr/hdp/#{solr_plugin.hdp_current_version}/ranger-solr-plugin:/usr/hdp/#{solr_plugin.hdp_current_version}/ranger-solr-plugin"
+          ]
+          for name, service of cluster_config.service_def
+            for mount in mounts
+              service.volumes.push mount unless service.volumes.indexOf(mount) isnt -1
+        context.call 'ryba/ranger/plugins/solr_cloud_docker/install', solr_cluster: {config: cluster_config, name: name, host_config: host_config}
+        context.then callback
 
 ## Merge solr_plugin conf to ranger admin
 

@@ -52,7 +52,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-      @call header: 'Packages', timeout: -1, handler: (options) ->
+      @call header: 'Packages', timeout: -1, (options) ->
         # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
         @system.execute
           cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
@@ -105,7 +105,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           cmd: "service oozie restart"
           if: -> @status -4
 
-      @call header: 'Layout Directories', handler: ->
+      @call header: 'Layout Directories', ->
         @system.mkdir
           target: oozie.data
           uid: oozie.user.name
@@ -228,7 +228,7 @@ Install the HBase Libs as part of enabling the Oozie Unified Credentials with HB
 
 Install the LZO compression library as part of enabling the Oozie Web Console.
 
-      @call header: 'LZO', timeout: -1, handler: ->
+      @call header: 'LZO', timeout: -1, ->
         @service
           name: 'lzo'
         @service
@@ -261,7 +261,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         source: '/usr/share/java/mysql-connector-java.jar'
         target: '/usr/hdp/current/oozie-server/libext/mysql-connector-java.jar'
 
-      @call header: 'Configuration', handler: ->
+      @call header: 'Configuration', ->
         @hconfigure
           target: "#{oozie.conf_dir}/oozie-site.xml"
           source: "#{__dirname}/../resources/oozie-site.xml"
@@ -286,7 +286,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           mode: 0o0755
           backup: true
 
-      @call header: 'SSL Server', handler: ->
+      @call header: 'SSL Server', ->
         @java.keystore_add
           header: 'SSL'
           keystore: oozie.keystore_file
@@ -312,55 +312,55 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           cacert: "#{ssl.cacert}"
           local: true
 
-      @call header: 'War', handler: ->
+      @call header: 'War', ->
         @call 
           header: 'HBase'
           if: is_hbase_installed
-          handler: ->
-            files = [
-              'hbase-common.jar'
-              'hbase-client.jar'
-              'hbase-server.jar'
-              'hbase-protocol.jar'
-              'hbase-hadoop2-compat.jar'
-            ]
-            for file in files
-              @system.copy
-                header: 'HBase Libs'
-                source: "/usr/hdp/current/hbase-client/lib/#{file}"
-                destination: '/usr/hdp/current/oozie-server/libext/'
+        , ->
+          files = [
+            'hbase-common.jar'
+            'hbase-client.jar'
+            'hbase-server.jar'
+            'hbase-protocol.jar'
+            'hbase-hadoop2-compat.jar'
+          ]
+          for file in files
+            @system.copy
+              header: 'HBase Libs'
+              source: "/usr/hdp/current/hbase-client/lib/#{file}"
+              destination: '/usr/hdp/current/oozie-server/libext/'
         @call
           header: 'Falcon'
           if: is_falcon_installed
-          handler: ->
-            @service
-              name: 'falcon'
-            @system.mkdir
-              target: '/tmp/falcon-oozie-jars'
-            # Note, the documentation mentions using "-d" option but it doesnt
-            # seem to work. Instead, we deploy the jar where "-d" default.
-            @system.execute
-              # cmd: """
-              # rm -rf /tmp/falcon-oozie-jars/*
-              # cp  /usr/lib/falcon/oozie/ext/falcon-oozie-el-extension-*.jar \
-              #   /tmp/falcon-oozie-jars
-              # """, (err) ->
-              cmd: """
-              falconext=`ls /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar`
-              if [ -f /usr/hdp/current/oozie-server/libext/`basename $falconext` ]; then exit 3; fi
-              rm -rf /tmp/falcon-oozie-jars/*
-              cp  /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar \
-                /usr/hdp/current/oozie-server/libext
-              """
-              code_skipped: 3
-            @system.execute
-              cmd: """
-              if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
-              if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
-              su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
-              rm -rf cat #{oozie.pid_dir}/oozie.pid
-              """
-              code_skipped: 3
+        , ->
+          @service
+            name: 'falcon'
+          @system.mkdir
+            target: '/tmp/falcon-oozie-jars'
+          # Note, the documentation mentions using "-d" option but it doesnt
+          # seem to work. Instead, we deploy the jar where "-d" default.
+          @system.execute
+            # cmd: """
+            # rm -rf /tmp/falcon-oozie-jars/*
+            # cp  /usr/lib/falcon/oozie/ext/falcon-oozie-el-extension-*.jar \
+            #   /tmp/falcon-oozie-jars
+            # """, (err) ->
+            cmd: """
+            falconext=`ls /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar`
+            if [ -f /usr/hdp/current/oozie-server/libext/`basename $falconext` ]; then exit 3; fi
+            rm -rf /tmp/falcon-oozie-jars/*
+            cp  /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar \
+              /usr/hdp/current/oozie-server/libext
+            """
+            code_skipped: 3
+          @system.execute
+            cmd: """
+            if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
+            if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
+            su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
+            rm -rf cat #{oozie.pid_dir}/oozie.pid
+            """
+            code_skipped: 3
         # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise
         # Oozie may fail to start or work properly because of incorrect file permissions.
         # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
@@ -400,7 +400,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
 
 ## SQL Database Creation
 
-      @call header: 'SQL Database Creation', handler: ->
+      @call header: 'SQL Database Creation', ->
         username = oozie.site['oozie.service.JPAService.jdbc.username']
         password = oozie.site['oozie.service.JPAService.jdbc.password']
         # jdbc = db.jdbc oozie.site['oozie.service.JPAService.jdbc.url']
@@ -434,7 +434,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
                unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
           else throw Error 'Database engine not supported'
 
-    # module.exports.push header: 'Oozie Server Database', handler: ->
+    # module.exports.push header: 'Oozie Server Database', ->
     #   {oozie} = @config.ryba
     #   @system.execute
     #     cmd: """
@@ -471,9 +471,8 @@ the ShareLib contents without having to go into HDFS.
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'
       @call 
         header: 'Share lib'
-        timeout: 600000
         if: @contexts('ryba/oozie/server')[0].config.host is @config.host
-        handler: ->
+      , ->
         @hdfs_mkdir
           target: "/user/#{oozie.user.name}/share/lib"
           user: "#{oozie.user.name}"
@@ -486,17 +485,17 @@ the ShareLib contents without having to go into HDFS.
             version=`ls /usr/hdp/current/oozie-server/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
             cat /usr/hdp/current/oozie-server/share/lib/sharelib.properties | grep build.version | grep $version
           """
-          handler: ->
-            @system.execute
-              header: 'Remove old local version'
-              cmd:"rm -Rf /usr/hdp/current/oozie-server/share"
-            @tools.extract
-              header: 'Extract released version'
-              source: "/usr/hdp/current/oozie-server/oozie-sharelib.tar.gz"
-              target: "/usr/hdp/current/oozie-server"
-              unless_exec: "test -d /usr/hdp/current/oozie-server/share"
-            @system.execute
-               cmd:"chmod -R 0755 /usr/hdp/current/oozie-server/share/"
+        , ->
+          @system.execute
+            header: 'Remove old local version'
+            cmd:"rm -Rf /usr/hdp/current/oozie-server/share"
+          @tools.extract
+            header: 'Extract released version'
+            source: "/usr/hdp/current/oozie-server/oozie-sharelib.tar.gz"
+            target: "/usr/hdp/current/oozie-server"
+            unless_exec: "test -d /usr/hdp/current/oozie-server/share"
+          @system.execute
+             cmd:"chmod -R 0755 /usr/hdp/current/oozie-server/share/"
         # Copy additions to the local sharelib
         @call ->
           for sublib of oozie.sharelib
@@ -512,29 +511,29 @@ the ShareLib contents without having to go into HDFS.
         @call
           header: "HBase Sharelib"
           if: is_hbase_installed
-          handler: ->
-            @service
-              name: 'hbase'
-            @system.mkdir
-              target: '/usr/hdp/current/oozie-server/share/lib/hbase'
-            @system.execute
-              header: 'Copy jars'
-              code_skipped: 2
-              cmd: """
-                count=0
-                for name in `ls -l /usr/hdp/current/hbase-client/lib/ | grep ^- | egrep '(htrace)|(hbase-)' | grep -v test | awk '{print $9}'`;
-                do
-                  if test -f /usr/hdp/current/oozie-server/share/lib/hbase/$name;
-                    then
-                      echo "file: $name  status: ok";
-                    else
-                      cp /usr/hdp/current/hbase-client/lib/$name /usr/hdp/current/oozie-server/share/lib/hbase/$name
-                      count=$((count+1))
-                      echo "file: $name  status: copied";
-                  fi;
-                  done;
-                if [ $count -eq 0 ] ; then exit 2 ; else exit 0; fi
-              """
+        , ->
+          @service
+            name: 'hbase'
+          @system.mkdir
+            target: '/usr/hdp/current/oozie-server/share/lib/hbase'
+          @system.execute
+            header: 'Copy jars'
+            code_skipped: 2
+            cmd: """
+              count=0
+              for name in `ls -l /usr/hdp/current/hbase-client/lib/ | grep ^- | egrep '(htrace)|(hbase-)' | grep -v test | awk '{print $9}'`;
+              do
+                if test -f /usr/hdp/current/oozie-server/share/lib/hbase/$name;
+                  then
+                    echo "file: $name  status: ok";
+                  else
+                    cp /usr/hdp/current/hbase-client/lib/$name /usr/hdp/current/oozie-server/share/lib/hbase/$name
+                    count=$((count+1))
+                    echo "file: $name  status: copied";
+                fi;
+                done;
+              if [ $count -eq 0 ] ; then exit 2 ; else exit 0; fi
+            """
         # Deploy a versionned sharelib
         @system.execute
           if: -> @status -1 or @status -2 or @status -3 or @status -4

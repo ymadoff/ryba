@@ -34,7 +34,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 OpenTSDB archive comes with an RPM
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         @file.download
           source: opentsdb.source
           target: "/var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
@@ -60,25 +60,25 @@ OpenTSDB archive comes with an RPM
       @call
         header: 'Kerberos'
         if: opentsdb.config['hbase.security.authentication'] is 'kerberos'
-        handler: ->
-          @krb5.addprinc krb5,
+      , ->
+        @krb5.addprinc krb5,
+          principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
+          randkey: true
+          keytab: '/etc/security/keytabs/opentsdb.service.keytab'
+          uid: opentsdb.user.name
+          gid: opentsdb.group.name
+        @file.jaas
+          target: '/etc/opentsdb/opentsdb.jaas'
+          content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
             principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
-            randkey: true
-            keytab: '/etc/security/keytabs/opentsdb.service.keytab'
-            uid: opentsdb.user.name
-            gid: opentsdb.group.name
-          @file.jaas
-            target: '/etc/opentsdb/opentsdb.jaas'
-            content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
-              principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
-              useTicketCache: true
-            uid: opentsdb.user.name
-            gid: opentsdb.group.name
-          @cron.add
-            cmd: "/usr/bin/kinit #{opentsdb.user.name}/#{@config.host}@#{realm} -k -t /etc/security/keytabs/opentsdb.service.keytab"
-            when: '0 */9 * * *'
-            user: opentsdb.user.name
-            exec: true
+            useTicketCache: true
+          uid: opentsdb.user.name
+          gid: opentsdb.group.name
+        @cron.add
+          cmd: "/usr/bin/kinit #{opentsdb.user.name}/#{@config.host}@#{realm} -k -t /etc/security/keytabs/opentsdb.service.keytab"
+          when: '0 */9 * * *'
+          user: opentsdb.user.name
+          exec: true
 
 ## Ulimit
 
@@ -138,7 +138,7 @@ Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot mod
           throw genericErr
         else if split.length is 2
           namespaces.push split[0]
-      @call if: namespaces.length > 0, header: 'Create HBase namespaces', handler: ->
+      @call if: namespaces.length > 0, header: 'Create HBase namespaces', ->
         for ns in namespaces
           @system.execute
             cmd: mkcmd.hbase @, """

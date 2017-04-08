@@ -20,60 +20,60 @@
       @call
         if: ranger.atlas_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
         header: 'Atlas ranger plugin audit to HDFS'
-        handler: ->
-          @system.mkdir
-            target: ranger.atlas_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
-            uid: atlas.user.name
-            gid: hadoop_group.name
-            mode: 0o0750
-          @call
-            if: @contexts('ryba/ranger/admin')[0].config.ryba.ranger.plugins.hdfs_enabled
-          , ->
-            atlas_policy =
-              name: "atlas-ranger-plugin-audit"
-              service: "#{hdfs_plugin.install['REPOSITORY_NAME']}"
-              repositoryType:"hdfs"
-              description: 'Atlas Ranger Plugin audit log policy'
-              isEnabled: true
-              isAuditEnabled: true
-              resources:
-                path:
-                  isRecursive: 'true'
-                  values: ['/ranger/audit/atlas']
-                  isExcludes: false
-              policyItems: [{
-                users: ["#{atlas.user.name}"]
-                groups: []
-                delegateAdmin: true
-                accesses:[
-                    "isAllowed": true
-                    "type": "read"
-                ,
-                    "isAllowed": true
-                    "type": "write"
-                ,
-                    "isAllowed": true
-                    "type": "execute"
-                ]
-                conditions: []
-                }]
-            @system.execute
-              cmd: """
-                curl --fail -H "Content-Type: application/json" -k -X POST \
-                -d '#{JSON.stringify atlas_policy}' \
-                -u admin:#{password} \
-                \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
-              """
-              unless_exec: """
-                curl --fail -H \"Content-Type: application/json\" -k -X GET  \
-                -u admin:#{password} \
-                \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/atlas-ranger-plugin-audit\"
-              """
-              code_skippe: 22
+      , ->
+        @system.mkdir
+          target: ranger.atlas_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
+          uid: atlas.user.name
+          gid: hadoop_group.name
+          mode: 0o0750
+        @call
+          if: @contexts('ryba/ranger/admin')[0].config.ryba.ranger.plugins.hdfs_enabled
+        , ->
+          atlas_policy =
+            name: "atlas-ranger-plugin-audit"
+            service: "#{hdfs_plugin.install['REPOSITORY_NAME']}"
+            repositoryType:"hdfs"
+            description: 'Atlas Ranger Plugin audit log policy'
+            isEnabled: true
+            isAuditEnabled: true
+            resources:
+              path:
+                isRecursive: 'true'
+                values: ['/ranger/audit/atlas']
+                isExcludes: false
+            policyItems: [{
+              users: ["#{atlas.user.name}"]
+              groups: []
+              delegateAdmin: true
+              accesses:[
+                  "isAllowed": true
+                  "type": "read"
+              ,
+                  "isAllowed": true
+                  "type": "write"
+              ,
+                  "isAllowed": true
+                  "type": "execute"
+              ]
+              conditions: []
+              }]
+          @system.execute
+            cmd: """
+              curl --fail -H "Content-Type: application/json" -k -X POST \
+              -d '#{JSON.stringify atlas_policy}' \
+              -u admin:#{password} \
+              \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+            """
+            unless_exec: """
+              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+              -u admin:#{password} \
+              \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/atlas-ranger-plugin-audit\"
+            """
+            code_skippe: 22
 
 # Packages
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         @system.execute
           header: 'Setup Execution Version'
           shy:true
@@ -102,29 +102,29 @@ we execute this task using the rest api.
       @call 
         if: @contexts('ryba/atlas')[0].config.host is @config.host 
         header: 'Ranger Atlas Repository'
-        handler:  ->
-          @system.execute
-            unless_exec: """
-              curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
-              -u admin:#{password} \"#{ranger.atlas_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.atlas_plugin.install['REPOSITORY_NAME']}\"
-            """
-            cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.atlas_plugin.service_repo}' \
-              -u admin:#{password} \"#{ranger.atlas_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
-            """
-          @krb5.addprinc krb5,
-            if: ranger.atlas_plugin.principal
-            header: 'Ranger Atlas Principal'
-            principal: ranger.atlas_plugin.principal
-            randkey: true
-            password: ranger.atlas_plugin.password
-          @hdfs_mkdir
-            header: 'Ranger Audit atlas Layout'
-            target: "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/atlas"
-            mode: 0o750
-            user: atlas.user.name
-            group: atlas.user.name
-            unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/atlas"
+      ,  ->
+        @system.execute
+          unless_exec: """
+            curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
+            -u admin:#{password} \"#{ranger.atlas_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.atlas_plugin.install['REPOSITORY_NAME']}\"
+          """
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.atlas_plugin.service_repo}' \
+            -u admin:#{password} \"#{ranger.atlas_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
+          """
+        @krb5.addprinc krb5,
+          if: ranger.atlas_plugin.principal
+          header: 'Ranger Atlas Principal'
+          principal: ranger.atlas_plugin.principal
+          randkey: true
+          password: ranger.atlas_plugin.password
+        @hdfs_mkdir
+          header: 'Ranger Audit atlas Layout'
+          target: "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/atlas"
+          mode: 0o750
+          user: atlas.user.name
+          group: atlas.user.name
+          unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/atlas"
 
 # Plugin Scripts 
 
@@ -156,79 +156,77 @@ we execute this task using the rest api.
           ]
           backup: true
           mode: 0o750
-        @call
-          header: 'Enable Atlas Plugin'
-          handler: (options, callback) ->
-            files = ['ranger-atlas-audit.xml','ranger-atlas-security.xml','ranger-policymgr-ssl.xml']
-            sources_props = {}
-            current_props = {}
-            files_exists = {}
-            @system.execute
-              cmd: """
-                echo '' | keytool -list \
-                -storetype jceks \
-                -keystore /etc/ranger/#{ranger.atlas_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
-              """
-              code_skipped: 1 
-            @call 
-              if: -> @status -1 #do not need this if the cred.jceks file is not provisioned
-              handler: ->
-                @each files, (options, cb) ->
-                  file = options.key
-                  target = "#{atlas.conf_dir}/#{file}"
-                  @fs.exists target, (err, exists) ->
-                    return cb err if err
-                    return cb() unless exists
-                    files_exists["#{file}"] = exists
-                    properties.read options.ssh, target , (err, props) ->
-                      return cb err if err
-                      sources_props["#{file}"] = props
-                      cb()
-            @system.execute
-              header: 'Script Execution'
-              cmd: """
-                if /usr/hdp/#{version}/ranger-atlas-plugin/enable-atlas-plugin.sh ;
-                then exit 0 ;
-                else exit 1 ;
-                fi;
-              """
-            @hconfigure
-              header: 'Fix ranger-atlas-security conf'
-              target: "#{atlas.conf_dir}/ranger-atlas-security.xml"
-              merge: true
-              properties:
-                'ranger.plugin.atlas.policy.rest.ssl.config.file': "#{atlas.conf_dir}/ranger-policymgr-ssl.xml"
-            @system.chown
-              header: 'Fix Permissions'
-              target: "/etc/ranger/#{ranger.atlas_plugin.install['REPOSITORY_NAME']}/.cred.jceks.crc"
-              uid: atlas.user.name
-              gid: atlas.group.name
-            @hconfigure
-              header: 'JAAS Properties for solr'
-              target: "#{atlas.conf_dir}/ranger-atlas-audit.xml"
-              merge: true
-              properties: ranger.atlas_plugin.audit
+        @call header: 'Enable Atlas Plugin', (options, callback) ->
+          files = ['ranger-atlas-audit.xml','ranger-atlas-security.xml','ranger-policymgr-ssl.xml']
+          sources_props = {}
+          current_props = {}
+          files_exists = {}
+          @system.execute
+            cmd: """
+              echo '' | keytool -list \
+              -storetype jceks \
+              -keystore /etc/ranger/#{ranger.atlas_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
+            """
+            code_skipped: 1 
+          @call 
+            if: -> @status -1 #do not need this if the cred.jceks file is not provisioned
+          , ->
             @each files, (options, cb) ->
               file = options.key
               target = "#{atlas.conf_dir}/#{file}"
               @fs.exists target, (err, exists) ->
-                return callback err if err
+                return cb err if err
+                return cb() unless exists
+                files_exists["#{file}"] = exists
                 properties.read options.ssh, target , (err, props) ->
                   return cb err if err
-                  current_props["#{file}"] = props
+                  sources_props["#{file}"] = props
                   cb()
-            @call
-              header: 'Compare Current Config Files'
-              shy: true
-              handler: ->
-                for file in files
-                  #do not need to go further if the file did not exist
-                  return callback null, true unless sources_props["#{file}"]?
-                  for prop, value of current_props["#{file}"]
-                    return callback null, true unless value is sources_props["#{file}"][prop]
-                  for prop, value of sources_props["#{file}"]
-                    return callback null, true unless value is current_props["#{file}"][prop]
-                  return callback null, false
+          @system.execute
+            header: 'Script Execution'
+            cmd: """
+              if /usr/hdp/#{version}/ranger-atlas-plugin/enable-atlas-plugin.sh ;
+              then exit 0 ;
+              else exit 1 ;
+              fi;
+            """
+          @hconfigure
+            header: 'Fix ranger-atlas-security conf'
+            target: "#{atlas.conf_dir}/ranger-atlas-security.xml"
+            merge: true
+            properties:
+              'ranger.plugin.atlas.policy.rest.ssl.config.file': "#{atlas.conf_dir}/ranger-policymgr-ssl.xml"
+          @system.chown
+            header: 'Fix Permissions'
+            target: "/etc/ranger/#{ranger.atlas_plugin.install['REPOSITORY_NAME']}/.cred.jceks.crc"
+            uid: atlas.user.name
+            gid: atlas.group.name
+          @hconfigure
+            header: 'JAAS Properties for solr'
+            target: "#{atlas.conf_dir}/ranger-atlas-audit.xml"
+            merge: true
+            properties: ranger.atlas_plugin.audit
+          @each files, (options, cb) ->
+            file = options.key
+            target = "#{atlas.conf_dir}/#{file}"
+            @fs.exists target, (err, exists) ->
+              return callback err if err
+              properties.read options.ssh, target , (err, props) ->
+                return cb err if err
+                current_props["#{file}"] = props
+                cb()
+          @call
+            header: 'Compare Current Config Files'
+            shy: true
+          , ->
+            for file in files
+              #do not need to go further if the file did not exist
+              return callback null, true unless sources_props["#{file}"]?
+              for prop, value of current_props["#{file}"]
+                return callback null, true unless value is sources_props["#{file}"][prop]
+              for prop, value of sources_props["#{file}"]
+                return callback null, true unless value is current_props["#{file}"][prop]
+              return callback null, false
 
 ## Dependencies
 

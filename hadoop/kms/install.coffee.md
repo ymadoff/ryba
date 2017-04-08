@@ -17,7 +17,7 @@
 
 ## Packages
 
-      @call header: 'Packages', timeout: -1, handler: (options) ->
+      @call header: 'Packages', timeout: -1, (options) ->
         @service
           name: 'hadoop-mapreduce'
         @hdp_select

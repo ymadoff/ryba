@@ -18,7 +18,7 @@ Stop the MongoDB Config Server service.
         if:  @config.ryba.clean_logs
         header: 'Clean Logs'
         label_true: 'CLEANED'
-        handler: ->
-          @system.execute
-            cmd: "rm #{shard.config.systemLog.path}"
-            code_skipped: 1
+      , ->
+        @system.execute
+          cmd: "rm #{shard.config.systemLog.path}"
+          code_skipped: 1

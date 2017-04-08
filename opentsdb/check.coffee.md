@@ -13,7 +13,7 @@
 
 ## Check HTTP API
 
-      @call header: 'Check HTTP API', label_true: 'CHECKED', handler: (_, callback) ->
+      @call header: 'Check HTTP API', label_true: 'CHECKED', (_, callback) ->
         date = Date.now()
         put = JSON.stringify
           metric: 'ryba.test'

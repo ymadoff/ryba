@@ -30,7 +30,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Env
 
-      @call header: 'Env', handler: ->
+      @call header: 'Env', ->
         @system.chown
           target: rexster.user.home
           uid: rexster.user.name
@@ -71,8 +71,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           target: rexster.log_dir
           uid: rexster.user.name
           gid: rexster.group.name
-
-    #@call header: 'Tuning', skip: true, handler: ->
 
 ## Kerberos JAAS for ZooKeeper
 
@@ -127,15 +125,15 @@ TODO: Use a namespace
       @call
         header: 'Grant HBase Perms'
         if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
-        handler: ->
-          {hbase, titan} = @config.ryba
-          table = titan.config['storage.hbase.table']
-          @system.execute
-            cmd: mkcmd.hbase @, """
-            if hbase shell 2>/dev/null <<< "user_permission '#{table}'" | grep 'rexster'; then exit 3; fi
-            hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', '#{table}'"
-            """
-            code_skipped: 3
+      , ->
+        {hbase, titan} = @config.ryba
+        table = titan.config['storage.hbase.table']
+        @system.execute
+          cmd: mkcmd.hbase @, """
+          if hbase shell 2>/dev/null <<< "user_permission '#{table}'" | grep 'rexster'; then exit 3; fi
+          hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', '#{table}'"
+          """
+          code_skipped: 3
 
 ## Dependencies
 

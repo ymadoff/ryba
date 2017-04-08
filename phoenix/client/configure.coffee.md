@@ -23,10 +23,10 @@
         hm_ctx.after
           type: 'service'
           name: 'hbase-master'
-          handler: ->
-            @service
-              header: 'Install Phoenix'
-              name: 'phoenix'
+        , ->
+          @service
+            header: 'Install Phoenix'
+            name: 'phoenix'
       for rs_ctx in rs_ctxs
         rs_ctx.config.ryba.hbase.rs.site['hbase.defaults.for.version.skip'] = 'true'
         rs_ctx.config.ryba.hbase.rs.site['hbase.regionserver.wal.codec'] = 'org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec'
@@ -38,10 +38,10 @@
         rs_ctx.after
           type: 'service'
           name: 'hbase-regionserver'
-          handler: ->
-            @service
-              header: 'Install Phoenix'
-              name: 'phoenix'
+        , ->
+          @service
+            header: 'Install Phoenix'
+            name: 'phoenix'
 
 ## Optimisation
 

@@ -21,7 +21,7 @@ uploaded when the package is first installed or upgraded. Be careful, the
 original file will be overwritten with and user modifications. A copy will be
 made available in the same directory after any modification.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         @service
           name: 'openssl-devel'
         @service
@@ -50,7 +50,7 @@ mapred:x:494:
 Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
-      @call header: 'Users & Groups', handler: ->
+      @call header: 'Users & Groups', ->
         @system.group [hadoop_group, hdfs.group, yarn.group, mapred.group]
         @system.user [hdfs.user, yarn.user, mapred.user]
 
@@ -58,7 +58,7 @@ not handled here.
 
 Configure the topology script to enable rack awareness to Hadoop.
 
-      @call header: 'Topology', handler: ->
+      @call header: 'Topology', ->
         h_ctxs = @contexts ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
         topology = []
         for h_ctx in h_ctxs
@@ -97,7 +97,7 @@ from multiple sessions with braking an active session.
 Create a Unix and Kerberos test user, by default "ryba". Its HDFS home directory
 will be created by one of the datanode.
 
-      @call header: 'User Test', handler: ->
+      @call header: 'User Test', ->
         # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
         {group, user, krb5_user} = @config.ryba
         @system.group group
@@ -118,7 +118,7 @@ keytab inside "/etc/security/keytabs/spnego.service.keytab" with ownerships set 
 and permissions set to "0660". We had to give read/write permission to the group because the
 same keytab file is for now shared between hdfs and yarn services.
 
-      @call header: 'SPNEGO', handler: ->
+      @call header: 'SPNEGO', ->
         @krb5.addprinc krb5,
           principal: "HTTP/#{@config.host}@#{realm}"
           randkey: true
@@ -142,7 +142,7 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, ->
         @hconfigure
           target: "#{hadoop_conf_dir}/ssl-server.xml"
           properties: ssl_server

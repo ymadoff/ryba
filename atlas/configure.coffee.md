@@ -328,14 +328,14 @@ hard coded.
             .before
               type: ['service','start']
               name: 'hive-server2'
-              handler: ->
+            , ->
                 @registry.register 'hdp_select', 'ryba/lib/hdp_select'
                 @service 'atlas-metadata*hive-plugin*'
                 @hdp_select 'atlas-client' #needed by hive server2 aux jars
             .after
               type: ['hconfigure']
               target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/hive-site.xml"
-              handler: ->
+            , ->
                 @file.properties
                   header: 'Atlas Hiveserver2 Client Properties'
                   target: '/etc/hive/conf/client.properties'
@@ -442,7 +442,7 @@ in or out of docker.
               .after
                 type: ['service','start']
                 name: 'solr'
-                handler: -> @call 'ryba/atlas/solr_layout'
+              , -> @call 'ryba/atlas/solr_layout'
           when 'cloud_docker'
             throw Error 'No Solr Cloud Server configured' unless scd_ctxs.length > 0
             cluster_name = atlas.solr_cluster_name ?= 'atlas_cluster'
@@ -479,7 +479,7 @@ in or out of docker.
                 .after
                   type: ['file','yaml']
                   target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
-                  handler: (_, cb) ->
+                , (_, cb) ->
                     dir = "#{cluster_config.atlas_collection_dir}"
                     @file.download
                       source: "#{__dirname}/resources/solr/lang/stopwords_en.txt"
@@ -507,7 +507,7 @@ in or out of docker.
                 .after
                   type: ['docker','compose','up']
                   target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
-                  handler: -> @call 'ryba/atlas/solr_layout', cluster_config: atlas.cluster_config
+                , -> @call 'ryba/atlas/solr_layout', cluster_config: atlas.cluster_config
             atlas.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
             urls = cluster_config.zk_connect.split(',').map( (host) -> "#{host}/#{cluster_config.zk_node}").join(',')
             atlas.application.properties['atlas.graph.index.search.solr.zookeeper-url'] ?= "#{urls}"

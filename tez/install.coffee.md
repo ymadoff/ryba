@@ -62,7 +62,7 @@ Environment passed to Hadoop.
 Tez UI will be untared in the tez.ui.html_path directory. A WebServer must be configured
 to serve this directory.
 
-      @call header: 'UI', if: tez.ui.enabled, handler: ->
+      @call header: 'UI', if: tez.ui.enabled, ->
         @system.mkdir
           header: 'Layout'
           target: tez.ui.html_path

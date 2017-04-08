@@ -13,7 +13,7 @@ service ranger-admin stop
 
 ## Clean Logs
 
-      @call header: 'Clean Logs', label_true: 'CLEANED', handler: ->
+      @call header: 'Clean Logs', label_true: 'CLEANED', ->
         return unless @config.ryba.clean_logs
         @system.execute
           cmd: 'rm /var/log/ranger/admin/*'

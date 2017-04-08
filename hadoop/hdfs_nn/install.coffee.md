@@ -56,7 +56,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-hdfs-namenode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Packages', handler: (options) ->
+      @call header: 'Packages', (options) ->
         @service
           name: 'hadoop-hdfs-namenode'
         @hdp_select
@@ -85,7 +85,7 @@ Create the NameNode data and pid directories. The NameNode data is by defined in
 "/etc/hadoop/conf/hdfs-site.xml" file by the "dfs.namenode.name.dir" property. The pid
 file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
-      @call header: 'Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, ->
         {hdfs, hadoop_group} = @config.ryba
         @system.mkdir
           target: "#{hdfs.nn.conf_dir}"
@@ -135,7 +135,7 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-      @call header: 'Environment', handler: ->
+      @call header: 'Environment', ->
         ryba.hdfs.nn.java_opts += " -D#{k}=#{v}" for k, v of ryba.hdfs.nn.opts 
         @file.render
           header: 'Environment'
@@ -186,7 +186,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, ->
         @hconfigure
           target: "#{hdfs.nn.conf_dir}/ssl-server.xml"
           properties: hdfs.nn.ssl_server
@@ -304,7 +304,7 @@ is only exected once all the JournalNodes are started. The NameNode is finally r
 if the NameNode was formated.
 
       # 'ryba/hadoop/hdfs_jn/wait'
-      @call header: 'Format', timeout: -1, handler: ->
+      @call header: 'Format', timeout: -1, ->
         any_dfs_name_dir = hdfs.nn.site['dfs.namenode.name.dir'].split(',')[0]
         any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
         is_hdfs_ha = @contexts('ryba/hadoop/hdfs_nn').length > 1
@@ -330,13 +330,13 @@ is only executed on the standby NameNode.
         timeout: -1
         if: -> @contexts('ryba/hadoop/hdfs_nn').length > 1
         unless: -> @config.host is active_nn_host
-        handler: ->
-          @connection.wait
-            host: active_nn_host
-            port: 8020
-          @system.execute
-            cmd: "su -l #{hdfs.user.name} -c \"hdfs --config '#{hdfs.nn.conf_dir}' namenode -bootstrapStandby -nonInteractive\""
-            code_skipped: 5
+      , ->
+        @connection.wait
+          host: active_nn_host
+          port: 8020
+        @system.execute
+          cmd: "su -l #{hdfs.user.name} -c \"hdfs --config '#{hdfs.nn.conf_dir}' namenode -bootstrapStandby -nonInteractive\""
+          code_skipped: 5
 
 ## Policy
 
@@ -361,10 +361,10 @@ ${HADOOP_CONF_DIR}/core-site.xml
 ## Ranger HDFS Plugin Install
 
       @call
-        if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: ->
-          @call 'ryba/ranger/plugins/hdfs/install'
-          @call 'ryba/ranger/plugins/hdfs/setup'
+        if: -> @contexts('ryba/ranger/admin').length
+      , ->
+        @call 'ryba/ranger/plugins/hdfs/install'
+        @call 'ryba/ranger/plugins/hdfs/setup'
 
 ## Dependencies
 

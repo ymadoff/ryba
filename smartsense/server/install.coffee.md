@@ -40,7 +40,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
 
 ## Layout
 
-      @call header: 'Layout Directories', handler: ->
+      @call header: 'Layout Directories', ->
         @system.mkdir
           target: smartsense.server.log_dir
           uid: smartsense.user.name
@@ -62,21 +62,21 @@ Note rmp can only be download from the Hortonworks Support Web UI.
       @call
         header: 'SSL Server'
         if: server.ini['server']['ssl_enabled']
-        handler: ->
-          @download
-            source: ssl.cert
-            target: "#{server.conf_dir}/cert.pem"
-            uid: smartsense.user.name
-            gid: smartsense.group.name
-          @download
-            source: ssl.key
-            target: "#{server.conf_dir}/key.pem"
-            uid: smartsense.user.name
-            gid: smartsense.group.name
+      , ->
+        @download
+          source: ssl.cert
+          target: "#{server.conf_dir}/cert.pem"
+          uid: smartsense.user.name
+          gid: smartsense.group.name
+        @download
+          source: ssl.key
+          target: "#{server.conf_dir}/key.pem"
+          uid: smartsense.user.name
+          gid: smartsense.group.name
 
 ## Setup
 
-      @call header: 'Setup Execution', timeout: -1, handler: ->
+      @call header: 'Setup Execution', timeout: -1, ->
         cmd = """
         hst setup -q \
           --accountname=#{server.ini['customer']['account.name']} \
@@ -124,14 +124,14 @@ Note rmp can only be download from the Hortonworks Support Web UI.
           code_skipped: [3,1]
         @call
           if: -> @status -3
-          handler: ->
-            @service.stop
-              name: 'hst-server'
-            @system.execute
-              shy: true
-              cmd: "rm -f #{smartsense.server.log_dir}/hst-server.log"
-            @service.start
-              name: 'hst-server'
+        , ->
+          @service.stop
+            name: 'hst-server'
+          @system.execute
+            shy: true
+            cmd: "rm -f #{smartsense.server.log_dir}/hst-server.log"
+          @service.start
+            name: 'hst-server'
 
 
 ## Dependencies

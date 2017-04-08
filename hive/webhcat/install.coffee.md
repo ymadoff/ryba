@@ -55,7 +55,7 @@ hive:x:493:
 Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', handler: (options) ->
+      @call header: 'Service', (options) ->
         @service 'hive-webhcat-server'
         @service 'pig'   # Upload .tar.gz
         @service 'sqoop' # Upload .tar.gz
@@ -83,7 +83,7 @@ inside "/etc/init.d" and activate it on startup.
 
 Create file system directories for log and pid.
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: webhcat.log_dir
           uid: hive.user.name
@@ -114,7 +114,7 @@ Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
 
 Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
 
-      @call header: 'Webhcat Env', handler: ->
+      @call header: 'Webhcat Env', ->
         webhcat.java_opts = ''
         webhcat.java_opts += " -D#{k}=#{v}" for k, v of webhcat.opts
         @file.render
@@ -136,7 +136,7 @@ Upload the Pig, Hive and Sqoop tarballs inside the "/hdp/apps/$version"
 HDFS directory. Note, the parent directories are created by the
 "ryba/hadoop/hdfs_dn/layout" module.
 
-      @call header: 'HDFS Tarballs', timeout: -1, handler: ->
+      @call header: 'HDFS Tarballs', timeout: -1, ->
         @hdfs_upload (
           for lib in ['pig', 'hive', 'sqoop']
             source: "/usr/hdp/current/#{lib}-client/#{lib}.tar.gz"

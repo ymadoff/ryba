@@ -22,7 +22,7 @@ cat /etc/group | grep httpfs
 httpfs:x:494:httpfs
 ```
 
-      @call header: 'Users & Groups', handler: ->
+      @call header: 'Users & Groups', ->
         {httpfs} = @config.ryba
         @system.group httpfs.group
         @system.user httpfs.user
@@ -50,7 +50,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Package
 
-      @call header: 'Package', timeout: -1, handler: (options) ->
+      @call header: 'Package', timeout: -1, (options) ->
         @service
           name: 'hadoop-httpfs'
         @hdp_select
@@ -71,7 +71,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos
 
-      @call header: 'Kerberos', timeout: -1, handler: ->
+      @call header: 'Kerberos', timeout: -1, ->
         @system.copy # SPNEGO Keytab
           source: core_site['hadoop.http.authentication.kerberos.keytab']
           target: httpfs.site['httpfs.authentication.kerberos.keytab']
@@ -90,7 +90,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Environment
 
-      @call header: 'Environment', handler: ->
+      @call header: 'Environment', ->
         @system.mkdir
           target: "#{httpfs.pid_dir}"
           uid: httpfs.user.name
@@ -106,7 +106,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0755
-        @call header: 'HttpFS Env', handler: ->
+        @call header: 'HttpFS Env', ->
           httpfs.catalina_opts += " -D#{k}=#{v}" for k, v of httpfs.catalina.opts
           @file.render
             target: "#{httpfs.conf_dir}/httpfs-env.sh"
@@ -151,7 +151,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## SSL
 
-      @call header: 'SSL', if: httpfs.env.HTTPFS_SSL_ENABLED is 'true', handler: ->
+      @call header: 'SSL', if: httpfs.env.HTTPFS_SSL_ENABLED is 'true', ->
         {ssl, ssl_server, ssl_client} = @config.ryba
         tmp_location = "/var/tmp/ryba/ssl"
         {httpfs} = @config.ryba

@@ -63,7 +63,7 @@ We open the client port if:
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-      @call header: 'Packages', timeout: -1, handler: (options) ->
+      @call header: 'Packages', timeout: -1, (options) ->
         @service
           name: 'nc' # Used by check
         @service
@@ -88,7 +88,7 @@ which has no dependency.
 ## Kerberos
 
       @call once: true, 'masson/core/krb5_client/wait'
-      @call header: 'Kerberos', handler: ->
+      @call header: 'Kerberos', ->
         @krb5.addprinc krb5,
           principal: "zookeeper/#{@config.host}@#{realm}"
           randkey: true
@@ -113,7 +113,7 @@ which has no dependency.
 Create the data, pid and log directories with the correct permissions and
 ownerships.
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: zookeeper.config['dataDir']
           uid: zookeeper.user.name

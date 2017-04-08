@@ -75,7 +75,7 @@ Download and unpack the release archive.
 Pid files are stored inside "/var/run/druid" by default.
 Log files are stored inside "/var/log/druid" by default.
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: "#{druid.pid_dir}"
           uid: "#{druid.user.name}"

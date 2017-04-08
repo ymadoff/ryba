@@ -18,9 +18,9 @@ The file storing the PID is "/var/run/kafka/kafka.pid".
 
 ## Clean Logs
 
-      @call header: 'Clean Logs', label_true: 'CLEANED', handler: ->
-        return unless @config.ryba.clean_logs
+      @call header: 'Clean Logs', label_true: 'CLEANED', ->
         @system.execute
+          unless: @config.ryba.clean_logs
           cmd: 'rm /var/log/kafka/*'
           code_skipped: 1
 

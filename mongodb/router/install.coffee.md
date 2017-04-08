@@ -31,7 +31,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install mongod-org-server containing packages for a mongod service. We render the init scripts
 in order to rendered configuration file with custom properties.
 
-      @call header: 'Packages', timeout: -1, handler: (options) ->
+      @call header: 'Packages', timeout: -1, (options) ->
         @service name: 'mongodb-org-mongos'
         @service name: 'mongodb-org-shell'
         @service name: 'mongodb-org-tools'
@@ -39,33 +39,33 @@ in order to rendered configuration file with custom properties.
           @call
             header: 'RPM'
             if: -> (os.type in ['redhat','centos'])
-            handler: ->
-              switch os.release[0]
-                when '6'
-                  @file.render
-                    source: "#{__dirname}/../resources/mongod-router-server.j2"
-                    target: '/etc/init.d/mongod-router-server'
-                    context: @config
-                    unlink: true
-                    mode: 0o0750
-                    local: true
-                    eof: true
-                  break;
-                when '7'
-                  @service.init
-                    source: "#{__dirname}/../resources/mongod-router-server-redhat-7.j2"
-                    target: '/usr/lib/systemd/system/mongod-router-server.service'
-                    context: @config
-                    mode: 0o0640
-                    local: true
-                    eof: true
-                  @system.tmpfs
-                    mount: mongodb.router.pid_dir
-                    uid: mongodb.user.name
-                    gid: mongodb.group.name
-                    perm: '0750'
-                  @service.startup
-                    name: 'mongod-config-server'
+          , ->
+            switch os.release[0]
+              when '6'
+                @file.render
+                  source: "#{__dirname}/../resources/mongod-router-server.j2"
+                  target: '/etc/init.d/mongod-router-server'
+                  context: @config
+                  unlink: true
+                  mode: 0o0750
+                  local: true
+                  eof: true
+                break;
+              when '7'
+                @service.init
+                  source: "#{__dirname}/../resources/mongod-router-server-redhat-7.j2"
+                  target: '/usr/lib/systemd/system/mongod-router-server.service'
+                  context: @config
+                  mode: 0o0640
+                  local: true
+                  eof: true
+                @system.tmpfs
+                  mount: mongodb.router.pid_dir
+                  uid: mongodb.user.name
+                  gid: mongodb.group.name
+                  perm: '0750'
+                @service.startup
+                  name: 'mongod-config-server'
 
 ## Layout
 
@@ -82,7 +82,7 @@ Create dir where the mongod-config-server stores its metadata
 
 Configuration file for mongodb config server.
 
-      @call header: 'Configure', handler: ->
+      @call header: 'Configure', ->
         @file.yaml
           target: "#{mongodb.router.conf_dir}/mongos.conf"
           content: mongodb.router.config
@@ -100,7 +100,7 @@ Configuration file for mongodb config server.
 Mongod service requires to have in a single file the private key and the certificate
 with pem file. So we append to the file the private key and certficate.
 
-      @call header: 'SSL', handler: ->
+      @call header: 'SSL', ->
         @file.download
           source: ssl.cacert
           target: "#{mongodb.router.conf_dir}/cacert.pem"

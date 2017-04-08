@@ -17,7 +17,7 @@ please see ryba/rexster
 
 Download and extract a ZIP Archive
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         archive_name = path.basename titan.source
         unzip_dir = path.join titan.install_dir, path.basename archive_name, path.extname archive_name
         archive_path = path.join titan.install_dir, archive_name
@@ -44,7 +44,7 @@ Download and extract a ZIP Archive
 
 Modify envvars in the gremlin scripts.
 
-      @call header: 'Gremlin Env', handler: ->
+      @call header: 'Gremlin Env', ->
         write = [
           match: /^(.*)JAVA_OPTIONS="-Dlog4j.configuration=[^f].*/m
           replace: "    JAVA_OPTIONS=\"-Dlog4j.configuration=file:#{path.join titan.home, 'conf', 'log4j-gremlin.properties'}\" # RYBA CONF, DON'T OVERWRITE"
@@ -84,7 +84,7 @@ Secure the Zookeeper connection with JAAS
 
 Creates a configuration file. Always load this file in Gremlin REPL !
 
-      @call header: 'Gremlin Properties', handler: ->
+      @call header: 'Gremlin Properties', ->
         storage = titan.config['storage.backend']
         index = titan.config['index.search.backend']
         @file.properties
@@ -97,7 +97,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
 
 # Creates a configuration file. Always load this file in Gremlin REPL !
 
-#     module.exports.push header: 'Gremlin Test Properties', handler: ->
+#     module.exports.push header: 'Gremlin Test Properties', ->
 #       {titan} = @config.ryba
 #       storage = titan.config['storage.backend']
 #       config = {}
@@ -115,27 +115,27 @@ Namespace is still not working in version 1.0
       # @call
       #   header: 'Create HBase Namespace'
       #   if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
-      #   handler: (options) ->
-      #     # options.log "Titan: HBase namespace not yet ready"
-      #     @system.execute
-      #       cmd: mkcmd.hbase @, """
-      #       if hbase shell -n 2>/dev/null <<< "list_namespace 'titan'" | grep '1 row(s)'; then exit 3; fi
-      #       hbase shell -n 2>/dev/null <<< "create_namespace 'titan'"
-      #       """
-      #       code_skipped: 3
+      # , (options) ->
+      #   # options.log "Titan: HBase namespace not yet ready"
+      #   @system.execute
+      #     cmd: mkcmd.hbase @, """
+      #     if hbase shell -n 2>/dev/null <<< "list_namespace 'titan'" | grep '1 row(s)'; then exit 3; fi
+      #     hbase shell -n 2>/dev/null <<< "create_namespace 'titan'"
+      #     """
+      #     code_skipped: 3
 
       @call
         header: 'Create HBase table'
         if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
-        handler: ->
-          table = titan.config['storage.hbase.table']
-          @system.execute
-            cmd: mkcmd.hbase @, """
-            if hbase shell -n 2>/dev/null <<< "exists '#{table}'" | grep 'Table #{table} does exist'; then exit 3; fi
-            cd #{titan.home}
-            #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< \"g = TitanFactory.open('titan-hbase-#{titan.config['index.search.backend']}.properties')\" | grep '==>titangraph'
-            """
-            code_skipped: 3
+      , ->
+        table = titan.config['storage.hbase.table']
+        @system.execute
+          cmd: mkcmd.hbase @, """
+          if hbase shell -n 2>/dev/null <<< "exists '#{table}'" | grep 'Table #{table} does exist'; then exit 3; fi
+          cd #{titan.home}
+          #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< \"g = TitanFactory.open('titan-hbase-#{titan.config['index.search.backend']}.properties')\" | grep '==>titangraph'
+          """
+          code_skipped: 3
 
 ## Dependencies
 

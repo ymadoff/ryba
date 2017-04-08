@@ -23,7 +23,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', ->
         @service name: 'php'
         @service name: 'php-common'
         @service name: 'php-pdo'
@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Install
 
-      @call unless_exec: "[ `cat #{nagvis.install_dir}/version` = #{nagvis.version} ]", header: 'Archive', handler: ->
+      @call unless_exec: "[ `cat #{nagvis.install_dir}/version` = #{nagvis.version} ]", header: 'Archive', ->
         @file.download
           source: nagvis.source
           target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"

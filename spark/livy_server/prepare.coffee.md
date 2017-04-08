@@ -16,7 +16,7 @@ Waiting for docker to deliver an net=host option for docker build command !
 
 # Livy Spark Server Build dockerfile execution
 
-      @call header: 'Prepare Build Container', timeout: -1,  handler: ->
+      @call header: 'Prepare Build Container', timeout: -1, ->
         @system.mkdir
           target: "#{@config.nikita.cache_dir}/spark_livy_server"
         @system.mkdir

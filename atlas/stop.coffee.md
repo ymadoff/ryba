@@ -22,7 +22,7 @@ You can stop the service with the following commands.
         header: 'Stop Clean Logs'
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
-        handler: ->
-          @system.execute
-            cmd: "rm -f #{@config.ryba.atlas.log_dir}/*"
-            code_skipped: 1
+      , ->
+        @system.execute
+          cmd: "rm -f #{@config.ryba.atlas.log_dir}/*"
+          code_skipped: 1

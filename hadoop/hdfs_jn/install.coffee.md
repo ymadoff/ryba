@@ -49,7 +49,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 The JournalNode data are stored inside the directory defined by the
 "dfs.journalnode.edits.dir" property.
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: "#{hdfs.jn.conf_dir}"
         @system.mkdir
@@ -75,7 +75,7 @@ The JournalNode data are stored inside the directory defined by the
 Install the "hadoop-hdfs-journalnode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Packages', timeout: -1, handler: (options) ->
+      @call header: 'Packages', timeout: -1, (options) ->
         @service
           name: 'hadoop-hdfs-journalnode'
         @hdp_select
@@ -110,7 +110,7 @@ SPNEGO tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab"
 keytab, also used by the NameNodes, DataNodes, ResourceManagers and
 NodeManagers.
 
-      @call header: 'Configure', handler: ->
+      @call header: 'Configure', ->
         @hconfigure
           header: 'Core Site'
           target: "#{hdfs.jn.conf_dir}/core-site.xml"
@@ -166,7 +166,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, ->
         {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
         ssl_client['ssl.client.truststore.location'] = "#{hdfs.jn.conf_dir}/truststore"
         ssl_server['ssl.server.keystore.location'] = "#{hdfs.jn.conf_dir}/keystore"

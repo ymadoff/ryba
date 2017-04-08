@@ -25,7 +25,7 @@
 
 We simply wait to connect to the shards
 
-      @call header: 'Wait Sharding Server', handler: ->
+      @call header: 'Wait Sharding Server', ->
         @call ->
           for ctx in mongodb_shards
             @connection.wait
@@ -41,7 +41,7 @@ So the primary server must be retrieved before applying this command. Because th
 We must connect to each server og the replica set manually and check if it is the primary one.
 
 
-      @call header: 'Add Shard Clusters ', retry: 3, handler: ->
+      @call header: 'Add Shard Clusters ', retry: 3, ->
         @each shards, (options, next) ->
           shard = options.key
           primary_host = null
@@ -55,26 +55,26 @@ We must connect to each server og the replica set manually and check if it is th
                -u #{shard_root.name} --password '#{shard_root.password}' \
                --eval 'sh.status()' | grep '.*#{shard}.*#{shard}/#{shard_quorum}'
               """
-            handler: ->
-              @each shard_hosts, (options) ->
-                host = options.key
-                @system.execute
-                  code_skipped: 1
-                  cmd: """
-                      #{mongo_shell_exec} --host #{host} \
-                       --port #{shard_port} -u #{shard_root.name} --password '#{shard_root.password}' \
-                       --eval 'db.isMaster().primary' | grep '#{host}:#{shard_port}' \
-                        | grep -v 'MongoDB.*version' | grep -v 'connecting to:'
-                    """
-                @call 
-                  if: -> @status -1
-                  handler: -> primary_host = host
-              @call ->
-                @system.execute
-                  if: -> primary_host
-                  cmd: """
-                     #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
-                     -u #{shard_root.name} --password '#{shard_root.password}' \
-                     --eval 'sh.addShard(\"#{shard}/#{primary_host}:#{shard_port}\")'
-                    """
+          , ->
+            @each shard_hosts, (options) ->
+              host = options.key
+              @system.execute
+                code_skipped: 1
+                cmd: """
+                    #{mongo_shell_exec} --host #{host} \
+                     --port #{shard_port} -u #{shard_root.name} --password '#{shard_root.password}' \
+                     --eval 'db.isMaster().primary' | grep '#{host}:#{shard_port}' \
+                      | grep -v 'MongoDB.*version' | grep -v 'connecting to:'
+                  """
+              @call 
+                if: -> @status -1
+              , -> primary_host = host
+            @call ->
+              @system.execute
+                if: -> primary_host
+                cmd: """
+                   #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
+                   -u #{shard_root.name} --password '#{shard_root.password}' \
+                   --eval 'sh.addShard(\"#{shard}/#{primary_host}:#{shard_port}\")'
+                  """
           @then next

@@ -3,7 +3,7 @@
 
     module.exports = header: 'Druid Historical Install', handler: ->
       {druid} = @config.ryba
-      @call once: true, handler: 'ryba/druid/install'
+      @call once: true, 'ryba/druid/install'
 
 ## IPTables
 

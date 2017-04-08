@@ -49,7 +49,7 @@ falcon:x:498:falcon
 
 ## Packages
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         @service
           name: 'falcon'
         @hdp_select
@@ -65,7 +65,7 @@ falcon:x:498:falcon
           cmd: "service falcon restart"
           if: -> @status -3
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: falcon.log_dir
           uid: falcon.user
@@ -104,7 +104,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 ## HDFS Layout
 
-      @call header: 'HDFS Layout', handler: ->
+      @call header: 'HDFS Layout', ->
         # status = user_owner = group_owner = null
         # @system.execute
         #   cmd: mkcmd.hdfs @, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
@@ -144,7 +144,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 ## Runtime
 
-    # module.exports.push header: 'Falcon Runtime', handler: ->
+    # module.exports.push header: 'Falcon Runtime', ->
     #   # {conf_dir, runtime} = @config.ryba.falcon
     #   # @file.ini
     #   #   target: "#{conf_dir}/runtime.properties"

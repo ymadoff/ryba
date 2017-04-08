@@ -108,7 +108,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
 Priority to docker pull function to get the solr container, else a tar should
 be prepared in the nikita cache dir.
 
-      @call header: 'Load Container', handler: ->
+      @call header: 'Load Container', ->
         exists = false
         @docker.checksum
           docker: solr.cloud_docker.swarm_conf
@@ -194,7 +194,7 @@ configuration like solr.in.sh or solr.xml.
           match: RegExp "^.*#{k}=.*$", 'mg'
           replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
           append: true
-        @call header: 'IPTables', handler: ->
+        @call header: 'IPTables', ->
           return unless @config.iptables.action is 'start'
           @tools.iptables
             rules: [
@@ -276,9 +276,9 @@ configuration like solr.in.sh or solr.xml.
         @call
           unless: config.docker_compose_version is '1'
           shy: true
-          handler: ->
-            for node in [1..config.containers]
-              config.service_def["node_#{node}"]['depends_on'] = ["node_#{config.master_node}"] if node != config.master_node
+        , ->
+          for node in [1..config.containers]
+            config.service_def["node_#{node}"]['depends_on'] = ["node_#{config.master_node}"] if node != config.master_node
         @call 
           header: 'Solr xml config'
         , ->
@@ -316,25 +316,25 @@ configuration like solr.in.sh or solr.xml.
               local: true
             @call
               header: "Dockerfile"
-              handler: ->
-                dockerfile = null
-                switch config.docker_compose_version
-                  when '1'
-                    dockerfile = @config.ryba.solr.cloud_docker.clusters[name].service_def
-                    break;
-                  when '2'
-                    dockerfile =
-                      version:'2'
-                      services: @config.ryba.solr.cloud_docker.clusters[name].service_def
-                    break;
-                @call ->
-                  @file.yaml
-                    if: @config.host is config['master'] or not @config.docker.swarm?
-                    target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
-                    content: dockerfile
-                    uid: solr.user.name
-                    gid: solr.group.name
-                    mode: 0o0750
+            , ->
+              dockerfile = null
+              switch config.docker_compose_version
+                when '1'
+                  dockerfile = @config.ryba.solr.cloud_docker.clusters[name].service_def
+                  break;
+                when '2'
+                  dockerfile =
+                    version:'2'
+                    services: @config.ryba.solr.cloud_docker.clusters[name].service_def
+                  break;
+              @call ->
+                @file.yaml
+                  if: @config.host is config['master'] or not @config.docker.swarm?
+                  target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
+                  content: dockerfile
+                  uid: solr.user.name
+                  gid: solr.group.name
+                  mode: 0o0750
         @docker.compose.up
           header: 'Compose up through swarm'
           if: @config.host is config['master'] and (@has_service('ryba/swarm/agent') or @has_service('ryba/swarm/master'))

@@ -27,23 +27,21 @@ the objects files and generate the hosts configuration.
 Copy the object files provided in the HDP companion files into the
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
-      @call
-        header: 'Objects'
-        handler: (_, callback) ->
-          glob "#{__dirname}/../resources/objects/*.*", (err, files) =>
-            return callback err if err
-            @file.download (
-              source: file
-              target: "/usr/libexec/hdp/ganglia"
-              mode: 0o0744
-            ) for file in files
-            @then callback
+      @call header: 'Objects', (_, callback) ->
+        glob "#{__dirname}/../resources/objects/*.*", (err, files) =>
+          return callback err if err
+          @file.download (
+            source: file
+            target: "/usr/libexec/hdp/ganglia"
+            mode: 0o0744
+          ) for file in files
+          @then callback
 
 ## Init Script
 
 Upload the "hdp-gmond" service file into "/etc/init.d".
 
-      @call header: 'Init Script', timeout: -1, handler: ->
+      @call header: 'Init Script', timeout: -1, ->
         @file
           target: '/etc/init.d/hdp-gmond'
           source: "#{__dirname}/../resources/scripts/hdp-gmond"
@@ -81,7 +79,7 @@ Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to
 Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
 "HDPSlaves" and "HDPHBaseMaster".
 
-      @call header: 'Host', timeout: -1, handler: ->
+      @call header: 'Host', timeout: -1, ->
         cmds = []
         # On the NameNode and SecondaryNameNode servers, to configure the gmond emitters
         if @has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
@@ -104,7 +102,7 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
 
 Update the files generated in the "host" action with the host of the Ganglia Collector.
 
-      @call header: 'Configuration', handler: ->
+      @call header: 'Configuration', ->
         @file
           target: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg

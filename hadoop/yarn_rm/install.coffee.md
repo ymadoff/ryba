@@ -73,7 +73,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', handler: (options) ->
+      @call header: 'Service', (options) ->
         {yarn} = @config.ryba
         @service
           name: 'hadoop-yarn-resourcemanager'
@@ -97,7 +97,7 @@ inside "/etc/init.d" and activate it on startup.
           cmd: "service hadoop-yarn-resourcemanager restart"
           if: -> @status -4
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         {yarn, hadoop_group} = @config.ryba
         @system.mkdir
           target: "#{yarn.rm.conf_dir}"
@@ -146,7 +146,7 @@ inside "/etc/init.d" and activate it on startup.
           match: RegExp "#{k}=.*", 'm'
           replace: "#{k}=#{v}"
           append: true
-      @call header: 'YARN Env', handler: ->
+      @call header: 'YARN Env', ->
         yarn.rm.java_opts += " -D#{k}=#{v}" for k, v of yarn.rm.opts 
         @file.render
           target: "#{yarn.rm.conf_dir}/yarn-env.sh"
@@ -186,7 +186,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, ->
         ssl_client['ssl.client.truststore.location'] = "#{yarn.rm.conf_dir}/truststore"
         ssl_server['ssl.server.keystore.location'] = "#{yarn.rm.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{yarn.rm.conf_dir}/truststore"
@@ -268,9 +268,9 @@ the "ryba/hadoop/hdfs" module for additional information.
 
       @call
         if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: ->
-          @call -> @config.ryba.yarn_plugin_is_master = true
-          @call 'ryba/ranger/plugins/yarn/install'
+      , ->
+        @call -> @config.ryba.yarn_plugin_is_master = true
+        @call 'ryba/ranger/plugins/yarn/install'
 
 ## Dependencies
 

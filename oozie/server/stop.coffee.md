@@ -26,7 +26,7 @@ The file storing the PID is "/var/run/oozie/oozie.pid".
         header: 'Stop Clean Logs'
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
-        handler: ->
-          @system.execute
-            cmd: 'rm /var/log/oozie/*'
-            code_skipped: 1
+      , ->
+        @system.execute
+          cmd: 'rm /var/log/oozie/*'
+          code_skipped: 1

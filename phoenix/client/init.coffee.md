@@ -19,21 +19,17 @@ Trigger Phoenix tables creation.
       zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"
       zk_path += "#{hbase.site['zookeeper.znode.parent']}"
       @system.execute
+        header: 'Namespace'
         cmd: mkcmd.hbase @, """
         code=3
-        if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM.' | wc -l` -lt "4" ]; then
+        if hbase shell 2>/dev/null <<< "list_namespace '@SYSTEM'" | egrep '^SYSTEM$'; then
           /usr/hdp/current/phoenix-client/bin/sqlline.py #{zk_path} <<< '!q' # 2>/dev/null
           echo 'Phoenix tables now created'
           code=0
         fi
-        if [ `hbase shell 2>/dev/null <<< "user_permission 'SYSTEM.*'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)' | wc -l` -lt "4" ]; then
-        hbase shell 2>/dev/null <<-CMD
-        grant 'ryba', 'RWC', 'SYSTEM.CATALOG'
-        grant 'ryba', 'RWC', 'SYSTEM.FUNCTION'
-        grant 'ryba', 'RWC', 'SYSTEM.SEQUENCE'
-        grant 'ryba', 'RWC', 'SYSTEM.STATS'
-        CMD
-        code=0
+        if hbase shell 2>/dev/null <<< "user_permission '@SYSTEM'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)'; then
+          hbase shell 2>/dev/null <<< "grant 'ryba', 'RWC', '@SYSTEM'"
+          code=0
         fi
         exit $code
         """

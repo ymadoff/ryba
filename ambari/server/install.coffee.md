@@ -49,7 +49,7 @@ Install Ambari server package.
 
 Prepare the Ambari Database
 
-      @call header: 'Database', handler: ->
+      @call header: 'Database', ->
 
 Password is stored inside a file which location is referenced by the property
 "server.jdbc.user.passwd" in the configuration file. The permissione "660" match

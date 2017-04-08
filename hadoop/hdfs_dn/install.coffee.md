@@ -58,7 +58,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-hdfs-datanode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         @service
           name: 'hadoop-hdfs-datanode'
         @hdp_select
@@ -74,7 +74,7 @@ inside "/etc/init.d" and activate it on startup.
           cmd: "service hadoop-hdfs-datanode restart"
           if: -> @status -3
 
-      @call header: 'Compression', timeout: -1, retry: 2, handler: (options) ->
+      @call header: 'Compression', timeout: -1, retry: 2, (options) ->
         @service.remove 'snappy', if: options.attempt is 1
         @service name: 'snappy'
         @service name: 'snappy-devel'
@@ -96,7 +96,7 @@ Create the DataNode data and pid directories. The data directory is set by the
 "hdp.hdfs.site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
-      @call header: 'Layout', handler: (options) ->
+      @call header: 'Layout', (options) ->
         # no need to restrict parent directory and yarn will complain if not accessible by everyone
         pid_dir = hdfs.secure_dn_pid_dir
         pid_dir = pid_dir.replace '$USER', hdfs.user.name
@@ -179,7 +179,7 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-      @call header: 'Environment', handler: ->
+      @call header: 'Environment', ->
         ryba.hdfs.dn.java_opts += " -D#{k}=#{v}" for k, v of ryba.hdfs.dn.opts 
         @file.render
           header: 'Environment'
@@ -250,7 +250,7 @@ Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/mul
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, ->
         {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
         ssl_client['ssl.client.truststore.location'] = "#{hdfs.dn.conf_dir}/truststore"
         ssl_server['ssl.server.keystore.location'] = "#{hdfs.dn.conf_dir}/keystore"
@@ -314,40 +314,38 @@ suggest:
 
 Note, we might move this middleware to Masson.
 
-      @call
-        header: 'Kernel'
-        handler: (_, next) ->
-          @system.execute
-            if: Object.keys(hdfs.sysctl).length
-            cmd: 'sysctl -a'
-            stdout: null
-            shy: true
-          , (err, _, content) ->
-            throw err if err
-            content = misc.ini.parse content
-            properties = {}
-            for k, v of hdfs.sysctl
-              v = "#{v}"
-              properties[k] = v if content[k] isnt v
-            return next null, false unless Object.keys(properties).length
-            @fs.readFile '/etc/sysctl.conf', 'ascii', (err, config) =>
-              current = misc.ini.parse config
-              #merge properties from current config
-              for k, v of current
-                properties[k] = v if hdfs.sysctl[k] isnt v
-              @file
-                header: 'Write Kernel Parameters'
-                target: '/etc/sysctl.conf'
-                content: misc.ini.stringify_single_key properties
-                backup: true
-                eof: true
-              , (err) ->
-                throw err if err
-                properties = for k, v of properties then "#{k}='#{v}'"
-                properties = properties.join ' '
-                @system.execute
-                  cmd: "sysctl #{properties}"
-                , next
+      @call header: 'Kernel', (_, next) ->
+        @system.execute
+          if: Object.keys(hdfs.sysctl).length
+          cmd: 'sysctl -a'
+          stdout: null
+          shy: true
+        , (err, _, content) ->
+          throw err if err
+          content = misc.ini.parse content
+          properties = {}
+          for k, v of hdfs.sysctl
+            v = "#{v}"
+            properties[k] = v if content[k] isnt v
+          return next null, false unless Object.keys(properties).length
+          @fs.readFile '/etc/sysctl.conf', 'ascii', (err, config) =>
+            current = misc.ini.parse config
+            #merge properties from current config
+            for k, v of current
+              properties[k] = v if hdfs.sysctl[k] isnt v
+            @file
+              header: 'Write Kernel Parameters'
+              target: '/etc/sysctl.conf'
+              content: misc.ini.stringify_single_key properties
+              backup: true
+              eof: true
+            , (err) ->
+              throw err if err
+              properties = for k, v of properties then "#{k}='#{v}'"
+              properties = properties.join ' '
+              @system.execute
+                cmd: "sysctl #{properties}"
+              , next
 
 ## Ulimit
 

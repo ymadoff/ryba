@@ -20,7 +20,7 @@
 hdf-select package conflicts with hdp-select package (both provide /usr/bin/conf-select)
 So we must manually force install of hdf-select outside of yum to handle it
 
-      @call header: 'HDP/HDF Cohabitation', handler: ->
+      @call header: 'HDP/HDF Cohabitation', ->
         @system.execute 
           unless_exec: 'yum list installed hdf-select'
           cmd: """
@@ -31,7 +31,7 @@ So we must manually force install of hdf-select outside of yum to handle it
 
 ## Layout
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', ->
         @system.mkdir
           target: nifi.log_dir
           uid: nifi.user.name
@@ -69,7 +69,7 @@ So we must manually force install of hdf-select outside of yum to handle it
 
 ## Service
 
-      @call header: 'Packages', timeout: -1, handler: (options) ->
+      @call header: 'Packages', timeout: -1, (options) ->
         @service
           name: 'nifi'
         @system.execute
@@ -114,7 +114,7 @@ So we must manually force install of hdf-select outside of yum to handle it
 NiFi service script use sudo to impersonate. Since, sudo must keep JAVA_HOME env
 var to work.
 
-      @call header: 'sudo keep JAVA_HOME', handler: ->
+      @call header: 'sudo keep JAVA_HOME', ->
         @system.chmod
           target: '/etc/sudoers'
           mode: 0o640
@@ -132,7 +132,7 @@ var to work.
 
 Describe where to get the user authentication information from.
 
-      @call header: 'Login identity provider', handler: ->
+      @call header: 'Login identity provider', ->
         providers = builder.create('loginIdentityProviders').dec '1.0', 'UTF-8', true 
         {ldap_provider, krb5_provider} = nifi.config.login_providers
         if ldap_provider?
@@ -184,7 +184,7 @@ Describe where to get the user authentication information from.
 
 ## Authorization
 
-      @call header: 'Authorizers', handler: ->
+      @call header: 'Authorizers', ->
         providers = builder.create('authorizers').dec '1.0', 'UTF-8', true
         {file_provider} = nifi.config.authorizers
         if file_provider?
@@ -228,7 +228,7 @@ Describe where to get the user authentication information from.
 Describes where the NiFi server store its internal states.
 By default it is a local file, but in cluster mode, it uses zookeeper.
 
-      @call header: 'State providers', handler: ->
+      @call header: 'State providers', ->
         providers = builder.create('stateManagement').dec '1.0', 'UTF-8', true
         local_node = providers.ele 'local-provider'
         local_node.ele 'id', 'local-provider'
@@ -290,7 +290,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 ## SSL
 
-      @call header: 'SSL', retry: 0, if: (-> nifi.config.properties['nifi.cluster.protocol.is.secure'] is 'true'), handler: ->
+      @call header: 'SSL', retry: 0, if: (-> nifi.config.properties['nifi.cluster.protocol.is.secure'] is 'true'), ->
         # Client: import certificate to all hosts
         @java.keystore_add
           keystore: nifi.config.properties['nifi.security.truststore']
@@ -334,7 +334,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 ## Additional Libs
 
-      @call header: 'Additional Libs', handler: ->
+      @call header: 'Additional Libs', ->
         for lib in nifi.additional_libs
           @file.download
             target: "/usr/hdf/current/nifi/lib/extras/#{path.basename lib}"

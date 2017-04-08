@@ -116,23 +116,23 @@ nagiocmd:x:2419:apache
       @call
         header: 'WebUI Users htpasswd'
         if: -> Object.getOwnPropertyNames(@config.ryba.nagios.users).length > 0
-        handler: ->
-          for name, user of @config.ryba.nagios.users
-            @system.execute
-              cmd: """
-              if [ -e /etc/nagios/htpasswd.users ]; then
-                hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{name}: | sed 's/.*:\\(.*\\)/\\1/'`
-                salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
-                if [ "$salt" != "" ]; then
-                  expect=`openssl passwd -crypt -salt $salt #{user.password} 2>/dev/null`
-                  if [ "$hash" == "$expect" ]; then exit 3; fi
-                fi
-                htpasswd -b /etc/nagios/htpasswd.users #{name} #{user.password}
-              else
-                htpasswd -c -b /etc/nagios/htpasswd.users #{name} #{user.password}
+      , ->
+        for name, user of @config.ryba.nagios.users
+          @system.execute
+            cmd: """
+            if [ -e /etc/nagios/htpasswd.users ]; then
+              hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{name}: | sed 's/.*:\\(.*\\)/\\1/'`
+              salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
+              if [ "$salt" != "" ]; then
+                expect=`openssl passwd -crypt -salt $salt #{user.password} 2>/dev/null`
+                if [ "$hash" == "$expect" ]; then exit 3; fi
               fi
-              """
-              code_skipped: 3
+              htpasswd -b /etc/nagios/htpasswd.users #{name} #{user.password}
+            else
+              htpasswd -c -b /etc/nagios/htpasswd.users #{name} #{user.password}
+            fi
+            """
+            code_skipped: 3
 
 ### Users Configuration
 

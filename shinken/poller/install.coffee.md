@@ -28,7 +28,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Package
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, ->
         @service name: 'net-snmp'
         @service name: 'net-snmp-utils'
         @service name: 'httpd'
@@ -43,9 +43,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Modules
 
-      @call header: 'Modules', handler: ->
+      @call header: 'Modules', ->
         installmod = (name, mod) =>
-          @call unless_exec: "shinken inventory | grep #{name}", handler: ->
+          @call unless_exec: "shinken inventory | grep #{name}", ->
             @file.download
               target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
@@ -65,7 +65,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Plugins
 
-      @call header: 'Plugins', timeout: -1, handler: ->
+      @call header: 'Plugins', timeout: -1, ->
       for plugin in glob.sync "#{__dirname}/resources/plugins/*"
         @file.download
           target: "#{shinken.plugin_dir}/#{path.basename plugin}"
@@ -76,7 +76,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Executor
 
-      @call header: 'Executor', handler: ->
+      @call header: 'Executor', ->
         @krb5.addprinc krb5,
           header: 'Kerberos'
           principal: shinken.poller.executor.krb5.unprivileged.principal
@@ -89,7 +89,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         #   keytab: shinken.poller.executor.krb5.privileged.keytab
         #   mode: 0o644
 
-        @call header: 'Docker', timeout: -1, handler: ->
+        @call header: 'Docker', timeout: -1, ->
           @file.download
             source: "#{@config.nikita.cache_dir or '.'}/shinken-poller-executor.tar"
             target: '/var/lib/docker_images/shinken-poller-executor.tar'

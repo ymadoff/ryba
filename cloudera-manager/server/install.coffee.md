@@ -33,7 +33,7 @@ Install the packages cloudera-scm-agent and cloudera-scm-daemons
 
 Set the server's hostname in the agent's configuration
 
-      @call header: 'Cloudera Manager Server Configuration', timeout: -1, handler: ->
+      @call header: 'Cloudera Manager Server Configuration', timeout: -1, ->
         mysql_pwd = @config.mysql.server.password
         mysql_exec = "mysql -uroot -p#{mysql_pwd} -h#{db.host} -P#{db.port}"
         @system.execute (
