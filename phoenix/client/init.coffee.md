@@ -22,18 +22,20 @@ Trigger Phoenix tables creation.
         header: 'Namespace'
         cmd: mkcmd.hbase @, """
         code=3
-        if hbase shell 2>/dev/null <<< "list_namespace '@SYSTEM'" | egrep '^SYSTEM$'; then
+        if ! hbase shell 2>/dev/null <<< "list_namespace_tables 'SYSTEM'" | egrep '^CATALOG$'; then
           /usr/hdp/current/phoenix-client/bin/sqlline.py #{zk_path} <<< '!q' # 2>/dev/null
           echo 'Phoenix tables now created'
           code=0
         fi
-        if hbase shell 2>/dev/null <<< "user_permission '@SYSTEM'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)'; then
+        if ! hbase shell 2>/dev/null <<< "user_permission '@SYSTEM'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)'; then
           hbase shell 2>/dev/null <<< "grant 'ryba', 'RWC', '@SYSTEM'"
           code=0
         fi
         exit $code
         """
         code_skipped: 3
+      , ->
+        process.exit()
 
 ## Dependencies
 
