@@ -2,8 +2,7 @@
 # Druid MiddleManager Wait
 
     module.exports = header: 'Druid MiddleManager Wait', label_true: 'STOPPED', handler: ->
-      {druid, clean_logs} = @config.ryba
-      middlemanagers = @contexts 'ryba/druid/middlemanager', require('./configure').handler
+      middlemanagers = @contexts 'ryba/druid/middlemanager'
       @connection.wait
         servers: for middlemanager in middlemanagers
           host: middlemanager.config.host
