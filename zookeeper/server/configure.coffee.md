@@ -11,16 +11,14 @@
 Example :
 
 ```json
-{
-  "ryba": {
+{ "ryba": {
     "zookeeper" : {
       "user": {
         "name": "zookeeper", "system": true, "gid": "hadoop",
         "comment": "Zookeeper User", "home": "/var/lib/zookeeper"
       }
     }
-  }
-}
+} }
 ```
 
     module.exports = ->
@@ -88,7 +86,8 @@ Example :
       # The number of ticks that can pass between
       # sending a request and getting an acknowledgement
       zookeeper.config['syncLimit'] ?= '5'
-      # the directory where the snapshot is stored.
+      # The directory where the snapshot is stored.
+      # Recommandation is 1 dedicated SSD drive.
       zookeeper.config['dataDir'] ?= '/var/zookeeper/data/'
       # the port at which the clients will connect
       zookeeper.config['clientPort'] ?= "#{zookeeper.port}"
