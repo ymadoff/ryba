@@ -23,7 +23,7 @@ made available in the same directory after any modification.
 
       @call header: 'Packages', timeout: -1, handler: ->
         @service
-          name: 'openssl'
+          name: 'openssl-devel'
         @service
           name: 'hadoop-client'
         @hdp_select
