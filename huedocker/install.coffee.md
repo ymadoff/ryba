@@ -8,7 +8,7 @@ no images available on dockerhub).
 Run `ryba prepare` to create the Docker container.
 
     module.exports = header: 'Hue Docker Install', handler: ->
-      {hue_docker, db_admin, realm, ssl} = @config.ryba
+      {hue_docker, db_admin, realm} = @config.ryba
       {hadoop_group, hdfs, hive, hbase} = @config.ryba
       hadoop_conf_dir = hue_docker.ini['hadoop']['hdfs_clusters']['default']['hadoop_conf_dir']
       hive_conf_dir = hue_docker.ini['beeswax']['hive_conf_dir'] 
@@ -203,7 +203,7 @@ path  during docker run.
         target: "#{hue_docker.ca_bundle}"
         source: "#{hue_docker.ssl.client_ca}"
         local: true
-        if: !!hue_docker.ssl.client_ca
+        if: hue_docker.ssl.client_ca
         backup: true
 
 ## SSL Server
@@ -217,12 +217,12 @@ changes.
       @call header: 'SSL Server', ->
         return unless hue_docker.ssl
         @file.download
-          source: ssl.cert
+          source: hue_docker.ssl.cert
           target: "#{hue_docker.conf_dir}/cert.pem"
           uid: hue_docker.user.name
           gid: hue_docker.group.name
         @file.download
-          source: ssl.key
+          source: hue_docker.ssl.key
           target: "#{hue_docker.conf_dir}/key.pem"
           uid: hue_docker.user.name
           gid: hue_docker.group.name
