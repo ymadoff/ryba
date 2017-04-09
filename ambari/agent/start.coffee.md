@@ -3,9 +3,13 @@
 
 Ambari Agent is started with the service's syntax command.
 
-    module.exports = header: 'Ambari Agent Start', timeout: -1, label_true: 'STARTED', handler: ->
-      # @system.execute
-      #   cmd: 'service ambari-agent start'
-      #   unless_exists: '/var/run/ambari-agent/ambari-agent.pid'
+    module.exports = header: 'Ambari Agent Start', label_true: 'STARTED', handler: ->
+
+Wait for Kerberos, Zookeeper, Hadoop and Hive.
+
+      @call once: true, 'ryba/ambari/server/wait'
+
+Start the service
+
       @service.start
         name: 'ambari-agent'

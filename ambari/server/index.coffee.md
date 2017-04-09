@@ -13,7 +13,7 @@ manage and monitor a Hadoop cluster.
       commands:
         'install': [
           'ryba/ambari/server/install'
-          # 'ryba/ambari/server/start'
+          'ryba/ambari/server/start'
         ]
         'start': 'ryba/ambari/server/start'
         'stop': 'ryba/ambari/server/stop'
