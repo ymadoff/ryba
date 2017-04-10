@@ -8,6 +8,7 @@ to its associated Scheduler.
 
     module.exports =
       use:
+        yum: implicit: true, module: 'masson/core/yum'
         iptables: implicit: true, module: 'masson/core/iptables'
         # List of monitored services
         mysql_server: 'masson/commons/mysql/server'
@@ -61,8 +62,6 @@ to its associated Scheduler.
         'check':
           'ryba/shinken/arbiter/check'
         'install': [
-          'masson/core/yum'
-          'masson/core/iptables'
           'ryba/shinken/lib/commons'
           'ryba/shinken/arbiter/install'
           'ryba/shinken/arbiter/start'

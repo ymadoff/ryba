@@ -16,7 +16,9 @@ is approximatively 1000 checks/s
 
     module.exports =
       use:
+        yum: implicit: true, module: 'masson/core/yum'
         iptables: implicit: true, module: 'masson/core/iptables'
+        docker: implicit: true, module: 'masson/commons/docker'
       configure: [
         'ryba/shinken/lib/configure'
         'ryba/shinken/poller/configure'
@@ -25,11 +27,7 @@ is approximatively 1000 checks/s
         'check':
           'ryba/shinken/poller/configure'
         'install': [
-          'masson/core/yum'
-          'masson/core/iptables'
-          'masson/commons/docker'
           'ryba/shinken/lib/commons'
-          #'ryba/mongodb'
           'ryba/shinken/poller/install'
           'ryba/shinken/poller/start'
           'ryba/shinken/poller/check'
