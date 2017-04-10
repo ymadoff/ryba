@@ -20,6 +20,7 @@ and a type if different from the name.
 
     module.exports =
       use:
+        yum: implicit: true, module: 'masson/core/yum'
         iptables: implicit: true, module: 'masson/core/iptables'
       configure: [
         'ryba/shinken/lib/configure'
@@ -29,8 +30,6 @@ and a type if different from the name.
         'check':
           'ryba/shinken/broker/configure'
         'install': [
-          'masson/core/yum'
-          'masson/core/iptables'
           'ryba/shinken/lib/commons'
           #'ryba/mongodb'
           'ryba/shinken/broker/install'
