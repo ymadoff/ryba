@@ -294,51 +294,52 @@ Theses functions are used to generate business rules
 ###  Declare services
 
           # TODO: put db_admin username/password
-          # if 'masson/commons/mysql/server' in ctx.services
-          #   w.modules.push 'mysql_server' if 'mysql_server' not in w.modules
-          #   h.hostgroups.push 'mysql_server' if 'mysql_server' not in h.hostgroups
-          #   services['MySQL - TCP'] ?= {}
-          #   services['MySQL - TCP'].hosts ?= []
-          #   services['MySQL - TCP'].hosts.push host
-          #   services['MySQL - TCP'].servicegroups ?= ['mysql_server']
-          #   services['MySQL - TCP'].use ?= 'process-service'
-          #   services['MySQL - TCP']['_process_name'] ?= 'mysqld'
-          #   services['MySQL - TCP'].check_command ?= "check_tcp!#{mysql.server.my_cnf.mysqld.port}"
-          #   services['MySQL - Connection time'] ?= {}
-          #   services['MySQL - Connection time'].hosts ?= []
-          #   services['MySQL - Connection time'].hosts.push host
-          #   services['MySQL - Connection time'].servicegroups ?= ['mysql_server']
-          #   services['MySQL - Connection time'].use ?= 'unit-service'
-          #   services['MySQL - Connection time'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!connection-time!3!10!#{mysql.server.user.name }!#{ryba.db_admin.password}"
-          #   create_dependency 'MySQL - Connection time', 'MySQL - TCP', host
-          #   services['MySQL - Slow queries'] ?= {}
-          #   services['MySQL - Slow queries'].hosts ?= []
-          #   services['MySQL - Slow queries'].hosts.push host
-          #   services['MySQL - Slow queries'].servicegroups ?= ['mysql_server']
-          #   services['MySQL - Slow queries'].use ?= 'functional-service'
-          #   services['MySQL - Slow queries'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!!slow-queries!0,25!1!!#{ryba.db_admin.username }!#{ryba.db_admin.password}"
-          #   create_dependency 'MySQL - Slow queries', 'MySQL - TCP', host
-          #   services['MySQL - Slave lag'] ?= {}
-          #   services['MySQL - Slave lag'].hosts ?= []
-          #   services['MySQL - Slave lag'].hosts.push host
-          #   services['MySQL - Slave lag'].servicegroups ?= ['mysql_server']
-          #   services['MySQL - Slave lag'].use ?= 'unit-service'
-          #   services['MySQL - Slave lag'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!slave-lag!3!10!#{ryba.db_admin.username }!#{ryba.db_admin.password}"
-          #   create_dependency 'MySQL - Slave lag', 'MySQL - TCP', host
-          #   services['MySQL - Slave IO running'] ?= {}
-          #   services['MySQL - Slave IO running'].hosts ?= []
-          #   services['MySQL - Slave IO running'].hosts.push host
-          #   services['MySQL - Slave IO running'].servicegroups ?= ['mysql_server']
-          #   services['MySQL - Slave IO running'].use ?= 'unit-service'
-          #   services['MySQL - Slave IO running'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!slave-io-running!1!1!#{ryba.db_admin.username }!#{ryba.db_admin.password}"
-          #   create_dependency 'MySQL - Slave IO running', 'MySQL - TCP', host
-          #   services['MySQL - Connected Threads'] ?= {}
-          #   services['MySQL - Connected Threads'].hosts ?= []
-          #   services['MySQL - Connected Threads'].hosts.push host
-          #   services['MySQL - Connected Threads'].servicegroups ?= ['mysql_server']
-          #   services['MySQL - Connected Threads'].use ?= 'unit-service'
-          #   services['MySQL - Connected Threads'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!threads-connected!50!80!#{ryba.db_admin.username }!#{ryba.db_admin.password}"
-          #   create_dependency 'MySQL - Connected Threads', 'MySQL - TCP', host
+          if 'masson/commons/mysql/server' in ctx.services
+            w.modules.push 'mysql_server' if 'mysql_server' not in w.modules
+            h.hostgroups.push 'mysql_server' if 'mysql_server' not in h.hostgroups
+            services['MySQL - TCP'] ?= {}
+            services['MySQL - TCP'].hosts ?= []
+            services['MySQL - TCP'].hosts.push host
+            services['MySQL - TCP'].servicegroups ?= ['mysql_server']
+            services['MySQL - TCP'].use ?= 'process-service'
+            services['MySQL - TCP']['_process_name'] ?= 'mysqld'
+            services['MySQL - TCP'].check_command ?= "check_tcp!#{mysql.server.my_cnf.mysqld.port}"
+            if ryba.db_admin?.mysql?.admin_username? and ryba.db_admin?.mysql?.admin_password?
+              services['MySQL - Connection time'] ?= {}
+              services['MySQL - Connection time'].hosts ?= []
+              services['MySQL - Connection time'].hosts.push host
+              services['MySQL - Connection time'].servicegroups ?= ['mysql_server']
+              services['MySQL - Connection time'].use ?= 'unit-service'
+              services['MySQL - Connection time'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!connection-time!3!10!#{ryba.db_admin.mysql.admin_username}!#{ryba.db_admin.mysql.admin_password}"
+              create_dependency 'MySQL - Connection time', 'MySQL - TCP', host
+              services['MySQL - Slow queries'] ?= {}
+              services['MySQL - Slow queries'].hosts ?= []
+              services['MySQL - Slow queries'].hosts.push host
+              services['MySQL - Slow queries'].servicegroups ?= ['mysql_server']
+              services['MySQL - Slow queries'].use ?= 'functional-service'
+              services['MySQL - Slow queries'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!!slow-queries!0,25!1!!#{ryba.db_admin.mysql.admin_username}!#{ryba.db_admin.mysql.admin_password}"
+              create_dependency 'MySQL - Slow queries', 'MySQL - TCP', host
+              services['MySQL - Slave lag'] ?= {}
+              services['MySQL - Slave lag'].hosts ?= []
+              services['MySQL - Slave lag'].hosts.push host
+              services['MySQL - Slave lag'].servicegroups ?= ['mysql_server']
+              services['MySQL - Slave lag'].use ?= 'unit-service'
+              services['MySQL - Slave lag'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!slave-lag!3!10!#{ryba.db_admin.mysql.admin_username}!#{ryba.db_admin.mysql.admin_password}"
+              create_dependency 'MySQL - Slave lag', 'MySQL - TCP', host
+              services['MySQL - Slave IO running'] ?= {}
+              services['MySQL - Slave IO running'].hosts ?= []
+              services['MySQL - Slave IO running'].hosts.push host
+              services['MySQL - Slave IO running'].servicegroups ?= ['mysql_server']
+              services['MySQL - Slave IO running'].use ?= 'unit-service'
+              services['MySQL - Slave IO running'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!slave-io-running!1!1!#{ryba.db_admin.mysql.admin_username}!#{ryba.db_admin.mysql.admin_password}"
+              create_dependency 'MySQL - Slave IO running', 'MySQL - TCP', host
+              services['MySQL - Connected Threads'] ?= {}
+              services['MySQL - Connected Threads'].hosts ?= []
+              services['MySQL - Connected Threads'].hosts.push host
+              services['MySQL - Connected Threads'].servicegroups ?= ['mysql_server']
+              services['MySQL - Connected Threads'].use ?= 'unit-service'
+              services['MySQL - Connected Threads'].check_command ?= "check_mysql!#{mysql.server.my_cnf.mysqld.port}!threads-connected!50!80!#{ryba.db_admin.mysql.admin_username}!#{ryba.db_admin.mysql.admin_password}"
+              create_dependency 'MySQL - Connected Threads', 'MySQL - TCP', host
           if 'ryba/zookeeper/server' in ctx.services
             w.modules.push 'zookeeper_server' if 'zookeeper_server' not in w.modules
             h.hostgroups.push 'zookeeper_server' if 'zookeeper_server' not in h.hostgroups
