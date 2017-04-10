@@ -1053,10 +1053,10 @@ Theses functions are used to generate business rules
         services['Cluster Availability'].use ?= 'bp-service'
         services['Cluster Availability'].check_command ?= bp_has_all '.*Available', '$HOSTNAME$'
 
-      if shinken.cluster_conf_dirs?
-        shinken.cluster_conf_dirs = [shinken.cluster_conf_dirs] unless Array.isArray shinken.cluster_conf_dirs
-        for confdir in shinken.cluster_conf_dirs
-          from_contexts.call @, glob.sync(confdir).map((f) -> require f) 
+      if shinken.contexts_dirs?
+        shinken.contexts_dirs = [shinken.contexts_dirs] unless Array.isArray shinken.contexts_dirs
+        for ctx_dir in shinken.contexts_dirs
+          from_contexts.call @, glob.sync(ctx_dir).map((f) -> require f) 
       else
         from_contexts.call @, @contexts '**'
 

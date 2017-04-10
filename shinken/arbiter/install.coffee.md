@@ -148,9 +148,7 @@ Objects config
 
 ### Services Config
 
-TODO: explain why this is commented or simply remove
-
-      # @call header: 'Ryba Services Config', ->
+      # @call header: 'Ryba Services Config', handler: ->
         # @file.render
         #   target: '/etc/shinken/services/hadoop-services.cfg'
         #   source: "#{__dirname}/resources/hadoop-services.cfg.j2"
