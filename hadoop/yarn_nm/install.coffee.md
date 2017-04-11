@@ -64,13 +64,12 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-mapreduce'
         @hdp_select
           name: 'hadoop-client'
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: "#{yarn.nm.pid_dir}"
-            uid: yarn.user.name
-            gid: hadoop_group.name
-            perm: '0755'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: "#{yarn.nm.pid_dir}"
+          uid: yarn.user.name
+          gid: hadoop_group.name
+          perm: '0755'
         @call
           if: yarn.site['spark.shuffle.service.enabled'] is 'true'
           header: 'Spark Worker Shuffle Package'

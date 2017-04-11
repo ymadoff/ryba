@@ -99,13 +99,12 @@ Install Atlas packages
         @system.link
           target: atlas.conf_dir
           source: '/usr/hdp/current/atlas-server/conf'
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: atlas.pid_dir
-            uid: atlas.user.name
-            gid: atlas.group.name
-            perm: '0750'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: atlas.pid_dir
+          uid: atlas.user.name
+          gid: atlas.group.name
+          perm: '0750'
 
 ## SSL 
 

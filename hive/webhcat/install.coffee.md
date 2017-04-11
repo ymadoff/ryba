@@ -68,13 +68,12 @@ inside "/etc/init.d" and activate it on startup.
           target: '/etc/init.d/hive-webhcat-server'
           mode: 0o0755
           context: @config.ryba
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: webhcat.pid_dir
-            uid: hive.user.name
-            gid: hadoop_group.name
-            perm: '0750'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: webhcat.pid_dir
+          uid: hive.user.name
+          gid: hadoop_group.name
+          perm: '0750'
         @system.execute
           cmd: "service hive-webhcat-server restart"
           if: -> @status -3

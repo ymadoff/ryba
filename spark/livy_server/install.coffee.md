@@ -59,13 +59,12 @@ Write startup script to /etc/init.d/service-hue-docker
           target: "/etc/init.d/#{spark.livy.service}"
           context: spark.livy
           mode: 0o755
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: spark.livy.pid_dir
-            uid: spark.user.name
-            gid: spark.group.name
-            perm: '0750'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: spark.livy.pid_dir
+          uid: spark.user.name
+          gid: spark.group.name
+          perm: '0750'
 
 ## Layout
 

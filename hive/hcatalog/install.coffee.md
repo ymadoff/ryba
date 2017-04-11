@@ -93,13 +93,12 @@ isnt yet started.
           target: '/etc/init.d/hive-hcatalog-server'
           context: @config.ryba
           mode: 0o0755
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: hive.hcatalog.pid_dir
-            uid: hive.user.name
-            gid: hive.group.name
-            perm: '0750'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: hive.hcatalog.pid_dir
+          uid: hive.user.name
+          gid: hive.group.name
+          perm: '0750'
         @system.execute
           cmd: "service hive-hcatalog-server restart"
           if: -> @status -4

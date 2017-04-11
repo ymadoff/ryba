@@ -37,36 +37,31 @@ in order to rendered configuration file with custom properties.
         @service name: 'mongodb-org-server'
         @service name: 'mongodb-org-shell'
         @service name: 'mongodb-org-tools'
-        @system.discover (err, status, os) ->
-          @call
-            header: 'RPM'
-            if: -> (os.type in ['redhat','centos'])
-          , ->
-            switch os.release[0]
-              when '6'
-                @service.init
-                  source: "#{__dirname}/../resources/mongod-config-server.j2"
-                  target: '/etc/init.d/mongod-config-server'
-                  context: @config
-                  mode: 0o0750
-                  local: true
-                  eof: true
-                break;
-              when '7'
-                @service.init
-                  source: "#{__dirname}/../resources/mongod-config-server-redhat-7.j2"
-                  target: '/usr/lib/systemd/system/mongod-config-server.service'
-                  context: @config
-                  mode: 0o0640
-                  local: true
-                  eof: true
-                @system.tmpfs
-                  mount: mongodb.configsrv.pid_dir
-                  uid: mongodb.user.name
-                  gid: mongodb.group.name
-                  perm: '0750'
-                @service.startup
-                  name: 'mongod-config-server'
+        @service.init
+          if_os: name: ['redhat','centos'], version: '6'
+          source: "#{__dirname}/../resources/mongod-config-server.j2"
+          target: '/etc/init.d/mongod-config-server'
+          context: @config
+          mode: 0o0750
+          local: true
+          eof: true
+        @call
+          if_os: name: ['redhat','centos'], version: '7'
+        , ->
+          @service.init
+            source: "#{__dirname}/../resources/mongod-config-server-redhat-7.j2"
+            target: '/usr/lib/systemd/system/mongod-config-server.service'
+            context: @config
+            mode: 0o0640
+            local: true
+            eof: true
+          @system.tmpfs
+            mount: mongodb.configsrv.pid_dir
+            uid: mongodb.user.name
+            gid: mongodb.group.name
+            perm: '0750'
+          @service.startup
+            name: 'mongod-config-server'
 
 
 ## Layout

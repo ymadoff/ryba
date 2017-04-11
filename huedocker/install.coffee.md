@@ -329,13 +329,12 @@ Write startup script to /etc/init.d/service-hue-docker
           target: "/etc/init.d/#{hue_docker.service}"
           context: hue_docker
           mode: 0o755
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: hue_docker.pid_file
-            uid: hue_docker.user.name
-            gid: hue_docker.group.name
-            perm: '0750'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: hue_docker.pid_file
+          uid: hue_docker.user.name
+          gid: hue_docker.group.name
+          perm: '0750'
 
 ## Dependencies
 

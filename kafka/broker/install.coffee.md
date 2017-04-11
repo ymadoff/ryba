@@ -68,13 +68,12 @@ directories.
           local: true
           mode: 0o0755
           context: @config
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: '/var/run/kafka'
-            uid: kafka.user.name
-            gid: kafka.group.name
-            perm: '0750'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: '/var/run/kafka'
+          uid: kafka.user.name
+          gid: kafka.group.name
+          perm: '0750'
 
 ## Configure
 

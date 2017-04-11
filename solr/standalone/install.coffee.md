@@ -110,13 +110,12 @@ Ryba support installing solr from apache official release or HDP Search repos.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: solr.single.pid_dir
-            uid: solr.user.name
-            gid: solr.group.name
-            perm: '0750'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: solr.single.pid_dir
+          uid: solr.user.name
+          gid: solr.group.name
+          perm: '0750'
         @system.mkdir
           target: solr.single.log_dir
           uid: solr.user.name

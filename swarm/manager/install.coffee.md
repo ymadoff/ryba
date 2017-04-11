@@ -68,26 +68,22 @@ Same logic that `masson/commons/docker`, but add the swarm starting options.
         for type, socketPaths of @config.docker.sockets
           opts.push "-H #{type}://#{path}" for path in socketPaths
         other_opts += opts.join ' '
-        @system.discover (err, status, os) ->
-          if os.type in ['redhat','centos']
-            switch os.release[0]
-              when '6' 
-                @file
-                  target: '/etc/sysconfig/docker'
-                  write: [
-                    match: /^other_args=.*$/mg
-                    replace: "other_args=\"#{other_opts}\"" 
-                  ]
-                  backup: true
-              when '7'
-                @file
-                  target: '/etc/sysconfig/docker'
-                  write: [
-                    match: /^OPTIONS=.*$/mg
-                    replace: "OPTIONS=\"#{other_opts}\"" 
-                  ]
-                  backup: true
-          else throw Error 'Swarm agent not supported on your OS'
+        @file
+          if_os: name: ['redhat','centos'], version: '6'
+          target: '/etc/sysconfig/docker'
+          write: [
+            match: /^other_args=.*$/mg
+            replace: "other_args=\"#{other_opts}\"" 
+          ]
+          backup: true
+        @file
+          if_os: name: ['redhat','centos'], version: '7'
+          target: '/etc/sysconfig/docker'
+          write: [
+            match: /^OPTIONS=.*$/mg
+            replace: "OPTIONS=\"#{other_opts}\"" 
+          ]
+          backup: true
         @service.restart
           name: 'docker'
           if: -> @status -1

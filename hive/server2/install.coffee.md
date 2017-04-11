@@ -82,13 +82,12 @@ isnt yet started.
           context: @config.ryba
           target: '/etc/init.d/hive-server2'
           mode: 0o0755
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: hive.server2.pid_dir
-            uid: hive.user.name
-            gid: hive.group.name
-            perm: '0750'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: hive.server2.pid_dir
+          uid: hive.user.name
+          gid: hive.group.name
+          perm: '0750'
         @system.execute
           cmd: "service hive-server2 restart"
           if: -> @status -4

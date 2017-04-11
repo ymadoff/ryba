@@ -77,13 +77,12 @@ which has no dependency.
           local: true
           target: '/etc/init.d/zookeeper-server'
         #TODO: Move pid creation dir to systemd startup scripts
-        @system.discover (err, status, os) ->
-          @system.tmpfs
-            if: -> (os.type in ['redhat','centos']) and (os.release[0] is '7')
-            mount: zookeeper.pid_dir
-            uid: zookeeper.user.name
-            gid: zookeeper.group.name
-            perm: '0750'
+        @system.tmpfs
+          if_os: name: ['redhat','centos'], version: '7'
+          mount: zookeeper.pid_dir
+          uid: zookeeper.user.name
+          gid: zookeeper.group.name
+          perm: '0750'
 
 ## Kerberos
 
