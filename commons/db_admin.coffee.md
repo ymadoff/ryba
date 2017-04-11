@@ -38,6 +38,7 @@ set it hosts will be constructed on it.
     module.exports =
       use:
         mysql: 'masson/commons/mysql/server'
+        mariadb: 'masson/commons/mariadb/server'
         postres: 'masson/commons/postgres/server'
       configure: ->
         {ryba} = @config ?= {}
@@ -45,10 +46,12 @@ set it hosts will be constructed on it.
         ryba.engine ?= ryba.db_admin.engine ?= 'mysql'
         # Discovers databases configurations
         mysql_ctxs = @contexts 'masson/commons/mysql/server'
+        mariadb_ctxs = @contexts 'masson/commons/mariadb/server'
         postgres_ctxs = @contexts 'masson/commons/postgres/server'
         ryba.db_admin.mysql ?= {}
         ryba.db_admin.mysql.engine = 'mysql'
-        mysql_hosts = ryba.db_admin.mysql.hosts ?= mysql_ctxs.map (ctx) -> ctx.config.host
+        ctxs = if mysql_ctxs.length isnt 0 then mysql_ctxs else mariadb_ctxs
+        mysql_hosts = ryba.db_admin.mysql.hosts ?= ctxs.map (ctx) -> ctx.config.host
         #backward compatibility with only host property
         if ryba.db_admin.mysql.host?
           mysql_hosts = ["#{ryba.db_admin.mysql.host}"]
@@ -58,9 +61,9 @@ set it hosts will be constructed on it.
           mysql_host = ryba.db_admin.mysql.host ?= mysql_hosts[0]
           ryba.db_admin.mysql.path ?= 'mysql'
           ryba.db_admin.mysql.engine ?= 'mysql'
-          cluster_servers = mysql_ctxs.filter( (ctx) -> ctx.config.host in mysql_hosts)
+          cluster_servers = ctxs.filter (ctx) -> ctx.config.host in mysql_hosts
           if cluster_servers.length > 0
-            mysql_conf = mysql_ctxs[0].config.mysql.server
+            mysql_conf = ctxs[0].config.mysql.server
             ryba.db_admin.mysql.admin_username ?= 'root'
             ryba.db_admin.mysql.admin_password ?= mysql_conf.password
             ryba.db_admin.mysql.port ?= mysql_conf.my_cnf['mysqld']['port']
