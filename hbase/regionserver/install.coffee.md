@@ -184,6 +184,8 @@ Enable stats collection in Ganglia and Graphite
         content: hbase.metrics.config
         backup: true
         mode: 0o0640
+        uid: hbase.user.name
+        gid: hbase.group.name
 
 # User limits
 

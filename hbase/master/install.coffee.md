@@ -205,6 +205,8 @@ Enable stats collection in Ganglia and Graphite
         content: hbase.metrics.config
         backup: true
         mode: 0o640
+        uid: hbase.user.name
+        gid: hbase.group.name
 
       # @call header: 'SSL', retry: 0, ->
       #   {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
