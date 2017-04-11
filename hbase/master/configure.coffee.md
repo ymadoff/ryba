@@ -99,7 +99,9 @@ Example
       hbase.master.site['hbase.master.keytab.file'] ?= '/etc/security/keytabs/hm.service.keytab'
       hbase.master.site['hbase.master.kerberos.principal'] ?= "hbase/_HOST@#{realm}" # "hm/_HOST@#{realm}" <-- need zookeeper auth_to_local
       hbase.master.site['hbase.regionserver.kerberos.principal'] ?= "hbase/_HOST@#{realm}" # "rs/_HOST@#{realm}" <-- need zookeeper auth_to_local
-      hbase.master.site['hbase.coprocessor.master.classes'] ?= 'org.apache.hadoop.hbase.security.access.AccessController'
+      hbase.master.site['hbase.coprocessor.master.classes'] ?= [
+        'org.apache.hadoop.hbase.security.access.AccessController'
+      ]
       # master be able to communicate with regionserver
       hbase.master.site['hbase.coprocessor.region.classes'] ?= [
         'org.apache.hadoop.hbase.security.token.TokenProvider'
@@ -169,6 +171,13 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
           hbase.master.site['hbase.meta.replica.count'] ?= '3' # Default to '1'
           hbase.master.site['hbase.region.replica.wait.for.primary.flush'] ?= 'true'
           hbase.master.site['hbase.region.replica.storefile.refresh.memstore.multiplier'] ?= '4'
+
+## Configuration Region Server Groups
+
+        # see https://hbase.apache.org/book.html#rsgroup
+        if hbase.rsgroups_enabled
+          hbase.master.site['hbase.master.loadbalancer.class'] = 'org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer'
+          hbase.master.site['hbase.coprocessor.master.classes'].push 'org.apache.hadoop.hbase.rsgroup.RSGroupAdminEndpoint' unless 'org.apache.hadoop.hbase.rsgroup.RSGroupAdminEndpoint' in hbase.master.site['hbase.coprocessor.master.classes']
 
 ## Configuration Cluster Replication
 
