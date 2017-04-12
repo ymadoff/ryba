@@ -1056,7 +1056,7 @@ Theses functions are used to generate business rules
       if shinken.contexts_dirs?
         shinken.contexts_dirs = [shinken.contexts_dirs] unless Array.isArray shinken.contexts_dirs
         for ctx_dir in shinken.contexts_dirs
-          from_contexts.call @, glob.sync(ctx_dir).map((f) -> require f) 
+          from_contexts.call @, glob.sync("#{ctx_dir}/*").map((f) -> require f) 
       else
         from_contexts.call @, @contexts '**'
 
