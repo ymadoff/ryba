@@ -148,7 +148,7 @@ Objects config
 
 ### Services Config
 
-      # @call header: 'Ryba Services Config', handler: ->
+      # @call header: 'Ryba Services Config', ->
         # @file.render
         #   target: '/etc/shinken/services/hadoop-services.cfg'
         #   source: "#{__dirname}/resources/hadoop-services.cfg.j2"
