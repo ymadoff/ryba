@@ -43,6 +43,7 @@
       [pg_ctx] = @contexts 'masson/commons/postgres/server'
       [my_ctx] = @contexts 'masson/commons/mysql/server'
       [maria_ctx] = @contexts 'masson/commons/mariadb/server'
+      @config.ryba ?= {}
       {db_admin} = @config.ryba
       # Init
       ambari_server = @config.ryba.ambari_server ?= {}
@@ -60,7 +61,8 @@
       ambari_server.sudo ?= false
       ambari_server.java_home ?= java_ctx.config.java.java_home
       ambari_server.admin ?= {}
-      ambari_server.admin_password ?= 'admin123'
+      ambari_server.current_admin_password ?= 'admin'
+      throw Error "Required Option: admin_password" unless ambari_server.admin_password
 
 ## Identities
 

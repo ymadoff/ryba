@@ -41,11 +41,13 @@ set it hosts will be constructed on it.
         mariadb: 'masson/commons/mariadb/server'
         postres: 'masson/commons/postgres/server'
       configure: ->
+      
+        @config.ryba ?= {}
         {ryba} = @config ?= {}
         ryba.db_admin ?= {}
         ryba.engine ?= ryba.db_admin.engine ?= 'mysql'
         # Discovers databases configurations
-        mysql_ctxs = @contexts 'masson/commons/mysql/server'
+        mysql_ctxs = @contexts ['masson/commons/mysql/server', 'masson/commons/mysql/server.5.7']
         mariadb_ctxs = @contexts 'masson/commons/mariadb/server'
         postgres_ctxs = @contexts 'masson/commons/postgres/server'
         ryba.db_admin.mysql ?= {}

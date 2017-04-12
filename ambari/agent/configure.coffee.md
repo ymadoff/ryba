@@ -3,6 +3,7 @@
 
     module.exports = ->
       [srv_ctx] = @contexts 'ryba/ambari/server'
+      @config.ryba ?= {}
       ambari_server = srv_ctx.config.ryba.ambari_server
       ambari_agent = @config.ryba.ambari_agent ?= {}
 
