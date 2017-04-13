@@ -63,11 +63,11 @@ They must have register set to 0 to not be instanciated
       hosts['linux-server'].use ?= 'generic-host'
       hosts['linux-server'].check_interval ?= '60'
       hosts['linux-server'].retry_interval ?= '20'
-      hosts['linux-server'].register = '0'
+      hosts['linux-server'].register = '0' # IT'S A TEMPLATE !
       hosts['aggregates'] ?= {}
       hosts['aggregates'].use ?= 'generic-host'
       hosts['aggregates'].check_command ?= 'ok'
-      hosts['aggregates'].register = '0'
+      hosts['aggregates'].register = '0' # IT'S A TEMPLATE !
       # Services
       services['generic-service'] ?= {}
       services['generic-service'].use ?= ''
@@ -1075,6 +1075,7 @@ Theses functions are used to generate business rules
       for name, host of hosts
         host.alias ?= name
         host.use ?= 'generic-host'
+        host.hostgroups ?= []
         host.hostgroups = [host.hostgroups] unless Array.isArray host.hostgroups
       # ServiceGroups
       for name, group of shinken.config.servicegroups
