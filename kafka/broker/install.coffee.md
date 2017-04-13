@@ -70,7 +70,7 @@ directories.
           context: @config
         @system.tmpfs
           if_os: name: ['redhat','centos'], version: '7'
-          mount: '/var/run/kafka'
+          mount: kafka.broker.run_dir
           uid: kafka.user.name
           gid: kafka.group.name
           perm: '0750'
@@ -278,6 +278,16 @@ will be placed in the directory which currently has the fewest partitions.
           mode: 0o0750
           parent: true
         ) for dir in kafka.broker.config['log.dirs'].split ','
+        @system.mkdir
+          target: kafka.broker.log_dir
+          uid: kafka.user.name
+          gid: kafka.group.name
+          mode: 0o0750
+        @system.mkdir
+          target: kafka.broker.run_dir
+          uid: kafka.user.name
+          gid: kafka.group.name
+          mode: 0o0750
 
 ## Ranger Kafka Plugin Install
 

@@ -45,6 +45,8 @@ Example:
       # Layout
       kafka.broker.conf_dir ?= '/etc/kafka-broker/conf'
       kafka.broker['heapsize'] ?= '1024'
+      kafka.broker.log_dir ?= '/var/log/kafka'
+      kafka.broker.run_dir ?= '/var/run/kafka'
       kafka.broker.config ?= {}
       if @config.metric_sinks?.graphite?
         kafka.broker.config['kafka.metrics.reporters'] ?= 'com.criteo.kafka.KafkaGraphiteMetricsReporter'

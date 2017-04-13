@@ -93,7 +93,7 @@ The properties can be found [here][kafka-repository]
         # V3 configuration
         kafka_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
         kafka_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
-        kafka_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hdfs/audit/kafka/spool'
+        kafka_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{kafka.broker.log_dir}/audit/hdfs/spool"
 
         kafka_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] ?= 'true'
         if kafka_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
@@ -118,7 +118,7 @@ The properties can be found [here][kafka-repository]
           kafka_plugin.install['XAAUDIT.SOLR.USER'] ?= ranger.admin.install['audit_solr_user']
           kafka_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
           kafka_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
-          kafka_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/kafka/audit/solr/spool'
+          kafka_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{kafka.broker.log_dir}/audit/solr/spool"
 
 ## Kafka Plugin SSL
 
