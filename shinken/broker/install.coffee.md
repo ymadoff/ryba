@@ -36,10 +36,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           @call unless_exec: "pip list | grep #{k}", ->
             @file.download
               source: v.url
-              target: "#{shinken.build_dir}/##{v.archive}.tar.gz"
+              target: "#{shinken.build_dir}/#{v.archive}.tar.gz"
               md5: v.md5
             @tools.extract
-              source: "#{shinken.build_dir}/##{v.archive}.tar.gz"
+              source: "#{shinken.build_dir}/#{v.archive}.tar.gz"
             @system.execute
               cmd:"""
               cd #{shinken.build_dir}/#{v.archive}
