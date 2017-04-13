@@ -130,7 +130,7 @@ Write file in profile.d to be able to communicate with swarm master.
             append: true
           ,
             match: /^export DOCKER_TLS_VERIFY=.*$/mg
-            replace: "export DOCKER_TLS_VERIFY=#{if @config.docker.sslEnabled then 1 else 0}"
+            replace: "export DOCKER_TLS_VERIFY=#{if @config.docker.ssl.enabled then 1 else 0}"
             append: true
           ]
           backup: true

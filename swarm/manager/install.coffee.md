@@ -99,7 +99,7 @@ on the local engine daemon (before configuring swarm).
         port: primary_ctx.config.ryba.swarm.manager.advertise_port
       @call =>
         args = []
-        if @config.docker.sslEnabled?
+        if @config.docker.ssl.enabled
          args.push [
             '--tlsverify'
             "--tlskey=/certs/#{path.basename @config.docker.ssl.key}"
@@ -148,7 +148,7 @@ on the swarm cluster level
             append: true
           ,
             match: /^export DOCKER_TLS_VERIFY=.*$/mg
-            replace: "export DOCKER_TLS_VERIFY=#{if @config.docker.sslEnabled then 1 else 0}" 
+            replace: "export DOCKER_TLS_VERIFY=#{if @config.docker.ssl.enabled then 1 else 0}" 
             append: true
           ]
           backup: true
