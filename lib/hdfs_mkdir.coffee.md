@@ -84,4 +84,4 @@ Options include:
 
 ## Dependecies
 
-    {mode} = require 'nikita/src/misc'
+    {mode} = require 'nikita/lib/misc'
