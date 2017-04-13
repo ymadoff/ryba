@@ -95,6 +95,8 @@ Hadoop group. The default group name is "hadoop".
       ambari_server.config['server.url_port'] ?= "8440"
       ambari_server.config['server.secured_url_port'] ?= "8441"
       ambari_server.config['client.api.port'] ?= "8080"
+      # Be Carefull, collision in HDP 2.5.3 on port 8443 between Ambari and Knox
+      ambari_server.config['client.api.ssl.port'] ?= "8443"
 
 ## Database
 
