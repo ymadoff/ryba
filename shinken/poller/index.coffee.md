@@ -20,14 +20,14 @@ is approximatively 1000 checks/s
         iptables: implicit: true, module: 'masson/core/iptables'
         docker: implicit: true, module: 'masson/commons/docker'
       configure: [
-        'ryba/shinken/lib/configure'
+        'ryba/shinken/commons/configure'
         'ryba/shinken/poller/configure'
       ]
       commands:
         'check':
           'ryba/shinken/poller/configure'
         'install': [
-          'ryba/shinken/lib/commons'
+          'ryba/shinken/commons/install'
           'ryba/shinken/poller/install'
           'ryba/shinken/poller/start'
           'ryba/shinken/poller/check'

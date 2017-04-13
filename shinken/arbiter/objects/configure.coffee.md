@@ -1,5 +1,5 @@
 
-# Configure
+# Configure Shinken Objects
 
     module.exports = ->
       {shinken} = @config.ryba
@@ -250,7 +250,7 @@ An external configuration can be obtained with an instance of ryba using
 
 Theses functions are used to generate business rules
 
-      bp_miss = (n, name, g) -> "bp_rule!(100%,1,#{n} of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
+      bp_miss = (n, name, g) -> "bp_rule!(100%,1,-#{n} of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
       bp_has_quorum = (name, g) -> "bp_rule!(100%,1,50% of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
       bp_has_one = (name, g) -> "bp_rule!(100%,1,100% of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
       bp_has_all = (name, g) -> "bp_rule!(100%,1,1 of: #{ if g? then "g:#{g}" else '*'},r:^#{name}?)"
@@ -741,8 +741,7 @@ Theses functions are used to generate business rules
             services['Kafka Broker - TCPs'].servicegroups ?= ['kafka_broker']
             services['Kafka Broker - TCPs'].use ?= 'process-service'
             services['Kafka Broker - TCPs']['_process_name'] ?= 'kafka-broker'
-            bp_rule = ryba.kafka.broker.protocols.map((p) -> "$HOSTNAME$,Kafka Broker - TCP #{p}").join(' & ')
-            services['Kafka Broker - TCPs'].check_command ?= "bp_rule!(#{bp_rule})"
+            services['Kafka Broker - TCPs'].check_command ?= "bp_rule!($HOSTNAME$,r:^Kafka Broker - TCP .*$)"
           if 'ryba/opentsdb' in ctx.services
             w.modules.push 'opentsdb' if 'opentsdb' not in w.modules
             h.hostgroups.push 'opentsdb' if 'opentsdb' not in h.hostgroups

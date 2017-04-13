@@ -42,11 +42,3 @@
         admins:
           alias: 'Shinken Administrators'
           members: ['shinken']
-
-Object Configuration
-
-      configure.call @
-
-## Dependencies
-
-    configure = require './lib/configure_objects'

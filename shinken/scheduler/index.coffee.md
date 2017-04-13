@@ -14,14 +14,14 @@ Sends broks (internal events of any kind) to the broker(s)
         yum: implicit: true, module: 'masson/core/yum'
         iptables: implicit: true, module: 'masson/core/iptables'
       configure: [
-        'ryba/shinken/lib/configure'
+        'ryba/shinken/commons/configure'
         'ryba/shinken/scheduler/configure'
       ]
       commands:
         'check':
           'ryba/shinken/scheduler/check'
         'install': [
-          'ryba/shinken/lib/commons'
+          'ryba/shinken/commons/install'
           'ryba/shinken/scheduler/install'
           'ryba/shinken/scheduler/start'
           'ryba/shinken/scheduler/check'

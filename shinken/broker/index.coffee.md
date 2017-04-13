@@ -23,14 +23,14 @@ and a type if different from the name.
         yum: implicit: true, module: 'masson/core/yum'
         iptables: implicit: true, module: 'masson/core/iptables'
       configure: [
-        'ryba/shinken/lib/configure'
+        'ryba/shinken/commons/configure'
         'ryba/shinken/broker/configure'
       ]
       commands:
         'check':
           'ryba/shinken/broker/configure'
         'install': [
-          'ryba/shinken/lib/commons'
+          'ryba/shinken/commons/install'
           #'ryba/mongodb'
           'ryba/shinken/broker/install'
           'ryba/shinken/broker/start'

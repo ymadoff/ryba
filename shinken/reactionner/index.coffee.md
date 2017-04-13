@@ -9,14 +9,14 @@ and sends the results to the scheduler.
         yum: implicit: true, module: 'masson/core/yum'
         iptables: implicit: true, module: 'masson/core/iptables'
       configure: [
-        'ryba/shinken/lib/configure'
+        'ryba/shinken/commons/configure'
         'ryba/shinken/reactionner/configure'
       ]
       commands:
         'check':
           'ryba/shinken/reactionner/check'
         'install': [
-          'ryba/shinken/lib/commons'
+          'ryba/shinken/commons/install'
           'ryba/shinken/reactionner/install'
           'ryba/shinken/reactionner/start'
           'ryba/shinken/reactionner/check'

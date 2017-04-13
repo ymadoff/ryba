@@ -55,14 +55,15 @@ to its associated Scheduler.
         zookeeper_client: 'ryba/zookeeper/client'
         zookeeper_server: 'ryba/zookeeper/server'
       configure: [
-        'ryba/shinken/lib/configure'
+        'ryba/shinken/commons/configure'
         'ryba/shinken/arbiter/configure'
+        'ryba/shinken/arbiter/objects/configure'
       ]
       commands:
         'check':
           'ryba/shinken/arbiter/check'
         'install': [
-          'ryba/shinken/lib/commons'
+          'ryba/shinken/commons/install'
           'ryba/shinken/arbiter/install'
           'ryba/shinken/arbiter/start'
           'ryba/shinken/arbiter/check'
