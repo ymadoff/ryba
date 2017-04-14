@@ -6,6 +6,8 @@
       nm_ctxs = @contexts 'ryba/hadoop/yarn_nm'
       graphite_ctxs = @contexts 'ryba/graphite/carbon'
       [ganglia_ctx] = @contexts 'ryba/ganglia/collector'
+      hcat_ctxs = @contexts 'ryba/hive/hcatalog'
+      throw Error "No HCatalog server declared" unless hcat_ctxs[0]
       spark = @config.ryba.spark ?= {}
       spark.conf ?= {}
       # User
@@ -72,6 +74,44 @@
       spark.conf['spark.yarn.services'] ?= 'org.apache.spark.deploy.yarn.history.YarnHistoryService'
       spark.conf['spark.yarn.submit.file.replication'] ?= '3'
       spark.dist_files ?= []
+
+## Client Metastore Configuration
+Spark needs hive-site.xml in order to create hive spark context. Spark is client
+towards hive/hcatalog and needs its client configuration.
+the hive-site.xml is set inside /etc/spark/conf/ dir.
+
+      spark.hive ?= {}
+      spark.hive.site ?= {}
+      for property in [
+        'hive.metastore.uris'
+        'hive.security.authorization.enabled'
+        'hive.security.authorization.manager'
+        'hive.security.metastore.authorization.manager'
+        'hive.security.authenticator.manager'
+        # Transaction, read/write locks
+        'hive.support.concurrency'
+        'hive.enforce.bucketing'
+        'hive.exec.dynamic.partition.mode'
+        'hive.txn.manager'
+        'hive.txn.timeout'
+        'hive.txn.max.open.batch'
+        'hive.cluster.delegation.token.store.zookeeper.connectString'
+        # 'hive.cluster.delegation.token.store.class'
+        # 'hive.metastore.local'
+        # 'fs.hdfs.impl.disable.cache'
+        'hive.metastore.sasl.enabled'
+        # 'hive.metastore.cache.pinobjtypes'
+        # 'hive.metastore.kerberos.keytab.file'
+        'hive.metastore.kerberos.principal'
+        # 'hive.metastore.pre.event.listeners'
+        'hive.optimize.mapjoin.mapreduce'
+        'hive.heapsize'
+        'hive.auto.convert.sortmerge.join.noconditionaltask'
+        'hive.exec.max.created.files'
+        'hive.metastore.warehouse.dir'
+        # Transaction, read/write locks
+      ] then spark.hive.site[property] ?= hcat_ctxs[0].config.ryba.hive.hcatalog.site[property]
+      spark.hive.site['hive.execution.engine'] ?= 'mr'
 
 [secu]: http://spark.apache.org/docs/latest/security.html
 
