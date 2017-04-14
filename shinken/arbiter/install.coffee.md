@@ -164,3 +164,12 @@ Objects config
         #   source: "#{__dirname}/resources/hadoop-dependencies.cfg.j2"
         #   local: true
         #   context: hosts: shinken.config.hosts
+
+## Check Config
+
+This will execute a dry-run: arbiter will only check the configuration and exit
+This output is more verbose than a failed start so it runs at the end of install
+
+      @execute
+        header: 'Check config'
+        cmd: 'shinken-arbiter -v -r -c /etc/shinken/shinken.cfg'
