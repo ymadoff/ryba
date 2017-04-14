@@ -46,7 +46,7 @@ of your cluster.
         hdfs: 'ryba/hadoop/hdfs_client'
         yarn_nm: 'ryba/hadoop/yarn_nm'
         hive_client: 'ryba/hive/client'
-        hive_beeline: implicit: true, module: 'ryba/hive/beeline'
+        hive_beeline: module: 'ryba/hive/beeline'
         oozie: 'ryba/ooozie/client'
         graphite: 'ryba/graphite/carbon'
         ganglia: 'ryba/ganglia/collector'
