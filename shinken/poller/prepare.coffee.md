@@ -23,12 +23,12 @@
         @file
           header: 'Write RSA Private Key'
           target: "#{@config.nikita.cache_dir or '.'}/build/id_rsa"
-          content: @config.connection.private_key
+          content: @config.ssh.private_key
         @file
           header: 'Write RSA Public Key'
           target: "#{@config.nikita.cache_dir or '.'}/build/id_rsa.pub"
-          content: @config.connection.public_key
-        @docker_build
+          content: @config.ssh.public_key
+        @docker.build
           header: 'Build Container'
           image: 'ryba/shinken-poller-executor'
           file: "#{@config.nikita.cache_dir or '.'}/build/Dockerfile"
@@ -36,7 +36,7 @@
 
 ## Save image
 
-        @docker_save
+        @docker.save
           header: 'Save Container'
           image: 'ryba/shinken-poller-executor'
           target: "#{@config.nikita.cache_dir or '.'}/shinken-poller-executor.tar"

@@ -94,7 +94,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             source: "#{@config.nikita.cache_dir or '.'}/shinken-poller-executor.tar"
             target: '/var/lib/docker_images/shinken-poller-executor.tar'
             md5: true
-          @docker_load
+          @docker.load
             source: '/var/lib/docker_images/shinken-poller-executor.tar'
             if: -> @status -1
           @file
@@ -103,7 +103,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             01 */9 * * * #{shinken.user.name} /usr/bin/kinit #{shinken.poller.executor.krb5.unprivileged.principal} -kt #{shinken.poller.executor.krb5.unprivileged.keytab}
             """
             eof: true
-          @docker_service
+          @docker.service
             name: 'poller-executor'
             image: 'ryba/shinken-poller-executor'
             net: 'host'

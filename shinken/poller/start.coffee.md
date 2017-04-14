@@ -12,9 +12,9 @@ Start the Shinken Poller service.
 Start the docker executors (normal and admin)
 
       @call header: 'Docker Executor', ->
-        @docker_start
+        @docker.start
           container: 'poller-executor'
-        @docker_exec
+        @docker.exec
           container: 'poller-executor'
           cmd: "kinit #{shinken.poller.executor.krb5.unprivileged.principal} -kt #{shinken.poller.executor.krb5.unprivileged.keytab}"
           shy: true
