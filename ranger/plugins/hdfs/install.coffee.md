@@ -49,19 +49,6 @@ The JAAS configuration can be donne with a jaas file and the Namenonde Env prope
 auth.to.login.conf or can be set by properties in ranger-hdfs-audit.xml file.
 Not documented be taken from [github-source][hdfs-plugin-source]
 
-      # wrap into call for version to be not null
-      @file.render
-        header: 'Configuration'
-        if: -> version?
-        source: "#{__dirname}/../../resources/plugin-install.properties.j2"
-        target: "/usr/hdp/#{version}/ranger-hdfs-plugin/install.properties"
-        local: true
-        eof: true
-        backup: true
-        write: for k, v of ranger.hdfs_plugin.install
-          match: RegExp "^#{quote k}=.*$", 'mg'
-          replace: "#{k}=#{v}"
-          append: true
       @call
         header: 'HDFS Plugin'
       , (options, callback) ->
@@ -69,6 +56,19 @@ Not documented be taken from [github-source][hdfs-plugin-source]
         sources_props = {}
         current_props = {}
         files_exists = {}
+        # wrap into call for version to be not null
+        @file.render
+          header: 'Configuration'
+          if: -> version?
+          source: "#{__dirname}/../../resources/plugin-install.properties.j2"
+          target: "/usr/hdp/#{version}/ranger-hdfs-plugin/install.properties"
+          local: true
+          eof: true
+          backup: true
+          write: for k, v of ranger.hdfs_plugin.install
+            match: RegExp "^#{quote k}=.*$", 'mg'
+            replace: "#{k}=#{v}"
+            append: true
         @system.execute
           cmd: """
             echo '' | keytool -list \

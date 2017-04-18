@@ -8,8 +8,6 @@
       {ryba} = @config
       {realm, ssl, core_site, hdfs, hadoop_group, hadoop_conf_dir} = ryba
       ranger = ranger_admin_ctx.config.ryba.ranger ?= {}
-
-      #de-activating now 
       #https://mail-archives.apache.org/mod_mbox/incubator-ranger-user/201605.mbox/%3C363AE5BD-D796-425B-89C9-D481F6E74BAF@apache.org%3E
       ranger.plugins.kafka_enabled ?= if kb_ctxs.length > 0 then true else false
       if ranger.plugins.kafka_enabled
@@ -93,7 +91,7 @@ The properties can be found [here][kafka-repository]
         # V3 configuration
         kafka_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
         kafka_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
-        kafka_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{kafka.broker.log_dir}/audit/hdfs/spool"
+        kafka_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{kb_ctxs[0].config.ryba.kafka.broker.log_dir}/audit/hdfs/spool"
 
         kafka_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] ?= 'true'
         if kafka_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
@@ -118,7 +116,7 @@ The properties can be found [here][kafka-repository]
           kafka_plugin.install['XAAUDIT.SOLR.USER'] ?= ranger.admin.install['audit_solr_user']
           kafka_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
           kafka_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
-          kafka_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{kafka.broker.log_dir}/audit/solr/spool"
+          kafka_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{kb_ctxs[0].config.ryba.kafka.broker.log_dir}/audit/solr/spool"
 
 ## Kafka Plugin SSL
 
