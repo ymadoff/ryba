@@ -177,6 +177,7 @@ depending on the total amout of memory.
       minimum_allocation_mb = null
       maximum_allocation_mb = 0
       maximum_allocation_vcores = 0
+      return if ctxs.filter( (ctx) -> ctx.has_service 'ryba/hadoop/yarn_nm').length is 0
       for ctx in ctxs
         continue unless ctx.has_service 'ryba/hadoop/yarn_nm'
         {cores, disks, cores_yarn, memory_yarn, rm_yarn_site, yarn_site} = ctx.config.capacity

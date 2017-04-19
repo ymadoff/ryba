@@ -126,6 +126,7 @@ protocols.
             --zookeeper #{zoo_connect} | grep #{test_topic}
             """
         @system.execute
+          if:  kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
           cmd: mkcmd.kafka @, """
             (
             /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -139,6 +140,25 @@ protocols.
             )
             """
           unless_exec: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+              --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+              --topic #{test_topic} | grep 'User:ANONYMOUS has Allow permission for operations: Write from hosts: *'
+            """
+        @system.execute
+          unless:  kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
+          cmd: """
+            (
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+              --add --allow-principal User:ANONYMOUS  \
+              --operation Read --operation Write --topic #{test_topic}
+            )&
+            (
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+              --add \
+              --allow-principal User:ANONYMOUS --consumer --group #{kafka.consumer.config['group.id']} --topic #{test_topic}
+            )
+            """
+          unless_exec: """
             /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
               --authorizer-properties zookeeper.connect=#{zoo_connect}  \
               --topic #{test_topic} | grep 'User:ANONYMOUS has Allow permission for operations: Write from hosts: *'

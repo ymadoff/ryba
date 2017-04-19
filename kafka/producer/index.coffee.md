@@ -7,7 +7,6 @@ log. It is fast, scalable, durable and distributed by design.
     module.exports = 
       use:
         kafka_broker: 'ryba/kafka/broker'
-        hadoop_core: implicit: true, module: 'ryba/hadoop/core'
       configure: 'ryba/kafka/producer/configure'
       commands:
         install: [

@@ -8,7 +8,11 @@ log. It is fast, scalable, durable and distributed by design.
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
         java: implicit: true, module: 'masson/commons/java'
-        hadoop_core: implicit: true, module: 'ryba/hadoop/core'
+        krb5_client: implicit: true, module: 'masson/core/krb5_client'
+        krb5_user: implicit: true, module: 'ryba/commons/krb5_user'
+        hdp: 'ryba/hdp'
+        zookeeper: 'ryba/zookeeper/server'
+        hadoop_core: 'ryba/hadoop/core'
         zoo_server: 'ryba/zookeeper/server'
         ranger_admin: 'ryba/ranger/admin'
         ganglia: 'ryba/ganglia/collector'
