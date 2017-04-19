@@ -145,7 +145,7 @@ Environment passed to the RegionServer before it starts.
 
       @call header: 'HBase Env', ->
         hbase.rs.java_opts += " -D#{k}=#{v}" for k, v of hbase.rs.opts
-        hbase.rs.java_opts += "-Xms#{hbase.rs.heapsize} -Xmx#{hbase.rs.heapsize}"
+        hbase.rs.java_opts += " -Xms#{hbase.rs.heapsize} -Xmx#{hbase.rs.heapsize}"
         @file.render
           target: "#{hbase.rs.conf_dir}/hbase-env.sh"
           source: "#{__dirname}/../resources/hbase-env.sh.j2"
