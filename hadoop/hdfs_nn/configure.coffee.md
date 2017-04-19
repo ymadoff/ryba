@@ -160,6 +160,7 @@ fencing method should be configured to not block failover.
       # adding SOCKET appender
       if @config.log4j?.services?
         if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hadoop/hdfs_nn' in @config.log4j?.services)
+          ryba.hdfs.nn.socket_client ?= "SOCKET"
           # Root logger
           if ryba.hdfs.nn.root_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
           then ryba.hdfs.nn.root_logger += ",#{ryba.hdfs.nn.socket_client}"
@@ -169,8 +170,6 @@ fencing method should be configured to not block failover.
           # Audit Logger
           if ryba.hdfs.nn.audit_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
           then ryba.hdfs.nn.audit_logger += ",#{ryba.hdfs.nn.socket_client}"
-
-          ryba.hdfs.nn.socket_client ?= "SOCKET"
           # Adding Application name, remote host and port values in namenode's opts
           ryba.hdfs.nn.opts['hadoop.log.application'] ?= 'namenode'
           ryba.hdfs.nn.opts['hadoop.log.remote_host'] ?= @config.log4j.remote_host
