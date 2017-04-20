@@ -48,6 +48,7 @@
       uigraphite.config ?= {}
       uigraphite.config.uri ?= 'http://localhost:3080/'
       uigraphite.config.templates_path ?= "#{shinken.user.home}/share/templates/graphite/"
+      uigraphite.config.graphite_data_source ?= 'shinken'
       uigraphite.config.dashboard_view_font ?= '8'
       uigraphite.config.dashboard_view_width ?= '320'
       uigraphite.config.dashboard_view_height ?= '240'
@@ -69,6 +70,12 @@
       graphite.source ?= "https://github.com/shinken-monitoring/mod-graphite/archive/#{graphite.version}.zip"
       graphite.archive ?= "mod-graphite-#{graphite.version}"
       graphite.type ?= 'graphite_perfdata'
+      graphite.config.host ?= 'localhost'
+      graphite.config.port ?= 2103
+      graphite.config.state_enable ?= '1'
+      graphite.config.state_host ?= '1'
+      graphite.config.state_service ?= '1'
+      graphite.config.graphite_data_source ?= 'shinken'
       # Livestatus
       livestatus = broker.modules['livestatus'] ?= {}
       livestatus.version ?= '1.4.1'

@@ -127,6 +127,7 @@ They must have register set to 0 to not be instanciated
       contacts['generic-contact'].host_notification_commands ?= 'notify-host-by-email'
       contacts['generic-contact'].host_notifications_enabled ?= '1'
       contacts['generic-contact'].service_notifications_enabled ?= '1'
+      contacts['generic-contact'].can_submit_commands ?= '0'
       contacts['generic-contact'].register = '0'
       contacts['admin-contact'] ?= {}
       contacts['admin-contact'].use ?= 'generic-contact'
@@ -134,6 +135,12 @@ They must have register set to 0 to not be instanciated
       contacts['admin-contact'].is_admin ?= '1'
       contacts['admin-contact'].contactgroups ?= ['admins']
       contacts['admin-contact'].register = '0'
+      contacts['readonly-contact'] ?= {}
+      contacts['readonly-contact'].use ?= 'generic-contact'
+      contacts['readonly-contact'].contactgroups ?= ['readonly']
+      contacts['readonly-contact'].host_notifications_enabled ?= '0'
+      contacts['readonly-contact'].service_notifications_enabled ?= '0'
+      contacts['readonly-contact'].register = '0'
       contacts['shinken'] ?= {}
       contacts['shinken'].contactgroups ?= []
       contacts['shinken'].contactgroups.push 'admins' unless 'admins' in contacts['shinken'].contactgroups
@@ -143,6 +150,12 @@ They must have register set to 0 to not be instanciated
       timeperiods['24x7'].time ?= {}
       for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
         timeperiods['24x7'].time[day] ?= '00:00-24:00'
+      # Timeperiods
+      timeperiods['office'] ?= {}
+      timeperiods['office'].alias ?= 'Everytime'
+      timeperiods['office'].time ?= {}
+      for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+        timeperiods['office'].time[day] ?= '09:00-19:00'
       timeperiods.none ?= {}
       timeperiods.none.alias ?= 'Never'
       timeperiods.none.time = {}

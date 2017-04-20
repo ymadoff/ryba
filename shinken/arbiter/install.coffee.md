@@ -79,13 +79,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             "$DOCKER_EXEC$": 'docker exec poller-executor'
         @file
           target: '/etc/shinken/shinken.cfg'
-          write: for k, v of {
-            'date_format': 'iso8601'
-            'shinken_user': shinken.user.name
-            'shinken_group': shinken.group.name
-            'interval_length': '1'
-            'enable_flap_detection': '1'
-            'no_event_handlers_during_downtimes': '1' }
+          write: for k, v of shinken.config.shinken
               match: ///^#{k}=.*$///mg
               replace: "#{k}=#{v}"
               append: true

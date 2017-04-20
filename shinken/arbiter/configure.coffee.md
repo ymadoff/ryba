@@ -31,7 +31,14 @@
       arbiter.config.host ?= '0.0.0.0'
       arbiter.config.use_ssl ?= shinken.config.use_ssl
       arbiter.config.hard_ssl_name_check ?= shinken.config.hard_ssl_name_check
-      shinken.config.users ?= 
+      shinken.config.shinken ?= {}
+      shinken.config.shinken['date_format'] ?= 'iso8601'
+      shinken.config.shinken['shinken_user'] ?= shinken.user.name
+      shinken.config.shinken['shinken_group'] ?= shinken.group.name
+      shinken.config.shinken['interval_length'] ?= '1'
+      shinken.config.shinken['enable_flap_detection'] ?= '1'
+      shinken.config.shinken['no_event_handlers_during_downtimes'] ?= '1'
+      shinken.config.users ?=
         shinken:
           password: 'shinken123'
           alias: 'Shinken Admin'
