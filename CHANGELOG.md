@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* druid: init script support for rh7
 * druid: remove calls to base install
 * ambari: remove jdbc options from setup
 * ambari: set default https port

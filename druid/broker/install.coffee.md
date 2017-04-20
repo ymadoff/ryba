@@ -19,7 +19,7 @@
 
 ## Configuration
 
-      @file.render
+      @service.init
         header: 'rc.d'
         target: "/etc/init.d/druid-broker"
         source: "#{__dirname}/../resources/druid-broker.j2"

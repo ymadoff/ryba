@@ -19,7 +19,7 @@
 
 ## Configuration
 
-      @file.render
+      @service.init
         header: 'rc.d'
         target: "/etc/init.d/druid-overlord"
         source: "#{__dirname}/../resources/druid-overlord.j2"

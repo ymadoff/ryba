@@ -19,7 +19,7 @@
 
 ## Configuration
 
-      @file.render
+      @service.init
         header: 'rc.d'
         target: "/etc/init.d/druid-historical"
         source: "#{__dirname}/../resources/druid-historical.j2"
