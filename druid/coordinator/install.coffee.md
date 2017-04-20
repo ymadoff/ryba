@@ -3,7 +3,6 @@
 
     module.exports = header: 'Druid Coordinator Install', handler: ->
       {druid} = @config.ryba
-      @call once: true, 'ryba/druid/install'
 
 ## IPTables
 
