@@ -28,10 +28,12 @@
         backup: true
         mode: 0o0755
       @file.properties
+        header: 'Runtime'
         target: "/opt/druid-#{druid.version}/conf/druid/historical/runtime.properties"
         content: druid.historical.runtime
         backup: true
       @file
+        header: 'JVM'
         target: "#{druid.dir}/conf/druid/historical/jvm.config"
         write: [
           match: /^-Xms.*$/m

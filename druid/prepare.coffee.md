@@ -8,3 +8,6 @@ Download the Druid package.
       @file.cache
         ssh: null
         source: "#{druid.source}"
+      @file.cache
+        ssh: null
+        source: "#{druid.source_mysql_extension}"

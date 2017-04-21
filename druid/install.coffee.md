@@ -54,11 +54,20 @@ Download and unpack the release archive.
         header: 'Packages'
         source: "#{druid.source}"
         target: "/var/tmp/#{path.basename druid.source}"
+      @file.download
+        header: 'Packages'
+        if: druid.db.engine is 'mysql'
+        source: "#{druid.source_mysql_extension}"
+        target: "/var/tmp/#{path.basename druid.source_mysql_extension}"
       # TODO, could be improved
       # current implementation prevent any further attempt if download status is true and extract fails
       @tools.extract
         source: "/var/tmp/#{path.basename druid.source}"
         target: '/opt'
+        if: -> @status -1
+      @tools.extract
+        source: "/var/tmp/#{path.basename druid.source_mysql_extension}"
+        target: "/opt/druid-#{druid.version}/extensions/"
         if: -> @status -1
       @system.link
         source: "/opt/druid-#{druid.version}"

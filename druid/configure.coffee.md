@@ -34,6 +34,17 @@ Example:
       druid.hadoop_conf_dir ?= hadoop_ctx.config.ryba.hadoop_conf_dir
       # Package
       druid.version ?= '0.10.0'
+      druid.source ?= "http://static.druid.io/artifacts/releases/druid-#{druid.version}-bin.tar.gz"
+      druid.source_mysql_extension ?= "http://static.druid.io/artifacts/releases/mysql-metadata-storage-#{druid.version}.tar.gz"
+
+## Identities
+
+      # Group
+      druid.group = name: druid.group if typeof druid.group is 'string'
+      druid.group ?= {}
+      druid.group.name ?= 'druid'
+      druid.group.system ?= true
+      druid.user.gid = druid.group.name
       # User
       druid.user = name: druid.user if typeof druid.user is 'string'
       druid.user ?= {}
@@ -42,26 +53,25 @@ Example:
       druid.user.comment ?= 'Druid User'
       druid.user.home ?= "/var/lib/#{druid.user.name}"
       druid.user.groups ?= ['hadoop']
-      # Group
-      druid.group = name: druid.group if typeof druid.group is 'string'
-      druid.group ?= {}
-      druid.group.name ?= 'druid'
-      druid.group.system ?= true
-      druid.user.gid = druid.group.name
-      druid.source ?= "http://static.druid.io/artifacts/releases/druid-#{druid.version}-bin.tar.gz"
-      # Kerberos
+
+## Kerberos
+
       druid.krb5_admin ?= {}
       druid.krb5_admin.principal ?= "druid@#{realm}"
       druid.krb5_admin.password ?= "druid123"
       druid.krb5_service ?= {}
       druid.krb5_service.principal ?= "druid/#{@config.host}@#{realm}"
       druid.krb5_service.keytab ?= "#{druid.dir}/conf/druid/_common/druid.keytab"
-      # Configuration
+
+## Configuration
+
       druid.common_runtime ?= {}
       # Extensions
       # Note, Mysql extension isnt natively supported due to licensing issues
+      # Seems like it is either postgresql or mysql extension ("postgresql-metadata-storage", "mysql-metadata-storage")
       # "druid-s3-extensions",
-      druid.common_runtime['druid.extensions.loadList'] ?= '["druid-kafka-eight", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global", "postgresql-metadata-storage", "druid-hdfs-storage"]' # "mysql-metadata-storage"
+      druid.common_runtime['druid.extensions.loadList'] = JSON.parse druid.common_runtime['druid.extensions.loadList'] if druid.common_runtime['druid.extensions.loadList']
+      druid.common_runtime['druid.extensions.loadList'] ?= ["druid-kafka-eight", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global", "druid-hdfs-storage"]
       # Logging
       druid.common_runtime['druid.startup.logging.logProperties'] ?= 'true'
       # Zookeeper
@@ -84,11 +94,13 @@ Example:
           druid.common_runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:postgresql://#{druid.db.host}:#{druid.db.port}/#{druid.db.database}"
           druid.common_runtime['druid.metadata.storage.connector.host'] ?= "#{druid.db.host}"
           druid.common_runtime['druid.metadata.storage.connector.port'] ?= "#{druid.db.port}"
+          druid.common_runtime['druid.extensions.loadList'].push "postgresql-metadata-storage"
         when 'mysql'
           druid.common_runtime['druid.metadata.storage.type'] ?= 'mysql'
           druid.common_runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:mysql://#{druid.db.host}:#{druid.db.port}/#{druid.db.database}"
-          druid.common_runtime['druid.metadata.storage.connector.host'] ?= "#{my_ctx.config.host}"
-          druid.common_runtime['druid.metadata.storage.connector.port'] ?= "#{my_ctx.config.postgres.server.port}"
+          druid.common_runtime['druid.metadata.storage.connector.host'] ?= "#{druid.db.host}"
+          druid.common_runtime['druid.metadata.storage.connector.port'] ?= "#{druid.db.port}"
+          druid.common_runtime['druid.extensions.loadList'].push "mysql-metadata-storage"
         when 'derby'
           druid.common_runtime['druid.metadata.storage.type'] ?= 'derby'
           druid.common_runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:derby://#{@config.host}:1527/var/druid/metadata.db;create=true"
@@ -120,3 +132,5 @@ Example:
       druid.common_runtime['druid.monitoring.monitors'] ?= '["com.metamx.metrics.JvmMonitor"]'
       druid.common_runtime['druid.emitter'] ?= 'logging'
       druid.common_runtime['druid.emitter.logging.logLevel'] ?= 'info'
+      druid.common_runtime['druid.extensions.loadList'] = JSON.stringify druid.common_runtime['druid.extensions.loadList']
+      
