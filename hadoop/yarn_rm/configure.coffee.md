@@ -221,6 +221,10 @@ rmr /rmstore/ZKRMStateRoot
       ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings'] ?= '' # Introduce by hadoop 2.7
       ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings-override.enable'] ?= 'false' # Introduce by hadoop 2.7
 
+## Admin Web UI
+
+      #Current YARN web UI allows anyone to kill any application as long as the user can login to the web UI.
+      ryba.yarn.rm.site['yarn.resourcemanager.webapp.ui-actions.enabled'] ?= 'false'
 
 ## Logs Aggregation
 
