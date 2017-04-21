@@ -21,6 +21,9 @@ Example:
       @config.ryba ?= {}
       {realm} = @config.ryba
       druid = @config.ryba.druid ?= {}
+
+## Environnment
+
       # Layout
       druid.dir ?= '/opt/druid'
       druid.conf_dir ?= '/etc/druid/conf'
@@ -29,6 +32,8 @@ Example:
       druid.server_opts ?= ''
       druid.server_heap ?= ''
       druid.hadoop_conf_dir ?= hadoop_ctx.config.ryba.hadoop_conf_dir
+      # Package
+      druid.version ?= '0.10.0'
       # User
       druid.user = name: druid.user if typeof druid.user is 'string'
       druid.user ?= {}
@@ -43,8 +48,6 @@ Example:
       druid.group.name ?= 'druid'
       druid.group.system ?= true
       druid.user.gid = druid.group.name
-      # Package
-      druid.version ?= '0.9.1.1'
       druid.source ?= "http://static.druid.io/artifacts/releases/druid-#{druid.version}-bin.tar.gz"
       # Kerberos
       druid.krb5_admin ?= {}
