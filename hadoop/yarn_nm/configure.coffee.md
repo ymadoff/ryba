@@ -1,5 +1,7 @@
 
-## Configuration
+# YARN NodeManager Configuration
+
+## Exemple
 
 ```json
 { "ryba": { "yarn": { "nm": {
@@ -12,6 +14,9 @@
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
       [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts/configure').handler
       {host, ryba} = @config
+
+## Environnment
+
       ryba.yarn.libexec ?= '/usr/hdp/current/hadoop-client/libexec'
       ryba.yarn.nm ?= {}
       ryba.yarn.nm.home ?= '/usr/hdp/current/hadoop-yarn-nodemanager'
@@ -21,6 +26,9 @@
       ryba.yarn.nm.opts ?= {}
       ryba.yarn.nm.java_opts ?= ''
       ryba.yarn.nm.heapsize ?= '1024'
+
+## Configuration
+
       ryba.yarn.site['yarn.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # Working Directories (see capacity for server resource discovery)
       ryba.yarn.site['yarn.nodemanager.local-dirs'] ?= ['/var/yarn/local']
@@ -38,6 +46,10 @@
       ryba.yarn.site['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
       ryba.yarn.site['yarn.nodemanager.principal'] ?= "nm/_HOST@#{ryba.realm}"
       ryba.yarn.site['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1'
+      # Cloudera recommand setting [vmem-check to false on Centos/RHEL 6 due to its aggressive allocation of virtual memory](http://blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
+      # by default, "yarn.nodemanager.vmem-check-enabled" is true (see in yarn-default.xml)
+      ryba.yarn.site['yarn.nodemanager.pmem-check-enabled'] ?= 'true'
+      ryba.yarn.site['yarn.nodemanager.vmem-check-enabled'] ?= 'true'
       ryba.yarn.site['yarn.nodemanager.resource.percentage-physical-cpu-limit'] ?= '100'
       ryba.yarn.site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
@@ -50,12 +62,16 @@
       ryba.yarn.site['yarn.log-aggregation.retain-seconds'] ?= '2592000' #  30 days, how long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
       ryba.yarn.site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
 
-      # See '~/www/src/hadoop/hadoop-common/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#263'
-      # ryba.yarn.site['yarn.nodemanager.webapp.spnego-principal']
-      # ryba.yarn.site['yarn.nodemanager.webapp.spnego-keytab-file']
-      # Cloudera recommand setting [vmem-check to false on Centos/RHEL 6 due to its aggressive allocation of virtual memory](http://blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
-      # by default, "yarn.nodemanager.vmem-check-enabled" is true (see in yarn-default.xml)
-      # [Container Executor](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuration_in_Secure_Mode)
+## Container Executor
+
+[YARN containers][container] in a secure cluster use the operating system 
+facilities to offer execution isolation for containers. Secure containers 
+execute under the credentials of the job user. The operating system enforces 
+access restriction for the container. The container must run as the use that 
+submitted the application.
+
+Secure Containers work only in the context of secured YARN clusters.
+
       ryba.container_executor ?= {}
       ryba.container_executor['yarn.nodemanager.local-dirs'] ?= ryba.yarn.site['yarn.nodemanager.local-dirs']
       ryba.container_executor['yarn.nodemanager.linux-container-executor.group'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.group']
@@ -157,4 +173,5 @@ Resources:
 
     {merge} = require 'nikita/lib/misc'
 
-[yarn-cgroup-red7]:(https://issues.apache.org/jira/browse/YARN-2194)
+[yarn-cgroup-red7]: https://issues.apache.org/jira/browse/YARN-2194
+[container]: http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/SecureContainer.html

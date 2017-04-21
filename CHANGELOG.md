@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* yarn nm: enforce memory check #70
 * src: remove depracated usage of destination
 * oozie: fix lzo package incompatibility
 * hdfs dn: fix lzo package incompatibility
