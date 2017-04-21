@@ -4,17 +4,15 @@ define arbiter {
   host_name           {{ a.config.host }}{# WARNING SHOULD BE SET FOR DISTRIBUTED MODE !!! #}
   address             {{ a.config.host }}
   port                {{ a.config.ryba.shinken.arbiter.config.port }}
-  spare               {{ a.config.ryba.shinken.arbiter.config.spare }}
-  {# 
-  #Uncomment these lines in a HA architecture so the master and slaves know
-  # how long they may wait for each other.
-  #timeout            3   ; Ping timeout
-  #data_timeout       120 ; Data send timeout
-  #max_check_attempts 3   ; If ping fails N or more, then the node is dead
-  #check_interval     60  ; Ping node every N second
-
+  spare               {{ a.config.ryba.shinken.arbiter.config.spare }} 
+  {#Uncomment these lines in a HA architecture so the master and slaves know
+  # how long they may wait for each other.#}
+  timeout             3{#   Ping timeout#}
+  data_timeout        120{# Data send timeout#}
+  max_check_attempts  3{#   If ping fails N or more, then the node is dead#}
+  check_interval      60{#  Ping node every N second#}{#
   # Interesting modules:
-  # - named-pipe             = Open the named pipe nagios.cmd
+  # - named-pipe              = Open the named pipe nagios.cmd
   # - mongodb                 = Load hosts from a mongodb database
   # - PickleRetentionArbiter  = Save data before exiting
   # - nsca                    = NSCA server
@@ -25,11 +23,11 @@ define arbiter {
   # - ws-arbiter              = WebService for pushing results to the arbiter
   # - Collectd                = Receive collectd perfdata
   # - SnmpBooster             = Snmp bulk polling module, configuration linker
-  # - import-landscape		= Import hosts from Landscape (Ubuntu/Canonical management tool)
-  # - AWS			= Import hosts from Amazon AWS (here EC2)
-  # - ip-tag			= Tag an host based on it's IP range
-  # - FileTag			= Tag an host if it's on a flat file
-  # - CSVTag			= Tag an host from the content of a CSV file
+  # - import-landscape        = Import hosts from Landscape (Ubuntu/Canonical management tool)
+  # - AWS                     = Import hosts from Amazon AWS (here EC2)
+  # - ip-tag                  = Tag an host based on it's IP range
+  # - FileTag                 = Tag an host if it's on a flat file
+  # - CSVTag                  = Tag an host from the content of a CSV file
   #}{% if not a.config.ryba.shinken.arbiter.config.modules | isEmpty %}
   modules             {{ a.config.ryba.shinken.arbiter.config.modules | join(',') }}{% endif %}
   use_ssl             {{ a.config.ryba.shinken.arbiter.config.use_ssl }}

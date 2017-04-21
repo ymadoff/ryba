@@ -66,12 +66,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ### Shinken Config
 
       @call header: 'Shinken Config', ->
-        for service in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
+        for subsrv in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
           @file.render
-            target: "/etc/shinken/#{service}s/#{service}-master.cfg"
-            source: "#{__dirname}/resources/#{service}-master.cfg.j2"
+            header: subsrv
+            target: "/etc/shinken/#{subsrv}s/#{subsrv}-master.cfg"
+            source: "#{__dirname}/resources/#{subsrv}.cfg.j2"
             local: true
-            context: "#{service}s": @contexts "ryba/shinken/#{service}"
+            context: "#{subsrv}s": @contexts "ryba/shinken/#{subsrv}"
         @file.properties
           target: '/etc/shinken/resource.d/resources.cfg'
           content:
@@ -80,9 +81,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @file
           target: '/etc/shinken/shinken.cfg'
           write: for k, v of shinken.config.shinken
-              match: ///^#{k}=.*$///mg
-              replace: "#{k}=#{v}"
-              append: true
+            match: ///^#{k}=.*$///mg
+            replace: "#{k}=#{v}"
+            append: true
           eof: true
 
 ### Modules Config
@@ -116,8 +117,9 @@ Objects config
         #for obj in ['hostgroups', 'servicegroups', 'contactgroups', 'commands', 'realms', 'dependencies', 'escalations', 'timeperiods']
         for obj in ['hostgroups', 'contactgroups', 'commands', 'realms', 'dependencies', 'escalations', 'timeperiods']
           @file.render
+            header: obj
             target: "/etc/shinken/#{obj}/#{obj}.cfg"
-            source: "#{__dirname}/resources/#{obj}.cfg.j2"
+            source: "#{__dirname}/objects/resources/#{obj}.cfg.j2"
             local: true
             context:
               "#{obj}": shinken.config[obj]
@@ -130,34 +132,17 @@ Objects config
             if v.register is '0' then templated[k] = v
             else real[k] = v
           @file.render
+            header: "#{obj} templates"
             target: "/etc/shinken/templates/#{obj}.cfg"
-            source: "#{__dirname}/resources/#{obj}.cfg.j2"
+            source: "#{__dirname}/objects/resources/#{obj}.cfg.j2"
             local: true
             context: "#{obj}": templated
           @file.render
+            header: obj
             target: "/etc/shinken/#{obj}/#{obj}.cfg"
-            source: "#{__dirname}/resources/#{obj}.cfg.j2"
+            source: "#{__dirname}/objects/resources/#{obj}.cfg.j2"
             local: true
             context: "#{obj}": real
-
-### Services Config
-
-      # @call header: 'Ryba Services Config', ->
-        # @file.render
-        #   target: '/etc/shinken/services/hadoop-services.cfg'
-        #   source: "#{__dirname}/resources/hadoop-services.cfg.j2"
-        #   local: true
-        #   context: hosts: shinken.config.hosts
-        # @file.render
-        #   target: '/etc/shinken/services/watchers-services.cfg'
-        #   source: "#{__dirname}/resources/watchers-services.cfg.j2"
-        #   local: true
-        #   context: hosts: shinken.config.hosts
-        # @file.render
-        #   target: '/etc/shinken/dependencies/hadoop-dependencies.cfg'
-        #   source: "#{__dirname}/resources/hadoop-dependencies.cfg.j2"
-        #   local: true
-        #   context: hosts: shinken.config.hosts
 
 ## Check Config
 
