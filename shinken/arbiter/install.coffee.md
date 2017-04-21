@@ -95,7 +95,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             local: true
             context:
               name: name
-              type: mod.type or name
+              type: mod.type
               config: mod.config
           if mod.modules?
             config_mod sub_name, sub_mod for sub_name, sub_mod of mod.modules

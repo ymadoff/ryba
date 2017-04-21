@@ -9,6 +9,7 @@
       arbiter.modules ?= {}
       configmod = (name, mod) =>
         if mod.version?
+          mod.type ?= name
           mod.source ?= "https://github.com/shinken-monitoring/mod-#{name}/archive/#{mod.version}.zip"
           mod.archive ?= "mod-#{name}-#{mod.version}"
           mod.config_file ?= "#{name}.cfg"

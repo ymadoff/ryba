@@ -88,9 +88,9 @@
       logstore.type ?= 'logstore_null'
       logstore.config_file ?= 'logstore_null.cfg'
       ## Auto discovery
-
       configmod = (name, mod) =>
         if mod.version?
+          mod.type ?= name
           mod.source ?= "https://github.com/shinken-monitoring/mod-#{name}/archive/#{mod.version}.zip"
           mod.archive ?= "mod-#{name}-#{mod.version}"
           mod.config_file ?= "#{name}.cfg"
@@ -105,6 +105,7 @@
       broker.config.port ?= 7772
       broker.config.spare ?= '0'
       broker.config.realm ?= 'All'
+      # There can be only one.... broker with manage_arbiters
       broker.config.manage_arbiters ?= if @contexts('ryba/shinken/broker').map((ctx) -> ctx.config.host).indexOf(@config.host) is 0 then '1' else '0'
       broker.config.modules = [broker.config.modules] if typeof broker.config.modules is 'string'
       broker.config.modules ?= Object.keys broker.modules

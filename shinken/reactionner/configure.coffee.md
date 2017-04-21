@@ -6,6 +6,18 @@
       reactionner = shinken.reactionner ?= {}
       # Additionnal Modules to install
       reactionner.modules ?= {}
+      configmod = (name, mod) =>
+        if mod.version?
+          mod.type ?= name
+          mod.source ?= "https://github.com/shinken-monitoring/mod-#{name}/archive/#{mod.version}.zip"
+          mod.archive ?= "mod-#{name}-#{mod.version}"
+          mod.config_file ?= "#{name}.cfg"
+        mod.modules ?= {}
+        mod.config ?= {}
+        mod.config.modules = [mod.config.modules] if typeof mod.config.modules is 'string'
+        mod.config.modules ?= Object.keys mod.modules
+        for subname, submod of mod.modules then configmod subname, submod
+      for name, mod of reactionner.modules then configmod name, mod
       # Config
       reactionner.config ?={}
       reactionner.config.port ?= 7769
