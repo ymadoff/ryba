@@ -174,7 +174,6 @@ Creating database from SparkSql is not supported for now.
             """
             unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{dir_check}/_SUCCESS"
 
-
 ## Spark Shell Python
 
       @call header: 'Check Shell Python', timeout: -1, label_true: 'CHECKED', ->

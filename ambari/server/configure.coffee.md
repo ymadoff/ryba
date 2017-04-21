@@ -100,6 +100,8 @@ Hadoop group. The default group name is "hadoop".
 
 ## Database
 
+Ambari DB password is stash into "/etc/ambari-server/conf/password.dat".
+
       ambari_server.supported_db_engines ?= ['mysql', 'mariadb', 'postgres']
       if pg_ctx then ambari_server.db.engine ?= 'postgres'
       else if maria_ctx then ambari_server.db.engine ?= 'mariadb'
