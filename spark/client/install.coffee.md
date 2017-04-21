@@ -158,7 +158,7 @@ has finished (logs are only available in yarn-cluster mode).
             properties: spark.hive.site
             backup: true
           @file.render
-            destination : "#{spark.conf_dir}/spark-env.sh"
+            target: "#{spark.conf_dir}/spark-env.sh"
             source: "#{__dirname}/../resources/spark-env.sh.j2"
             local: true
             context: @config

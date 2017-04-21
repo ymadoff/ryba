@@ -24,7 +24,7 @@
       @hdp_select
         name: 'spark-thriftserver'
       @service.init
-        destination : "/etc/init.d/spark-thrift-server"
+        target: "/etc/init.d/spark-thrift-server"
         source: "#{__dirname}/../resources/spark-thrift-server"
         local: true
         context: @config.ryba
@@ -92,7 +92,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 
       @call header: 'Spark Configuration', ->
         @file.render
-          destination : "#{spark.thrift.conf_dir}/spark-env.sh"
+          target: "#{spark.thrift.conf_dir}/spark-env.sh"
           source: "#{__dirname}/../resources/spark-env.sh.j2"
           local: true
           context: @config
@@ -111,7 +111,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           separator: ' '
         @file
           header: 'Spark env'
-          destination : "#{spark.thrift.conf_dir}/spark-env.sh"
+          target: "#{spark.thrift.conf_dir}/spark-env.sh"
           # See "/usr/hdp/current/spark-historyserver/sbin/spark-daemon.sh" for
           # additionnal environmental variables.
           write: [

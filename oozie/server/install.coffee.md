@@ -332,7 +332,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
             @system.copy
               header: 'HBase Libs'
               source: "/usr/hdp/current/hbase-client/lib/#{file}"
-              destination: '/usr/hdp/current/oozie-server/libext/'
+              target: '/usr/hdp/current/oozie-server/libext/'
         @call
           header: 'Falcon'
           if: is_falcon_installed

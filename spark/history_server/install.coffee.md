@@ -30,7 +30,7 @@ web interface.
       @hdp_select
         name: 'spark-historyserver'
       @service.init
-        destination : "/etc/init.d/spark-history-server"
+        target: "/etc/init.d/spark-history-server"
         source: "#{__dirname}/../resources/spark-history-server"
         local: true
         context: @config.ryba
@@ -79,7 +79,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @file
         header: 'Spark env'
-        destination : "#{spark.history.conf_dir}/spark-env.sh"
+        target: "#{spark.history.conf_dir}/spark-env.sh"
         # See "/usr/hdp/current/spark-historyserver/sbin/spark-daemon.sh" for
         # additionnal environmental variables.
         write: [

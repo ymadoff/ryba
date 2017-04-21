@@ -10,13 +10,13 @@
 
         @file.yaml
           header: 'elasticsearch'
-          destination: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
+          target: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
           content:es.config
           backup: true
 
         @file
           header: 'elasticsearch logging'
-          destination: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
+          target: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
           source: "#{__dirname}/resources/logging.yml"
           local: true
           backup: true
@@ -116,7 +116,7 @@
 
           @file.yaml
             header: 'docker-compose'
-            destination: "/etc/elasticsearch/#{es_name}/docker-compose.yml"
+            target: "/etc/elasticsearch/#{es_name}/docker-compose.yml"
             content: {version:'2',services:docker_services,networks:docker_networks}
             backup: true
 
