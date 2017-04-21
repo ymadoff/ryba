@@ -73,17 +73,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             source: "#{__dirname}/resources/#{subsrv}.cfg.j2"
             local: true
             context: "#{subsrv}s": @contexts "ryba/shinken/#{subsrv}"
+            backup: true
         @file.properties
           target: '/etc/shinken/resource.d/resources.cfg'
           content:
             "$PLUGINSDIR$": shinken.plugin_dir
             "$DOCKER_EXEC$": 'docker exec poller-executor'
+          backup: true
         @file
           target: '/etc/shinken/shinken.cfg'
           write: for k, v of shinken.config.shinken
             match: ///^#{k}=.*$///mg
             replace: "#{k}=#{v}"
             append: true
+          backup: true
           eof: true
 
 ### Modules Config
@@ -98,6 +101,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               name: name
               type: mod.type
               config: mod.config
+            backup: true
           if mod.modules?
             config_mod sub_name, sub_mod for sub_name, sub_mod of mod.modules
         # Loop on all services
@@ -124,6 +128,7 @@ Objects config
             context:
               "#{obj}": shinken.config[obj]
               brokers: brokers
+            backup: true
         # Templated objects
         for obj in ['hosts', 'services', 'contacts']
           real = {}
@@ -137,12 +142,14 @@ Objects config
             source: "#{__dirname}/objects/resources/#{obj}.cfg.j2"
             local: true
             context: "#{obj}": templated
+            backup: true
           @file.render
             header: obj
             target: "/etc/shinken/#{obj}/#{obj}.cfg"
             source: "#{__dirname}/objects/resources/#{obj}.cfg.j2"
             local: true
             context: "#{obj}": real
+            backup: true
 
 ## Check Config
 
