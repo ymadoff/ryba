@@ -81,10 +81,15 @@ inside "/etc/init.d" and activate it on startup.
         @system.link
           source: '/usr/lib64/libsnappy.so'
           target: '/usr/hdp/current/hadoop-client/lib/native/.'
-        @service
-          name: 'lzo'
-        @service
-          name: 'lzo-devel'
+        @call (_, callback) ->
+          @service
+            name: 'lzo-devel'
+            relax: true
+          , (err) ->
+            @service.remove
+              if: !!err
+              name: 'lzo-devel'
+            @then callback
         @service
           name: 'hadoop-lzo'
         @service

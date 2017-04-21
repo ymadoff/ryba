@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* hdfs dn: fix lzo package incompatibility
 * ambari server: fix typos
 * druid: mysql support
 * druid: upgrade to version 0.10.0
