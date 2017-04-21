@@ -228,10 +228,15 @@ Install the HBase Libs as part of enabling the Oozie Unified Credentials with HB
 Install the LZO compression library as part of enabling the Oozie Web Console.
 
       @call header: 'LZO', timeout: -1, ->
-        @service
-          name: 'lzo'
-        @service
-          name: 'lzo-devel'
+        @call (_, callback) ->
+          @service
+            name: 'lzo-devel'
+            relax: true
+          , (err) ->
+            @service.remove
+              if: !!err
+              name: 'lzo-devel'
+            @then callback
         @service
           name: 'hadoop-lzo'
         @service

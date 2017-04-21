@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* oozie: fix lzo package incompatibility
 * hdfs dn: fix lzo package incompatibility
 * ambari server: fix typos
 * druid: mysql support
