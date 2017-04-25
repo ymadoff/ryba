@@ -61,7 +61,7 @@ RUN make install
 RUN rm -rf check_mysql_health-2.2.2
 WORKDIR /home/{{ shinken.user.name }}
 # Downloading shinken-plugins
-RUN git clone https://github.com/Pierrotws/shinken-plugins plugins
+RUN git clone https://github.com/ryba-io/shinken-plugins plugins
 RUN rm -rf plugins/.git*
 RUN mkdir plugins/mysql
 RUN mv libexec/check_mysql_health plugins/mysql/check_health
