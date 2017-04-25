@@ -108,6 +108,10 @@ They must have register set to 0 to not be instanciated
       services['process-service'].event_handler_enabled ?= '1'
       services['process-service'].event_handler ?= 'service_start!$_SERVICEPROCESS_NAME$'
       services['process-service'].register = '0'
+      services['cert-service'] ?= {}
+      services['cert-service'].use ?= 'unit-service'
+      services['cert-service'].check_interval = '1800'
+      services['cert-service'].register ?= '0'
       services['functional-service'] ?= {}
       services['functional-service'].use ?= 'generic-service'
       services['functional-service'].check_interval = '600'
@@ -400,7 +404,7 @@ Theses functions are used to generate business rules
             services['HDFS NN - Certificate'].hosts ?= []
             services['HDFS NN - Certificate'].hosts.push host
             services['HDFS NN - Certificate'].servicegroups ?= ['hdfs_nn']
-            services['HDFS NN - Certificate'].use ?= 'unit-service'
+            services['HDFS NN - Certificate'].use ?= 'cert-service'
             services['HDFS NN - Certificate'].check_command ?= "check_cert!#{https}!120!60"
             create_dependency 'HDFS NN - Certificate', 'HDFS NN - WebService', host
             services['HDFS NN - RPC latency'] ?= {}
@@ -470,7 +474,7 @@ Theses functions are used to generate business rules
             services['HDFS DN - Certificate'].hosts ?= []
             services['HDFS DN - Certificate'].hosts.push host
             services['HDFS DN - Certificate'].servicegroups ?= ['hdfs_dn']
-            services['HDFS DN - Certificate'].use ?= 'unit-service'
+            services['HDFS DN - Certificate'].use ?= 'cert-service'
             services['HDFS DN - Certificate'].check_command ?= "check_cert!#{ryba.hdfs.site['dfs.datanode.https.address'].split(':')[1]}!120!60"
             create_dependency 'HDFS DN - Certificate', 'HDFS DN - TCP SSL', host
             services['HDFS DN - Free space'] ?= {}
@@ -504,7 +508,7 @@ Theses functions are used to generate business rules
             services['HttpFS - Certificate'].hosts ?= []
             services['HttpFS - Certificate'].hosts.push host
             services['HttpFS - Certificate'].servicegroups ?= ['httpfs']
-            services['HttpFS - Certificate'].use ?= 'unit-service'
+            services['HttpFS - Certificate'].use ?= 'cert-service'
             services['HttpFS - Certificate'].check_command ?= "check_cert!#{ryba.httpfs.http_port}!120!60"
             create_dependency 'HttpFS - Certificate', 'HttpFS - WebService', host
           if 'ryba/hadoop/yarn_rm' in ctx.services
@@ -527,7 +531,7 @@ Theses functions are used to generate business rules
             services['YARN RM - Certificate'].hosts ?= []
             services['YARN RM - Certificate'].hosts.push host
             services['YARN RM - Certificate'].servicegroups ?= ['yarn_rm']
-            services['YARN RM - Certificate'].use ?= 'unit-service'
+            services['YARN RM - Certificate'].use ?= 'cert-service'
             services['YARN RM - Certificate'].check_command ?= "check_cert!8090!120!60"
             create_dependency 'YARN RM - Certificate', 'YARN RM - WebService', host
           if 'ryba/hadoop/yarn_nm' in ctx.services
@@ -550,7 +554,7 @@ Theses functions are used to generate business rules
             services['YARN NM - Certificate'].hosts ?= []
             services['YARN NM - Certificate'].hosts.push host
             services['YARN NM - Certificate'].servicegroups ?= ['yarn_nm']
-            services['YARN NM - Certificate'].use ?= 'unit-service'
+            services['YARN NM - Certificate'].use ?= 'cert-service'
             services['YARN NM - Certificate'].check_command ?= 'check_cert!8044!120!60'
             create_dependency 'YARN NM - Certificate', 'YARN NM - WebService', host
             services['YARN NM - Health'] ?= {}
@@ -580,7 +584,7 @@ Theses functions are used to generate business rules
             services['YARN TS - Certificate'].hosts ?= []
             services['YARN TS - Certificate'].hosts.push host
             services['YARN TS - Certificate'].servicegroups ?= ['yarn_ts']
-            services['YARN TS - Certificate'].use ?= 'unit-service'
+            services['YARN TS - Certificate'].use ?= 'cert-service'
             services['YARN TS - Certificate'].check_command ?= 'check_cert!8190!120!60'
             create_dependency 'YARN TS - Certificate', 'YARN TS - WebService', host
           if 'ryba/hbase/master' in ctx.services
@@ -604,7 +608,7 @@ Theses functions are used to generate business rules
             services['HBase Master - Certificate'].hosts ?= []
             services['HBase Master - Certificate'].hosts.push host
             services['HBase Master - Certificate'].servicegroups ?= ['hbase_master']
-            services['HBase Master - Certificate'].use ?= 'unit-service'
+            services['HBase Master - Certificate'].use ?= 'cert-service'
             services['HBase Master - Certificate'].check_command ?= "check_cert!#{ryba.hbase.master.site['hbase.master.info.port']}!120!60"
             create_dependency 'HBase Master - Certificate', 'HBase Master - WebUI', host
           if 'ryba/hbase/regionserver' in ctx.services
@@ -627,7 +631,7 @@ Theses functions are used to generate business rules
             services['HBase RegionServer - Certificate'].hosts ?= []
             services['HBase RegionServer - Certificate'].hosts.push host
             services['HBase RegionServer - Certificate'].servicegroups ?= ['hbase_regionserver']
-            services['HBase RegionServer - Certificate'].use ?= 'unit-service'
+            services['HBase RegionServer - Certificate'].use ?= 'cert-service'
             services['HBase RegionServer - Certificate'].check_command ?= "check_cert!#{ryba.hbase.rs.site['hbase.regionserver.info.port']}!120!60"
             create_dependency 'HBase RegionServer - Certificate', 'HBase RegionServer - WebUI', host
           if 'ryba/hbase/rest' in ctx.services
@@ -644,7 +648,7 @@ Theses functions are used to generate business rules
             services['HBase REST - Certificate'].hosts ?= []
             services['HBase REST - Certificate'].hosts.push host
             services['HBase REST - Certificate'].servicegroups ?= ['hbase_rest']
-            services['HBase REST - Certificate'].use ?= 'unit-service'
+            services['HBase REST - Certificate'].use ?= 'cert-service'
             services['HBase REST - Certificate'].check_command ?= "check_cert!#{ryba.hbase.rest.site['hbase.rest.port']}!120!60"
             create_dependency 'HBase REST - Certificate', 'HBase REST - WebService', host
             services['HBase REST - WebUI'] ?= {}
@@ -667,7 +671,7 @@ Theses functions are used to generate business rules
             services['HBase Thrift - Certificate'].hosts ?= []
             services['HBase Thrift - Certificate'].hosts.push host
             services['HBase Thrift - Certificate'].servicegroups ?= ['hbase_thrift']
-            services['HBase Thrift - Certificate'].use ?= 'unit-service'
+            services['HBase Thrift - Certificate'].use ?= 'cert-service'
             services['HBase Thrift - Certificate'].check_command ?= "check_cert!#{ryba.hbase.thrift.site['hbase.thrift.port']}!120!60"
             create_dependency 'HBase Thrift - Certificate', 'HBase Thrift - TCP SSL', host
           if 'ryba/hive/hcatalog' in ctx.services
@@ -694,7 +698,7 @@ Theses functions are used to generate business rules
             services['Hiveserver2 - Certificate'].hosts ?= []
             services['Hiveserver2 - Certificate'].hosts.push host
             services['Hiveserver2 - Certificate'].servicegroups ?= ['hiveserver2']
-            services['Hiveserver2 - Certificate'].use ?= 'unit-service'
+            services['Hiveserver2 - Certificate'].use ?= 'cert-service'
             services['Hiveserver2 - Certificate'].check_command ?= "check_cert!#{ryba.hive.server2.site['hive.server2.thrift.port']}!120!60"
             create_dependency 'Hiveserver2 - Certificate', 'Hiveserver2 - TCP SSL', host
           if 'ryba/hive/webhcat' in ctx.services
@@ -735,7 +739,7 @@ Theses functions are used to generate business rules
             services['Oozie Server - Certificate'].hosts ?= []
             services['Oozie Server - Certificate'].hosts.push host
             services['Oozie Server - Certificate'].servicegroups ?= ['oozie_server']
-            services['Oozie Server - Certificate'].use ?= 'unit-service'
+            services['Oozie Server - Certificate'].use ?= 'cert-service'
             services['Oozie Server - Certificate'].check_command ?= "check_cert!#{ryba.oozie.http_port}!120!60"
             create_dependency 'Oozie Server - Certificate', 'Oozie Server - WebUI', host
           if 'ryba/kafka/broker' in ctx.services
@@ -800,13 +804,16 @@ Theses functions are used to generate business rules
             services['Hue - WebUI'].servicegroups ?= ['hue']
             services['Hue - WebUI'].use ?= 'process-service'
             services['Hue - WebUI']['_process_name'] ?= 'hue-server-docker'
-            services['Hue - WebUI'].check_command ?= "check_tcp!#{ryba.hue_docker.ini.desktop.http_port}!-S"
-            services['Hue - Certificate'] ?= {}
-            services['Hue - Certificate'].hosts ?= []
-            services['Hue - Certificate'].hosts.push host
-            services['Hue - Certificate'].servicegroups ?= ['hue']
-            services['Hue - Certificate'].use ?= 'unit-service'
-            services['Hue - Certificate'].check_command ?= "check_cert!#{ryba.hue_docker.ini.desktop.http_port}!120!60"
+            if ryba.hue_docker.ssl
+              services['Hue - WebUI'].check_command ?= "check_tcp!#{ryba.hue_docker.ini.desktop.http_port}!-S"
+              services['Hue - Certificate'] ?= {}
+              services['Hue - Certificate'].hosts ?= []
+              services['Hue - Certificate'].hosts.push host
+              services['Hue - Certificate'].servicegroups ?= ['hue']
+              services['Hue - Certificate'].use ?= 'cert-service'
+              services['Hue - Certificate'].check_command ?= "check_cert!#{ryba.hue_docker.ini.desktop.http_port}!120!60"
+            else
+              services['Hue - WebUI'].check_command ?= "check_tcp!#{ryba.hue_docker.ini.desktop.http_port}"
             create_dependency 'Hue - Certificate', 'Hue - WebUI', host
           if 'ryba/knox' in ctx.services
             w.modules.push 'knox' if 'knox' not in w.modules
@@ -822,11 +829,12 @@ Theses functions are used to generate business rules
             services['Knox - Certificate'].hosts ?= []
             services['Knox - Certificate'].hosts.push host
             services['Knox - Certificate'].servicegroups ?= ['knox']
-            services['Knox - Certificate'].use ?= 'unit-service'
+            services['Knox - Certificate'].use ?= 'cert-service'
             services['Knox - Certificate'].check_command ?= "check_cert!#{ryba.knox.site['gateway.port']}!120!60"
             create_dependency 'Knox - Certificate', 'Knox - WebService', host
 
 ### Watcher services
+
         if 'mysql_server' in w.modules
           services['MySQL - Available'] ?= {}
           services['MySQL - Available'].hosts ?= []

@@ -134,7 +134,7 @@ Objects config
           real = {}
           templated = {}
           for k, v of shinken.config[obj]
-            if v.register is '0' then templated[k] = v
+            if "#{v.register}" is '0' then templated[k] = v
             else real[k] = v
           @file.render
             header: "#{obj} templates"
