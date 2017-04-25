@@ -832,6 +832,36 @@ Theses functions are used to generate business rules
             services['Knox - Certificate'].use ?= 'cert-service'
             services['Knox - Certificate'].check_command ?= "check_cert!#{ryba.knox.site['gateway.port']}!120!60"
             create_dependency 'Knox - Certificate', 'Knox - WebService', host
+          if 'ryba/nifi' in ctx.services
+            {properties} = ryba.nifi.config
+            w.modules.push 'nifi' if 'nifi' not in w.modules
+            h.hostgroups.push 'nifi' if 'nifi' not in h.hostgroups
+            # get nifi port
+            services['NiFi - WebUI'] ?= {}
+            services['NiFi - WebUI'].hosts ?= []
+            services['NiFi - WebUI'].hosts.push host
+            services['NiFi - WebUI'].servicegroups ?= ['nifi']
+            services['NiFi - WebUI'].use ?= 'process-service'
+            services['NiFi - WebUI']['_process_name'] ?= 'nifi'
+            if properties['nifi.cluster.protocol.is.secure'] is 'true'
+              services['NiFi - WebUI'].check_command ?= "check_tcp!#{properties['nifi.web.https.port']}!-S"
+              services['NiFi - Certificate'] ?= {}
+              services['NiFi - Certificate'].hosts ?= []
+              services['NiFi - Certificate'].hosts.push host
+              services['NiFi - Certificate'].servicegroups ?= ['nifi']
+              services['NiFi - Certificate'].use ?= 'cert-service'
+              services['NiFi - Certificate'].check_command ?= "check_cert!#{properties['nifi.web.https.port']}!120!60"
+              create_dependency 'NiFi - Certificate', 'NiFi - WebUI', host
+            else
+              services['NiFi - WebUI'].check_command ?= "check_tcp!#{properties['nifi.web.http.port']}"
+            services['NiFi - TCP'] ?= {}
+            services['NiFi - TCP'].hosts ?= []
+            services['NiFi - TCP'].hosts.push host
+            services['NiFi - TCP'].servicegroups ?= ['nifi']
+            services['NiFi - TCP'].use ?= 'unit-service'
+            services['NiFi - TCP']['_process_name'] ?= 'nifi'
+            services['NiFi - TCP'].check_command ?= "check_tcp!#{properties['nifi.cluster.node.protocol.port']}"
+            create_dependency 'NiFi - TCP', 'NiFi - WebUI', host
 
 ### Watcher services
 
