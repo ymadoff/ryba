@@ -11,6 +11,8 @@ manage and monitor a Hadoop cluster.
         db_admin: implicit: true, module: 'ryba/commons/db_admin'
       configure: 'ryba/ambari/server/configure'
       commands:
+        'ambari_blueprint': 'ryba/ambari/server/blueprint'
+        'check': 'ryba/ambari/server/check'
         'install': [
           'ryba/ambari/server/install'
           'ryba/ambari/server/start'

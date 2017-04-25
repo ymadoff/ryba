@@ -46,7 +46,7 @@ Install Ambari server package.
         ambari ALL=(ALL) NOPASSWD:SETENV: /bin/mkdir -p /etc/security/keytabs, /bin/chmod * /etc/security/keytabs/*.keytab, /bin/chown * /etc/security/keytabs/*.keytab, /bin/chgrp * /etc/security/keytabs/*.keytab, /bin/rm -f /etc/security/keytabs/*.keytab, /bin/cp -p -f /var/lib/ambari-server/data/tmp/* /etc/security/keytabs/*.keytab
         Defaults exempt_group = ambari
         Defaults !env_reset,env_delete-=PATH
-        Defaults: ambari !requiretty 
+        Defaults: ambari !requiretty
         """
 
 ## Database
