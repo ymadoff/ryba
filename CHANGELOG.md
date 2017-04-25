@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* ambari server: write urls based on ssl activation
 * yarn nm: enforce memory check #70
 * src: remove depracated usage of destination
 * oozie: fix lzo package incompatibility

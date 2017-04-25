@@ -9,15 +9,19 @@ Ambari server is started with the service's syntax command.
 ## Check HTTP Server
 
       clusters_url = url.format
-        protocol: 'http'
+        protocol: unless ambari_server.config['api.ssl'] is 'true'
+        then 'http'
+        else 'https'
         hostname: @config.host
-        port: ambari_server.config['client.api.port']
+        port: unless ambari_server.config['api.ssl'] is 'true'
+        then ambari_server.config['client.api.port']
+        else ambari_server.config['client.api.ssl.port']
         pathname: '/api/v1/clusters'
       cred = "admin:#{ambari_server.admin_password}"
       @system.execute
         header: "Web"
         cmd: """
-        curl -u #{cred} #{clusters_url}
+        curl -k -u #{cred} #{clusters_url}
         """
 
 ## Check Internal Port
