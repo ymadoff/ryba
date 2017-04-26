@@ -859,7 +859,6 @@ Theses functions are used to generate business rules
             services['NiFi - TCP'].hosts.push host
             services['NiFi - TCP'].servicegroups ?= ['nifi']
             services['NiFi - TCP'].use ?= 'unit-service'
-            services['NiFi - TCP']['_process_name'] ?= 'nifi'
             services['NiFi - TCP'].check_command ?= "check_tcp!#{properties['nifi.cluster.node.protocol.port']}"
             create_dependency 'NiFi - TCP', 'NiFi - WebUI', host
 
@@ -1073,6 +1072,13 @@ Theses functions are used to generate business rules
           services['Hue - Available'].servicegroups ?= ['hue']
           services['Hue - Available'].use ?= 'bp-service'
           services['Hue - Available'].check_command ?= bp_has_quorum 'Hue - WebUI', '$HOSTNAME$'
+        if 'nifi' in w.modules
+          services['NiFi - Available'] ?= {}
+          services['NiFi - Available'].hosts ?= []
+          services['NiFi - Available'].hosts.push clustername
+          services['NiFi - Available'].servicegroups ?= ['nifi']
+          services['NiFi - Available'].use ?= 'bp-service'
+          services['NiFi - Available'].check_command ?= bp_has_quorum 'NiFi - WebUI', '$HOSTNAME$'
         services['Hadoop - CORE'] ?= {}
         services['Hadoop - CORE'].hosts ?= []
         services['Hadoop - CORE'].hosts.push clustername
