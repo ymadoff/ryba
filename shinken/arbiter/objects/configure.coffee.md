@@ -47,7 +47,7 @@ They must have register set to 0 to not be instanciated
       hosts['generic-host'].check_interval ?= '300'
       hosts['generic-host'].retry_interval ?= '60'
       hosts['generic-host'].active_checks_enabled ?= '1'
-      hosts['generic-host'].check_period ?= '24x7'
+      hosts['generic-host'].check_period ?= 'everytime'
       hosts['generic-host'].event_handler_enabled ?= '0'
       hosts['generic-host'].flap_detection_enabled ?= '1'
       hosts['generic-host'].process_perf_data ?= '1'
@@ -55,7 +55,7 @@ They must have register set to 0 to not be instanciated
       hosts['generic-host'].retain_nonstatus_information ?= '1'
       hosts['generic-host'].contactgroups ?= ['admins']
       hosts['generic-host'].notification_interval ?= '3600'
-      hosts['generic-host'].notification_period ?= '24x7'
+      hosts['generic-host'].notification_period ?= 'everytime'
       hosts['generic-host'].notification_options ?= 'd,u,r,f'
       hosts['generic-host'].notification_enabled ?= '1'
       hosts['generic-host'].register = '0' # IT'S A TEMPLATE !
@@ -85,14 +85,14 @@ They must have register set to 0 to not be instanciated
       services['generic-service'].retain_status_information ?= '1'
       services['generic-service'].retain_nonstatus_information ?= '1'
       services['generic-service'].is_volatile ?= '0'
-      services['generic-service'].check_period ?= '24x7'
+      services['generic-service'].check_period ?= 'everytime'
       services['generic-service'].max_check_attempts ?= '2'
       services['generic-service'].check_interval ?= '300'
       services['generic-service'].retry_interval ?= '60'
       services['generic-service'].contactgroups ?= 'admins'
       services['generic-service'].notifications_options ?= 'w,u,c,r'
       services['generic-service'].notification_interval ?= '3600'
-      services['generic-service'].notification_period ?= '24x7'
+      services['generic-service'].notification_period ?= 'everytime'
       services['generic-service'].business_rule_output_template ?= '$($HOSTNAME$: $SERVICEDESC$)$'
       services['generic-service'].register = '0'
       services['unit-service'] ?= {}
@@ -123,8 +123,8 @@ They must have register set to 0 to not be instanciated
       # Contacts
       contacts['generic-contact'] ?= {}
       contacts['generic-contact'].use ?= ''
-      contacts['generic-contact'].service_notification_period ?= '24x7'
-      contacts['generic-contact'].host_notification_period ?= '24x7'
+      contacts['generic-contact'].service_notification_period ?= 'everytime'
+      contacts['generic-contact'].host_notification_period ?= 'everytime'
       contacts['generic-contact'].service_notification_options ?= 'w,u,c,r,f'
       contacts['generic-contact'].host_notification_options ?= 'd,u,r,f,s'
       contacts['generic-contact'].service_notification_commands ?= 'notify-service-by-email'
@@ -149,17 +149,17 @@ They must have register set to 0 to not be instanciated
       contacts['shinken'].contactgroups ?= []
       contacts['shinken'].contactgroups.push 'admins' unless 'admins' in contacts['shinken'].contactgroups
       # Timeperiods
-      timeperiods['24x7'] ?= {}
-      timeperiods['24x7'].alias ?= 'Everytime'
-      timeperiods['24x7'].time ?= {}
+      timeperiods['everytime'] ?= {}
+      timeperiods['everytime'].alias ?= 'Everytime'
+      timeperiods['everytime'].time ?= {}
       for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-        timeperiods['24x7'].time[day] ?= '00:00-24:00'
+        timeperiods['everytime'].time[day] ?= '00:00-24:00'
       # Timeperiods
       timeperiods['office'] ?= {}
-      timeperiods['office'].alias ?= 'Everytime'
+      timeperiods['office'].alias ?= 'Office time'
       timeperiods['office'].time ?= {}
       for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
-        timeperiods['office'].time[day] ?= '09:00-19:00'
+        timeperiods['office'].time[day] ?= '07:00-19:00'
       timeperiods.none ?= {}
       timeperiods.none.alias ?= 'Never'
       timeperiods.none.time = {}
