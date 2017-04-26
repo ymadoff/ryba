@@ -1010,7 +1010,7 @@ Theses functions are used to generate business rules
           services['HBase - Replication logs'].hosts.push clustername
           services['HBase - Replication logs'].servicegroups ?= ['hbase']
           services['HBase - Replication logs'].use ?= 'functional-service'
-          services['HBase - Replication logs'].check_command ?= "check_hdfs_content_summary!50470!/apps/hbase/data/oldWALs!spaceConsumed!53687091200!107374182400!-S"
+          services['HBase - Replication logs'].check_command ?= "check_hdfs_content_summary!50470!/apps/hbase/data/oldWALs!spaceConsumed!824633720832!1099511627776!-S" # 768GiB | 1TiB
         if 'hbase_regionserver' in w.modules
           services['HBase RegionServer - Available'] ?= {}
           services['HBase RegionServer - Available'].hosts ?= []
