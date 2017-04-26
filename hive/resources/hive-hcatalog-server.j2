@@ -32,9 +32,9 @@
 ### END INIT INFO
 
 NAME='Hive HCatalog Server'
-USER='{{ryba.hive.user.name}}'
-GROUP='{{ryba.hive.group.name}}'
-RUN_DIR='{{ryba.hive.hcatalog.pid_dir}}'
+USER='{{hive.user.name}}'
+GROUP='{{hive.group.name}}'
+RUN_DIR='{{hive.hcatalog.pid_dir}}'
 PID_FILE="${RUN_DIR}/hive-hcatalog.pid"
 CONF_DIR={{hive.hcatalog.conf_dir}}
 CMD="su -l $USER -c \"nohup hive --config ${CONF_DIR} --service metastore >{{hive.hcatalog.log_dir}}/hcatalog.out 2>{{hive.hcatalog.log_dir}}/hcatalog.err & echo \\\$! >$PID_FILE\""
