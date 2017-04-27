@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* ambari server: master key support
 * ambari server: export blueprint definition
 * ambari server: write urls based on ssl activation
 * yarn nm: enforce memory check #70

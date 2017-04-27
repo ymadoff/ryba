@@ -6,24 +6,25 @@
 ```json
 { "ambari_server": {
   "cluster_name": "mycluster",
-  "repo": "http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.5.0.3/ambari.repo"
-  "config": {
-    "client.security": "ldap",
-    "authentication.ldap.useSSL": true,
-    "authentication.ldap.primaryUrl": "master3.ryba:636",
-    "authentication.ldap.baseDn": "ou=users,dc=ryba",
-    "authentication.ldap.bindAnonymously": false,
-    "authentication.ldap.managerDn": "cn=admin,ou=users,dc=ryba",
-    "authentication.ldap.managerPassword": "XXX",
-    "authentication.ldap.usernameAttribute": "cn"
-} } }
+  "admin_password": "MySecret"
+  "db": {
+    "password": "MySecret"
+  }
+} }
 ```
 
-## LDAP Example
+## Database Encryption
 
 ```json
 { "ambari_server": {
-  "cluster_name": "mycluster",
+  "master_key": "MySecret",
+} }
+```
+
+## LDAP Connection
+
+```json
+{ "ambari_server": {
   "config": {
     "client.security": "ldap",
     "authentication.ldap.useSSL": true,
@@ -33,7 +34,8 @@
     "authentication.ldap.managerDn": "cn=admin,ou=users,dc=ryba",
     "authentication.ldap.managerPassword": "XXX",
     "authentication.ldap.usernameAttribute": "cn"
-} } }
+  }
+} }
 ```
 
     module.exports = ->
@@ -59,6 +61,7 @@
       # ambari_server.database.password ?= null
       ambari_server.sudo ?= false
       ambari_server.java_home ?= java_ctx.config.java.java_home
+      ambari_server.master_key ?= null
       ambari_server.admin ?= {}
       ambari_server.current_admin_password ?= 'admin'
       throw Error "Required Option: admin_password" unless ambari_server.admin_password
@@ -111,7 +114,7 @@ Ambari DB password is stash into "/etc/ambari-server/conf/password.dat".
       ambari_server.db[k] ?= v for k, v of db_admin[ambari_server.db.engine]
       ambari_server.db.database ?= 'ambari'
       ambari_server.db.username ?= 'ambari'
-      ambari_server.config['server.jdbc.user.name'] = ambari_server.db.username
-      ambari_server.config['server.jdbc.database'] = ambari_server.db.engine
-      ambari_server.config['server.jdbc.user.passwd'] ?= '/etc/ambari-server/conf/password.dat'
-      ambari_server.config['server.jdbc.database_name'] ?= ambari_server.db.database
+      # ambari_server.config['server.jdbc.user.name'] = ambari_server.db.username
+      # ambari_server.config['server.jdbc.database'] = ambari_server.db.engine
+      # ambari_server.config['server.jdbc.user.passwd'] ?= '/etc/ambari-server/conf/password.dat'
+      # ambari_server.config['server.jdbc.database_name'] ?= ambari_server.db.database
