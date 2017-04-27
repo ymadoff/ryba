@@ -70,6 +70,7 @@
       graphite.source ?= "https://github.com/shinken-monitoring/mod-graphite/archive/#{graphite.version}.zip"
       graphite.archive ?= "mod-graphite-#{graphite.version}"
       graphite.type ?= 'graphite_perfdata'
+      graphite.config ?= {}
       graphite.config.host ?= 'localhost'
       graphite.config.port ?= 2103
       graphite.config.state_enable ?= '1'
