@@ -79,15 +79,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call header: 'Executor', ->
         @krb5.addprinc krb5,
           header: 'Kerberos'
-          principal: shinken.poller.executor.krb5.unprivileged.principal
+          principal: shinken.poller.executor.krb5.principal
           randkey: true
-          keytab: shinken.poller.executor.krb5.unprivileged.keytab
+          keytab: shinken.poller.executor.krb5.keytab
           mode: 0o644
-        # @krb5.addprinc krb5,
-        #   principal: shinken.poller.executor.krb5.privileged.principal
-        #   randkey: true
-        #   keytab: shinken.poller.executor.krb5.privileged.keytab
-        #   mode: 0o644
 
         @call header: 'Docker', timeout: -1, ->
           @file.download
@@ -100,7 +95,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           @file
             target: "#{shinken.poller.executor.resources_dir}/cronfile"
             content: """
-            01 */9 * * * #{shinken.user.name} /usr/bin/kinit #{shinken.poller.executor.krb5.unprivileged.principal} -kt #{shinken.poller.executor.krb5.unprivileged.keytab}
+            01 */9 * * * #{shinken.user.name} /usr/bin/kinit #{shinken.poller.executor.krb5.principal} -kt #{shinken.poller.executor.krb5.keytab}
             """
             eof: true
           @docker.service
@@ -114,7 +109,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               #"#{shinken.poller.executor.krb5.privileged.keytab}:#{shinken.poller.executor.krb5.privileged.keytab}"
               "#{shinken.poller.executor.resources_dir}:/home/#{shinken.user.name}/plugins/resources"
               "#{shinken.poller.executor.resources_dir}/cronfile:/etc/cron.d/1cron"
-              "#{shinken.poller.executor.krb5.unprivileged.keytab}:#{shinken.poller.executor.krb5.unprivileged.keytab}"
+              "#{shinken.poller.executor.krb5.keytab}:#{shinken.poller.executor.krb5.keytab}"
             ]
 
 ## Dependencies
