@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* ambari server: desactivate sudo
 * ambari server: master key support
 * ambari server: export blueprint definition
 * ambari server: write urls based on ssl activation

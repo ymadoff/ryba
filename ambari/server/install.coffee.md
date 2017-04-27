@@ -39,7 +39,8 @@ Install Ambari server package.
 ## Non-Root
 
       @file
-        # if: ambari_server.sudo
+        header: 'Sudo'
+        if: ambari_server.sudo
         target: '/etc/sudoers.d/ambari_server'
         content: """
         # Ambari Commands
@@ -48,6 +49,10 @@ Install Ambari server package.
         Defaults !env_reset,env_delete-=PATH
         Defaults: ambari !requiretty
         """
+      @system.remove
+        header: 'Clean Sudo'
+        unless: ambari_server.sudo
+        target: '/etc/sudoers.d/ambari_server'
 
 ## Database
 
