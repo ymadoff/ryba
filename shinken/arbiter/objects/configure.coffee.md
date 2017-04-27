@@ -769,16 +769,16 @@ Theses functions are used to generate business rules
             services['Ranger - WebUI'].use ?= 'process-service'
             services['Ranger - WebUI']['_process_name'] ?= 'ranger-admin'
             if ryba.ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true'
-              services['Ranger - WebUI'].check_command ?= "check_tcp!#{ranger.admin.site['ranger.service.https.port']}!-S"
+              services['Ranger - WebUI'].check_command ?= "check_tcp!#{ryba.ranger.admin.site['ranger.service.https.port']}!-S"
               services['Ranger - Certificate'] ?= {}
               services['Ranger - Certificate'].hosts ?= []
               services['Ranger - Certificate'].hosts.push host
               services['Ranger - Certificate'].servicegroups ?= ['ranger-admin']
               services['Ranger - Certificate'].use ?= 'cert-service'
-              services['Ranger - Certificate'].check_command ?= "check_cert!#{ranger.admin.site['ranger.service.https.port']}!120!60"
+              services['Ranger - Certificate'].check_command ?= "check_cert!#{ryba.ranger.admin.site['ranger.service.https.port']}!120!60"
               create_dependency 'Ranger - Certificate', 'Ranger - WebUI', host
             else
-              services['Ranger - WebUI'].check_command ?= "check_tcp!#{ranger.admin.site['ranger.service.http.port']}"
+              services['Ranger - WebUI'].check_command ?= "check_tcp!#{ryba.ranger.admin.site['ranger.service.http.port']}"
           if 'ryba/opentsdb' in ctx.services
             w.modules.push 'opentsdb' if 'opentsdb' not in w.modules
             h.hostgroups.push 'opentsdb' if 'opentsdb' not in h.hostgroups
