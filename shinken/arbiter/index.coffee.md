@@ -47,6 +47,7 @@ to its associated Scheduler.
         phoenix_client: 'ryba/phoenix/client'
         phoenix_master: 'ryba/phoenix/master'
         phoenix_regionserver: 'ryba/phoenix/regionserver'
+        ranger: 'ryba/ranger/admin'
         rexster: 'ryba/rexster'
         spark_client: 'ryba/spark/client'
         spark_hs: 'ryba/spark/history_server'
@@ -54,6 +55,7 @@ to its associated Scheduler.
         tez: 'ryba/tez'
         zookeeper_client: 'ryba/zookeeper/client'
         zookeeper_server: 'ryba/zookeeper/server'
+        nifi: 'ryba/nifi'
       configure: [
         'ryba/shinken/commons/configure'
         'ryba/shinken/arbiter/configure'
