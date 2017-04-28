@@ -300,6 +300,11 @@
       ]
       nifi.java_opts.push "-Djava.security.auth.login.config=#{nifi.conf_dir}/nifi-zookeeper.jaas"
 
+## Log4J
+
+      nifi.log4j ?= {}
+      nifi.log4j[k] ?= v for k, v of @config.log4j
+
 ## Additional Libs
 
 Set local path of additional libs (for custom processors) in this array.
