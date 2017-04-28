@@ -164,7 +164,7 @@
       if properties['nifi.cluster.is.node'] is 'true'
         properties['nifi.cluster.node.address'] ?= @config.host
         properties['nifi.cluster.node.protocol.port'] ?= '9870'
-        properties['nifi.cluster.node.protocol.threads'] ?= '2'
+        properties['nifi.cluster.node.protocol.threads'] ?= '10'
         properties['nifi.zookeeper.connect.string'] ?= zk_hosts.map( (ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
         properties['nifi.zookeeper.root.node'] ?= '/nifi'
         properties['nifi.cluster.request.replication.claim.timeout'] ?= '15 sec'
@@ -180,6 +180,8 @@
         properties['nifi.cluster.manager.flow.retrieval.delay'] ?= '5 sec'
         properties['nifi.cluster.manager.protocol.threads'] ?= '10'
         properties['nifi.cluster.manager.safemode.duration'] ?= '0 sec'
+      properties['nifi.cluster.flow.election.max.wait.time'] ?= '5 mins'
+      properties['nifi.cluster.flow.election.max.candidates'] ?= "#{@contexts('ryba/nifi').length}"
 
 ## Security
 
