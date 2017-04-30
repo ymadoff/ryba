@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* benchmark: first refactor
 * ambari server: desactivate sudo
 * ambari server: master key support
 * ambari server: export blueprint definition
