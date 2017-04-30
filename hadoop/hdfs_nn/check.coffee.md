@@ -71,7 +71,7 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
         retry: 3
         wait: 60000
         timeout: -1
-        cmd: mkcmd.hdfs @, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
+        cmd: mkcmd.hdfs @, "exec 5>&1; hdfs --config #{hdfs.nn.conf_dir} fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
         if: force_check or check_hdfs_fsck
 
 ## Check HDFS

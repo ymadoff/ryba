@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* hdfs nn: fix fsck check by using nn config
 * benchmark: first refactor
 * ambari server: desactivate sudo
 * ambari server: master key support
