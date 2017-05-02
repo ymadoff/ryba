@@ -84,8 +84,8 @@ Example
       hbase.master.site['hbase.cluster.distributed'] = 'true'
       # Enter the HBase NameNode server hostname
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-High-Availability-Guide/cdh4hag_topic_2_6.html
-      nn_host = if nn_ctxs.length > 1 then ryba.nameservice else nn_ctxs[0].config.host
-      hbase.master.site['hbase.rootdir'] ?= "hdfs://#{nn_host}:8020/apps/hbase/data"
+      nn_host = if nn_ctxs.length > 1 then ryba.nameservice else "#{nn_ctxs[0].config.host}:8020"
+      hbase.master.site['hbase.rootdir'] ?= "hdfs://#{nn_host}/apps/hbase/data"
       # Comma separated list of Zookeeper servers (match to
       # what is specified in zoo.cfg but without portnumbers)
       hbase.master.site['hbase.zookeeper.quorum'] = "#{zk_hosts}"
