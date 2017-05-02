@@ -12,7 +12,7 @@ Install the HBase client package and configure it with secured access.
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
-## Users & Groups
+## Identities
 
 By default, the "hbase" package create the following entries:
 
@@ -23,8 +23,8 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ``` 
 
-      @system.group hbase.group
-      @system.user hbase.user
+      @system.group header: 'Group', hbase.group
+      @system.user header: 'User', hbase.user
 
 ## Packages
 

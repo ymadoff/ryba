@@ -7,10 +7,10 @@
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
-## Users & Groups
+## Identities
 
-      @system.group ranger.group
-      @system.user ranger.user
+      @system.group header: 'Group', ranger.group
+      @system.user header: 'User', ranger.user
 
 ## Package
 

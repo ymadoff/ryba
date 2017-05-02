@@ -5,6 +5,9 @@
       mongodb_configsrvs = @contexts 'ryba/mongodb/configsrv'
       mongodb_shards = @contexts 'ryba/mongodb/shard'
       mongodb = @config.ryba.mongodb ?= {}
+
+## Identities
+
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
       mongodb.user ?= {}
@@ -16,12 +19,14 @@
       mongodb.group = name: mongodb.group if typeof mongodb.group is 'string'
       mongodb.group ?= {}
       mongodb.group.name ?= 'mongod'
+      mongodb.user.gid = mongodb.group.name
       mongodb.group.system ?= true
       mongodb.user.limits ?= {}
       mongodb.user.limits.nofile ?= 64000
       mongodb.user.limits.nproc ?= true
-      mongodb.user.gid = mongodb.group.name
-      # Config
+
+## Configuration
+
       mongodb.shard ?= {}
       mongodb.shard.conf_dir ?= '/etc/mongod-shard-server/conf'
       mongodb.shard.pid_dir ?= '/var/run/mongod'

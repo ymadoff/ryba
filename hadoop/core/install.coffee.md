@@ -29,7 +29,7 @@ made available in the same directory after any modification.
         @hdp_select
           name: 'hadoop-client'
 
-## Users & Groups
+## Identities
 
 By default, the "hadoop-client" package rely on the "hadoop", "hadoop-hdfs",
 "hadoop-mapreduce" and "hadoop-yarn" dependencies and create the following
@@ -50,9 +50,10 @@ mapred:x:494:
 Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
-      @call header: 'Users & Groups', ->
-        @system.group [hadoop_group, hdfs.group, yarn.group, mapred.group]
-        @system.user [hdfs.user, yarn.user, mapred.user]
+      for group in [hadoop_group, hdfs.group, yarn.group, mapred.group]
+        @system.group header: "Group #{group.name}", group
+      for user in [hdfs.user, yarn.user, mapred.user]
+        @system.user header: "user #{user.name}", user
 
 ## Topology
 

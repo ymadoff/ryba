@@ -44,7 +44,6 @@ Example:
       druid.group ?= {}
       druid.group.name ?= 'druid'
       druid.group.system ?= true
-      druid.user.gid = druid.group.name
       # User
       druid.user = name: druid.user if typeof druid.user is 'string'
       druid.user ?= {}
@@ -53,6 +52,7 @@ Example:
       druid.user.comment ?= 'Druid User'
       druid.user.home ?= "/var/lib/#{druid.user.name}"
       druid.user.groups ?= ['hadoop']
+      druid.user.gid = druid.group.name
 
 ## Kerberos
 

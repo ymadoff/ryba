@@ -40,26 +40,8 @@ Example:
       hive = @config.ryba.hive ?= {}
       {db_admin, realm} = @config.ryba
 
-## Users and Groups
-
-      # User
-      hive.user ?= {}
-      hive.user = name: hive.user if typeof hive.user is 'string'
-      hive.user.name ?= 'hive'
-      hive.user.system ?= true
-      hive.user.groups ?= 'hadoop'
-      hive.user.comment ?= 'Hive User'
-      hive.user.home ?= '/var/lib/hive'
-      hive.user.limits ?= {}
-      hive.user.limits.nofile ?= 64000
-      hive.user.limits.nproc ?= true
-      # Group
-      hive.group ?= {}
-      hive.group = name: hive.group if typeof hive.group is 'string'
-      hive.group.name ?= 'hive'
-      hive.group.system ?= true
-      hive.user.gid = hive.group.name
-      # Layout and environment
+## Environment
+      
       hive.hcatalog ?= {}
       hive.hcatalog.conf_dir ?= '/etc/hive-hcatalog/conf'
       hive.hcatalog.log_dir ?= '/var/log/hive-hcatalog'
@@ -68,7 +50,27 @@ Example:
       hive.hcatalog.heapsize ?= 1024
       hive.libs ?= []
 
-## Environment
+## Identities
+
+      # Group
+      hive.group ?= {}
+      hive.group = name: hive.group if typeof hive.group is 'string'
+      hive.group.name ?= 'hive'
+      hive.group.system ?= true
+      # User
+      hive.user ?= {}
+      hive.user = name: hive.user if typeof hive.user is 'string'
+      hive.user.name ?= 'hive'
+      hive.user.gid = hive.group.name
+      hive.user.system ?= true
+      hive.user.groups ?= 'hadoop'
+      hive.user.comment ?= 'Hive User'
+      hive.user.home ?= '/var/lib/hive'
+      hive.user.limits ?= {}
+      hive.user.limits.nofile ?= 64000
+      hive.user.limits.nproc ?= true
+
+## Configuration Env
 
       hive.hcatalog.env ?=  {}
       #JMX Config
@@ -95,7 +97,7 @@ Example:
 
       hive.warehouse_mode ?= null # let ranger overwrite to '0000' or use '1777'
 
-## Configuration
+## Configuration site
 
       hive.hcatalog.site ?= {}
       # by default BONECP could lead to BLOCKED thread for class reading from DB

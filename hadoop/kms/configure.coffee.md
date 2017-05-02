@@ -12,8 +12,12 @@
       kms.conf_dir ?= '/etc/hadoop-kms/conf'
       kms.log_dir ?= '/var/log/hadoop-kms'
 
-## User
+## Identities
 
+      kms.group = name: kms.group if typeof kms.group is 'string'
+      kms.group ?= {}
+      kms.group.name ?= 'kms'
+      kms.group.system ?= true
       kms.user = name: kms.user if typeof kms.user is 'string'
       kms.user ?= {}
       kms.user.name ?= 'kms'
@@ -21,14 +25,7 @@
       kms.user.comment ?= 'Hadoop KMS User'
       kms.user.home ?= "/var/lib/#{kms.user.name}"
       kms.user.groups ?= ['hadoop']
-
-## Group
-
-      kms.group = name: kms.group if typeof kms.group is 'string'
-      kms.group ?= {}
-      kms.group.name ?= 'kms'
-      kms.group.system ?= true
-      kms.user.gid = kms.group.name
+      kms.user.gid ?= kms.group.name
 
 ## Environment
 

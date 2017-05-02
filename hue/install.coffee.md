@@ -13,7 +13,7 @@ article from december 2014 describe how to
 
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
-## Users & Groups
+## Identities
 
 By default, the "hue" package create the following entries:
 

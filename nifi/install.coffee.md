@@ -10,10 +10,10 @@
 
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
-## Users
+## Identities
 
-      @system.group nifi.group
-      @system.user nifi.user
+      @system.group header: 'Group', nifi.group
+      @system.user header: 'User', nifi.user
 
 ## HDP - HDF Cohabitation
 

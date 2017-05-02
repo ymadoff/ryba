@@ -9,8 +9,8 @@ The ambari server must be set in the configuration file.
 
 By default, the "ambari-agent" package does not create any identities.
 
-      @system.group ambari_agent.group
-      @system.user ambari_agent.user
+      @system.group header: 'Group', ambari_agent.group
+      @system.user header: 'User', ambari_agent.user
 
 ## Package & Repository
 

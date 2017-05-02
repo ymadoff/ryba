@@ -22,11 +22,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           ]
           if: @config.iptables.action is 'start'
 
-## Users & Groups
+## Identities
 
-      @call header: 'Users & Groups', ->
-        @system.group mongodb.group
-        @system.user mongodb.user
+      @system.group header: 'Group', mongodb.group
+      @system.user header: 'User', mongodb.user
 
 ## Packages
 

@@ -8,7 +8,8 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
     module.exports = header: 'ES Install', handler: ->
       {elasticsearch ,realm} = @config.ryba
       # krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-## Users & Groups
+
+## Identities
 
 By default, the "zookeeper" package create the following entries:
 
@@ -19,8 +20,8 @@ cat /etc/group | grep elasticsearch
 elasticsearch:x:493:
 ```
 
-      @system.group elasticsearch.group
-      @system.user elasticsearch.user
+      @system.group header: 'Group', elasticsearch.group
+      @system.user header: 'User', elasticsearch.user
 
 ## Kerberos
 

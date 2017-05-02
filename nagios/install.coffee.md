@@ -20,7 +20,7 @@
         gid: nagios.user.group
         mode: 0o600
 
-## Users & Groups
+## Identities
 
 ```bash
 cat /etc/passwd | grep nagios
@@ -30,10 +30,9 @@ nagios:x:2418:
 nagiocmd:x:2419:apache
 ```
 
-      @call header: 'Users & Groups', ->
-        @system.group nagios.group
-        @system.group nagios.groupcmd
-        @system.user nagios.user
+      @system.group header: "Group #{nagios.group.name}", nagios.group
+      @system.group header: "Group #{nagios.groupcmd.name}", nagios.groupcmd
+      @system.user header: "User #{nagios.user.name}", nagios.user
 
 ## Packages
 

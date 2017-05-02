@@ -9,7 +9,7 @@
 
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
 
-## Users & Groups
+## Identities
 
 By default, the "flume" package create the following entries:
 
@@ -23,8 +23,8 @@ flume:x:496:
 Note, the "flume" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
 creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
-      @system.group @config.ryba.flume.group
-      @system.user @config.ryba.flume.user
+      @system.group header: 'Group', @config.ryba.flume.group
+      @system.user header: 'User', @config.ryba.flume.user
 
 ## Install
 

@@ -27,23 +27,31 @@ loop on topologies to provide missing values
     module.exports = ->
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       knox = @config.ryba.knox ?= {}
+
+## Environment
+
       knox.conf_dir ?= '/etc/knox/conf'
       knox.log_dir ?= '/var/log/knox'
       knox.bin_dir ?= '/usr/hdp/current/knox-server/bin'
-      # User
-      knox.user = name: knox.user if typeof knox.user is 'string'
-      knox.user ?= {}
-      knox.user.name ?= 'knox'
-      knox.user.system ?= true
-      knox.user.comment ?= 'Knox Gateway User'
-      knox.user.home ?= '/var/lib/knox'
+
+## Identities
+
       # Group
       knox.group = name: knox.group if typeof knox.group is 'string'
       knox.group ?= {}
       knox.group.name ?= 'knox'
       knox.group.system ?= true
+      # User
+      knox.user = name: knox.user if typeof knox.user is 'string'
+      knox.user ?= {}
+      knox.user.name ?= 'knox'
       knox.user.gid = knox.group.name
-      # Kerberos
+      knox.user.system ?= true
+      knox.user.comment ?= 'Knox Gateway User'
+      knox.user.home ?= '/var/lib/knox'
+
+## Kerberos
+
       knox.krb5_user ?= {}
       knox.krb5_user.principal ?= "#{knox.user.name}/#{@config.host}@#{@config.ryba.realm}"
       knox.krb5_user.keytab ?= '/etc/security/keytabs/knox.service.keytab'

@@ -6,6 +6,9 @@ Configure Spark Livy Server and integrates it with the other components deployed
     module.exports = ->
       {hadoop_conf_dir, core_site,realm} = @config.ryba
       {spark} = @config.ryba ?= {}
+
+## Identities
+
       # User
       spark.user ?= {}
       spark.user = name: spark.user if typeof spark.user is 'string'

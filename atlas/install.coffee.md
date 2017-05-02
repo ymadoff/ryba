@@ -27,10 +27,10 @@
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
-## User/group
+## Identities
       
-      @system.group atlas.group
-      @system.user atlas.user
+      @system.group header: 'Group',  atlas.group
+      @system.user header: 'User', atlas.user
 
 ## IPTables
 

@@ -44,10 +44,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: solr.user.name
         gid: solr.group.name
 
-## Users and Groups
+## Identities
 
-      @system.group solr.group
-      @system.user solr.user
+      @system.group header: 'Group', solr.group
+      @system.user header: 'User', solr.user
 
 ## Packages
 Ryba support installing solr from apache official release or HDP Search repos.

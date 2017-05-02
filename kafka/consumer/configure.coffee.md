@@ -10,11 +10,14 @@
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
       ks_ctxs = @contexts 'ryba/kafka/broker'
       throw Error 'Cannot configure kafka consumer without broker' unless ks_ctxs.length > 0
-      kafka.user ?= {}
-      kafka.user[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.user
-      kafka.group ?= {}
-      kafka.group[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.group
-      # Configuration
+
+## Identities
+
+      kafka.group = merge ks_ctxs[0].config.ryba.kafka.group, kafka.group
+      kafka.user = merge ks_ctxs[0].config.ryba.kafka.user, kafka.user
+
+## Configuration
+
       kafka.consumer ?= {}
       kafka.consumer.conf_dir ?= '/etc/kafka/conf'
       kafka.consumer.config ?= {}
@@ -77,3 +80,7 @@
       kafka.consumer.env ?= {}
       if ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.set.acl'] is 'true'
         kafka.consumer.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.consumer.conf_dir}/kafka-client.jaas"
+
+## Dependencies
+
+    {merge} = require 'nikita/lib/misc'

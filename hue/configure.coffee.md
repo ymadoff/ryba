@@ -45,24 +45,31 @@ Example:
     module.exports = irreversible: true, handler: ->
       ryba = @config.ryba
       hue = @config.ryba.hue ?= {}
-      # Layout
+
+## Environment
+
       hue.conf_dir ?= '/etc/hue/conf'
       hue.log_dir ?= '/var/log/hue'
-      # User
-      hue.user ?= {}
-      hue.user = name: hue.user if typeof hue.user is 'string'
-      hue.user.name ?= 'hue'
-      hue.user.system ?= true
-      hue.user.comment ?= 'Hue User'
-      hue.user.home = '/var/lib/hue'
+      hue.clean_tmp ?= true
+
+## Identities
+
       # Group
       hue.group = name: hue.group if typeof hue.group is 'string'
       hue.group ?= {}
       hue.group.name ?= hue.user.name
       hue.group.system ?= true
+      # User
+      hue.user ?= {}
+      hue.user = name: hue.user if typeof hue.user is 'string'
+      hue.user.name ?= 'hue'
+      hue.user.system ?= true
       hue.user.gid = hue.group.name
-      hue.clean_tmp ?= true
-      ## Configuration for Proxy Users
+      hue.user.comment ?= 'Hue User'
+      hue.user.home = '/var/lib/hue'
+
+## Proxy Users
+
       hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       for hadoop_ctx in hadoop_ctxs
         hadoop_ctx.config.ryba ?= {}
@@ -85,7 +92,9 @@ Example:
         oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{hue.user.name}.groups"] ?= '*'
       {hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
-      hue ?= {}
+
+## Configuration
+
       hue.ini ?= {}
       # todo, this might not work as expected after ha migration
       nodemanagers = @contexts('ryba/hadoop/yarn_nm').map((ctx) -> ctx.config.host)

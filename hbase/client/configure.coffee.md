@@ -9,28 +9,11 @@
       hbase.site ?= {}
       hbase.client ?= {}
 
-# Users and Groups
+# Identities
 
-      hbase.user ?= {}
-      hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
-      hbase.user.name ?= hm_ctxs[0].config.ryba.hbase.user.name
-      hbase.user.system ?= hm_ctxs[0].config.ryba.hbase.user.system
-      hbase.user.comment ?= hm_ctxs[0].config.ryba.hbase.user.comment
-      hbase.user.home ?= hm_ctxs[0].config.ryba.hbase.user.home
-      hbase.user.groups ?= hm_ctxs[0].config.ryba.hbase.user.groups
-      hbase.user.limits ?= {}
-      hbase.user.limits.nofile ?= hm_ctxs[0].config.ryba.hbase.user.limits.nofile
-      hbase.user.limits.nproc ?= hm_ctxs[0].config.ryba.hbase.user.limits.nproc
-      hbase.admin ?= {}
-      hbase.admin.name ?= hbase.user.name
-      hbase.admin.principal ?=hm_ctxs[0].config.ryba.hbase.admin.principal
-      hbase.admin.password ?=hm_ctxs[0].config.ryba.hbase.admin.password
-      # Group
-      hbase.group ?= {}
-      hbase.group = name: hbase.group if typeof hbase.group is 'string'
-      hbase.group.name ?= hm_ctxs[0].config.ryba.hbase.group.name
-      hbase.group.system ?= hm_ctxs[0].config.ryba.hbase.group.system
-      hbase.user.gid = hbase.group.name
+      hbase.group = merge hm_ctxs[0].config.ryba.hbase.group, hbase.group
+      hbase.user = merge hm_ctxs[0].config.ryba.hbase.user, hbase.user
+      hbase.admin = merge hm_ctxs[0].config.ryba.hbase.admin, hbase.admin
 
 ## Layout
 
@@ -85,3 +68,7 @@
         'hbase.zookeeper.property.clientPort'
         'dfs.domain.socket.path'
       ] then hbase.site[property] ?= hm_ctxs[0].config.ryba.hbase.master.site[property]
+
+## Dependencies
+
+    {merge} = require 'nikita/lib/misc'

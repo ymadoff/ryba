@@ -10,7 +10,7 @@ each HDFS cluster.
       {falcon} = @config.ryba
       [falcon_ctx] = @contexts 'ryba/falcon/server', require('./configure').handler
 
-## Users & Groups
+## Identities
 
 By default, the "zookeeper" package create the following entries:
 
@@ -21,8 +21,8 @@ cat /etc/group | grep falcon
 falcon:x:498:falcon
 ```
 
-      @system.group falcon.client.group
-      @system.user falcon.client.user
+      @system.group header: 'Group', falcon.client.group
+      @system.user header: 'User', falcon.client.user
 
 ## Packages
 

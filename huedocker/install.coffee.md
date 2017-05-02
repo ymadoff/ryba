@@ -29,7 +29,7 @@ Run `ryba prepare` to create the Docker container.
       @call once: true, 'ryba/hive/server2/wait'
       @call once: true, 'ryba/hive/hcatalog/wait'
 
-## Users & Groups
+## Identities
 
 By default, the "hue" package create the following entries:
 
@@ -40,8 +40,8 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-      @system.group hue_docker.group
-      @system.user hue_docker.user
+      @system.group header: 'Group', hue_docker.group
+      @system.user header: 'User', hue_docker.user
 
 ## IPTables
 

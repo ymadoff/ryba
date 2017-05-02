@@ -26,15 +26,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: iptables.action is 'start'
 
-## Users and Groups
+## Identities
+
 Create user and groups for solr user.
 
       @system.mkdir
         target: activemq.user.home
         uid: activemq.user.name
         gid: activemq.group.name
-      @system.group activemq.group
-      @system.user activemq.user
+      @system.group header: 'Group', activemq.group
+      @system.user header: 'User', activemq.user
 
 ## Startup Script
 

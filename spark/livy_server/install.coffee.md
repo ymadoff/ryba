@@ -34,7 +34,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-## Spark Users And Group
+## Identities
 
 By default, the "spark" package create the following entries:
 
@@ -45,8 +45,8 @@ cat /etc/group | grep spark
 spark:x:494:
 ```
 
-      @system.group spark.group
-      @system.user spark.user
+      @system.group header: 'Group', spark.group
+      @system.user header: 'User', spark.user
 
 ## Startup Script
 

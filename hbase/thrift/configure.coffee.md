@@ -2,37 +2,18 @@
 # HBase Thrit Server Configuration
 
     module.exports = ->
-      m_ctxs = @contexts 'ryba/hbase/master'
+      hm_ctxs = @contexts 'ryba/hbase/master'
       rs_ctxs = @contexts 'ryba/hbase/regionserver'
       ryba = @config.ryba ?= {}
       {realm, core_site, ssl_server, hbase} = @config.ryba
       hbase = @config.ryba.hbase ?= {}
-      throw Error 'No HBase Master configured' unless m_ctxs.length > 0
+      throw Error 'No HBase Master configured' unless hm_ctxs.length > 0
 
-# Users and Groups
+# Identities
 
-      hbase.test ?= {}
-      hbase.test.default_table ?= m_ctxs[0].config.ryba.hbase.test.default_table
-      hbase.user ?= {}
-      hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
-      hbase.user.name ?= m_ctxs[0].config.ryba.hbase.user.name
-      hbase.user.system ?= m_ctxs[0].config.ryba.hbase.user.system
-      hbase.user.comment ?= m_ctxs[0].config.ryba.hbase.user.comment
-      hbase.user.home ?= m_ctxs[0].config.ryba.hbase.user.home
-      hbase.user.groups ?= m_ctxs[0].config.ryba.hbase.user.groups
-      hbase.user.limits ?= {}
-      hbase.user.limits.nofile ?= m_ctxs[0].config.ryba.hbase.user.limits.nofile
-      hbase.user.limits.nproc ?= m_ctxs[0].config.ryba.hbase.user.limits.nproc
-      hbase.admin ?= {}
-      hbase.admin.name ?= hbase.user.name
-      hbase.admin.principal ?=m_ctxs[0].config.ryba.hbase.admin.principal
-      hbase.admin.password ?=m_ctxs[0].config.ryba.hbase.admin.password
-      # Group
-      hbase.group ?= {}
-      hbase.group = name: hbase.group if typeof hbase.group is 'string'
-      hbase.group.name ?= m_ctxs[0].config.ryba.hbase.group.name
-      hbase.group.system ?= m_ctxs[0].config.ryba.hbase.group.system
-      hbase.user.gid = hbase.group.name
+      hbase.group = merge hm_ctxs[0].config.ryba.hbase.group, hbase.group
+      hbase.user = merge hm_ctxs[0].config.ryba.hbase.user, hbase.user
+      hbase.admin = merge hm_ctxs[0].config.ryba.hbase.admin, hbase.admin
 
 # Thrift Server Configuration  
 
@@ -55,7 +36,7 @@
       # auth - authentication checking only
       hbase.thrift.site['hbase.thrift.security.qop'] ?= "auth"
       hbase.thrift.env ?= {}
-      hbase.thrift.env['JAVA_HOME'] ?= m_ctxs[0].config.ryba.hbase.master.env['JAVA_HOME']
+      hbase.thrift.env['JAVA_HOME'] ?= hm_ctxs[0].config.ryba.hbase.master.env['JAVA_HOME']
 
 ## Kerberos
 
@@ -68,12 +49,12 @@
 [hbase-impersonation-mode]: http://hbase.apache.org/book.html#security.gateway.thrift
 [hbase-configuration-cloudera]:(http://www.cloudera.com/content/www/en-us/documentation/enterprise/latest/topics/cdh_sg_hbase_authentication.html/)
 
-      hbase.thrift.site['hbase.security.authentication'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.security.authentication']
-      hbase.thrift.site['hbase.security.authorization'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.security.authorization']
-      hbase.thrift.site['hbase.rpc.engine'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.rpc.engine']
+      hbase.thrift.site['hbase.security.authentication'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.security.authentication']
+      hbase.thrift.site['hbase.security.authorization'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.security.authorization']
+      hbase.thrift.site['hbase.rpc.engine'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.rpc.engine']
       hbase.thrift.site['hbase.thrift.authentication.type'] = hbase.thrift.site['hbase.security.authentication'] ?= 'kerberos'
-      hbase.thrift.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
-      hbase.thrift.site['hbase.regionserver.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.master.site['hbase.regionserver.kerberos.principal']
+      hbase.thrift.site['hbase.master.kerberos.principal'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
+      hbase.thrift.site['hbase.regionserver.kerberos.principal'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.regionserver.kerberos.principal']
       # hbase.site['hbase.thrift.kerberos.principal'] ?= "hbase/_HOST@#{realm}" # Dont forget `grant 'thrift_server', 'RWCA'`
       # hbase.site['hbase.thrift.keytab.file'] ?= "#{hbase.conf_dir}/thrift.service.keytab"
       # Principal changed to http by default in order to enable impersonation and make it work with hue
@@ -90,7 +71,7 @@
 
 ## Proxy Users
 
-      for hbase_ctx in [m_ctxs..., rs_ctxs...]
+      for hbase_ctx in [hm_ctxs..., rs_ctxs...]
         match = /^(.+?)[@\/]/.exec hbase.thrift.site['hbase.thrift.kerberos.principal']
         throw Error 'Invalid HBase Thrift principal' unless match
         hbase_ctx.config.ryba.hbase ?= {}
@@ -112,4 +93,8 @@
         'hbase.zookeeper.quorum'
         'hbase.zookeeper.property.clientPort'
         'dfs.domain.socket.path'
-      ] then hbase.thrift.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]
+      ] then hbase.thrift.site[property] ?= hm_ctxs[0].config.ryba.hbase.master.site[property]
+
+## Dependencies
+
+    {merge} = require 'nikita/lib/misc'

@@ -11,7 +11,7 @@
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @call 'ryba/hadoop/hdfs_nn/wait'
 
-## Users & Groups
+## Identities
 
 By default, the package create the following entries:
 
@@ -22,10 +22,8 @@ cat /etc/group | grep httpfs
 httpfs:x:494:httpfs
 ```
 
-      @call header: 'Users & Groups', ->
-        {httpfs} = @config.ryba
-        @system.group httpfs.group
-        @system.user httpfs.user
+      @system.group header: 'Group', httpfs.group
+      @system.user header: 'User', httpfs.user
 
 ## IPTables
 

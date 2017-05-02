@@ -9,10 +9,10 @@
 
       @call once:true, 'ryba/smartsense/server/wait'
 
-## User & Group
+## Identities
 
-      @system.group smartsense.group
-      @system.user smartsense.user
+      @system.group header: 'Group', smartsense.group
+      @system.user header: 'User', smartsense.user
 
 ## Packages
 Note rmp can only be download from the Hortonworks Support Web UI.

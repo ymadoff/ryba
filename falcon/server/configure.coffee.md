@@ -15,12 +15,22 @@ associated processing and management tasks on Hadoop clusters.
       hadoop_ctxs = [nn_ctxs..., dn_ctxs...]
       {realm} = @config.ryba
       falcon = @config.ryba.falcon ?= {}
-      # Layout
+
+## Environment
+
       falcon.conf_dir ?= '/etc/falcon/conf'
       falcon.log_dir ?= '/var/log/falcon'
       falcon.pid_dir ?= '/var/run/falcon'
       falcon.server_opts ?= ''
       falcon.server_heap ?= ''
+
+## Identities
+
+      # Group
+      falcon.group = name: falcon.group if typeof falcon.group is 'string'
+      falcon.group ?= {}
+      falcon.group.name ?= 'falcon'
+      falcon.group.system ?= true
       # User
       falcon.user = name: falcon.user if typeof falcon.user is 'string'
       falcon.user ?= {}
@@ -29,13 +39,10 @@ associated processing and management tasks on Hadoop clusters.
       falcon.user.comment ?= 'Falcon User'
       falcon.user.home ?= '/var/lib/falcon'
       falcon.user.groups ?= ['hadoop']
-      # Group
-      falcon.group = name: falcon.group if typeof falcon.group is 'string'
-      falcon.group ?= {}
-      falcon.group.name ?= 'falcon'
-      falcon.group.system ?= true
       falcon.user.gid = falcon.group.name
-      # Runtime
+
+## Runtime
+
       falcon.runtime ?= {}
       # Note, prism serveur start on port 16443, see https://falcon.apache.org/Distributed-mode.html
       falcon.runtime['prism.falcon.local.endpoint'] ?= "https://#{@config.host}:15443/"

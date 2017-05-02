@@ -44,10 +44,10 @@ Example:
       hive.server2.opts ?= ''
       hive.server2.heapsize ?= 1024
 
-## Users & Groups
+## Identities
 
-      hive.user = merge hive.user, hcat_ctxs[0].config.ryba.hive.user
-      hive.group = merge hive.group, hcat_ctxs[0].config.ryba.hive.group
+      hive.group = merge hcat_ctxs[0].config.ryba.hive.group, hive.group
+      hive.user = merge hcat_ctxs[0].config.ryba.hive.user, hive.user
 
 ## Configuration
 

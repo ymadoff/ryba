@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* src: normalize identies creation
 * hdfs nn: fix fsck check by using nn config
 * benchmark: first refactor
 * ambari server: desactivate sudo

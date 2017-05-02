@@ -49,6 +49,9 @@ Example:
       [sts_ctx] = @contexts 'ryba/spark/thrift_server'
       [shs_ctx] = @contexts 'ryba/spark/history_server'
       hue_docker = @config.ryba.hue_docker ?= {}
+
+## Environment
+
       # Layout
       hue_docker.conf_dir ?= '/etc/hue_docker/conf'
       hue_docker.log_dir ?= '/var/log/hue_docker'
@@ -71,22 +74,26 @@ Example:
       hue_docker.prod.tar ?= 'hue_docker.tar'
       hue_docker.port ?= '8888'
       hue_docker.image_dir ?= '/tmp'
+      hue_docker.clean_tmp ?= true
       blacklisted_app = []
-      # User
-      hue_docker.user ?= {}
-      hue_docker.user = name: hue_docker.user if typeof hue_docker.user is 'string'
-      hue_docker.user.name ?= 'hue'
-      hue_docker.user.uid ?= '2410'
-      hue_docker.user.system ?= true
-      hue_docker.user.comment ?= 'Hue User'
-      hue_docker.user.home = '/var/lib/hue_docker'
+
+## Identities
+
       # Group
       hue_docker.group = name: hue_docker.group if typeof hue_docker.group is 'string'
       hue_docker.group ?= {}
       hue_docker.group.name ?= hue_docker.user.name
       hue_docker.group.system ?= true
+      # User
+      hue_docker.user ?= {}
+      hue_docker.user = name: hue_docker.user if typeof hue_docker.user is 'string'
+      hue_docker.user.name ?= 'hue'
       hue_docker.user.gid ?= hue_docker.group.name
-      hue_docker.clean_tmp ?= true
+      hue_docker.user.system ?= true
+      hue_docker.user.comment ?= 'Hue User'
+      hue_docker.user.home = '/var/lib/hue_docker'
+
+## Configuration
 
       hue_docker.ini ?= {}
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes

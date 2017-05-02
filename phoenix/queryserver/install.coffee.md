@@ -11,10 +11,10 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
 
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
-## Users & Groups
+## Identities
 
-      @system.group phoenix.group
-      @system.user phoenix.user
+      @system.group header: 'Group', phoenix.group
+      @system.user header: 'User', phoenix.user
 
 ## IPTables
 

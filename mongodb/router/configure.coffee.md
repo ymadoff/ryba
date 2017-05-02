@@ -3,16 +3,13 @@
 
     module.exports = ->
       mongodb_configsrvs = @contexts 'ryba/mongodb/configsrv'
+      throw new Error 'No mongo config server configured ' unless mongodb_configsrvs.length > 0
       mongodb_shards = @contexts 'ryba/mongodb/shard'
       mongodb = @config.ryba.mongodb ?= {}
       mongodb.version ?= '3.4'
-      # User
-      mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
-      mongodb.user ?= {}
-      mongodb.user.name ?= 'mongod'
-      mongodb.user.system ?= true
-      mongodb.user.comment ?= 'MongoDB User'
-      mongodb.user.home ?= '/var/lib/mongod'
+
+## Identities
+
       # Group
       mongodb.group = name: mongodb.group if typeof mongodb.group is 'string'
       mongodb.group ?= {}
@@ -21,8 +18,17 @@
       mongodb.user.limits ?= {}
       mongodb.user.limits.nofile ?= 64000
       mongodb.user.limits.nproc ?= true
+      # User
+      mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
+      mongodb.user ?= {}
+      mongodb.user.name ?= 'mongod'
       mongodb.user.gid = mongodb.group.name
-      throw new Error 'No mongo config server configured ' unless mongodb_configsrvs.length > 0
+      mongodb.user.system ?= true
+      mongodb.user.comment ?= 'MongoDB User'
+      mongodb.user.home ?= '/var/lib/mongod'
+
+## Configuration
+
       # Config
       mongodb.router ?= {}
       mongodb.router.conf_dir ?= '/etc/mongod-router-server/conf'

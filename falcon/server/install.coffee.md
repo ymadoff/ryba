@@ -33,7 +33,7 @@ Note, this hasnt been verified.
         ]
         if: @config.iptables.action is 'start'
 
-## Users & Groups
+## Identities
 
 By default, the "zookeeper" package create the following entries:
 
@@ -44,8 +44,8 @@ cat /etc/group | grep falcon
 falcon:x:498:falcon
 ```
 
-      @system.group falcon.group
-      @system.user falcon.user
+      @system.group header: 'Group', falcon.group
+      @system.user header: 'User', falcon.user
 
 ## Packages
 

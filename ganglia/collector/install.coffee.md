@@ -4,7 +4,7 @@
     module.exports = header: 'Ganglia Collector', handler: ->
       {ganglia} = @config.ryba
 
-## Users & Groups
+## Identities
 
 By default, the "rrdcached" package create the following entries:
 

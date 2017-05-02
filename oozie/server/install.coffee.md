@@ -20,7 +20,7 @@ failover and Oozie must target the active node.
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
-## Users & Groups
+## Identities
 
 By default, the "oozie" package create the following entries:
 
@@ -31,8 +31,8 @@ cat /etc/group | grep oozie
 oozie:x:493:
 ```
 
-      @system.group oozie.group
-      @system.user oozie.user
+      @system.group header: 'Group', oozie.group
+      @system.user header: 'User', oozie.user
 
 ## IPTables
 

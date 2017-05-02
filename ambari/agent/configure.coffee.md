@@ -15,8 +15,8 @@
 
 ## Identities
 
-      ambari_agent.group = ambari_server.group
-      ambari_agent.user = ambari_server.user
+      ambari_agent.group ?= ambari_server.group
+      ambari_agent.user ?= ambari_server.user
 
 ## Configuration
 

@@ -45,7 +45,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         rules: rules
         if: @config.iptables.action is 'start'
 
-## Users & Groups
+## Identities
 
 By default, the "hive" and "hive-hcatalog" packages create the following
 entries:
@@ -57,8 +57,8 @@ cat /etc/group | grep hive
 hive:x:493:
 ```
 
-      @system.group hive.group
-      @system.user hive.user
+      @system.group header: 'Group', hive.group
+      @system.user header: 'User', hive.user
 
 ## Startup
 

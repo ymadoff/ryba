@@ -9,10 +9,10 @@
 
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
-## Users & Groups
+## Identities
 
-      @system.group opentsdb.group
-      @system.user opentsdb.user
+      @system.group header: 'Group', opentsdb.group
+      @system.user header: 'User', opentsdb.user
 
 ## IPTables
 

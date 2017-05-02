@@ -27,25 +27,10 @@ Example:
       hive.client.heapsize = 1024
       hive.conf_dir ?= '/etc/hive/conf'
 
-## Users & Groups
+## Identities
 
-      # User
-      hive.user ?= {}
-      hive.user = name: hive.user if typeof hive.user is 'string'
-      hive.user.name  = hcat_ctxs[0].config.ryba.hive.user.name ?= 'hive'
-      hive.user.system =  hcat_ctxs[0].config.ryba.hive.user.system ?= true
-      hive.user.groups = hcat_ctxs[0].config.ryba.hive.user.groups ?= 'hadoop'
-      hive.user.comment = hcat_ctxs[0].config.ryba.hive.user.comment ?= 'Hive User'
-      hive.user.home = hcat_ctxs[0].config.ryba.hive.user.home ?= '/var/lib/hive'
-      hive.user.limits ?= {}
-      hive.user.limits.nofile = hcat_ctxs[0].config.ryba.hive.user.limits.nofile ?= 64000
-      hive.user.limits.nproc = hcat_ctxs[0].config.ryba.hive.user.limits.nproc ?= true
-      # Group
-      hive.group ?= {}
-      hive.group = name: hive.group if typeof hive.group is 'string'
-      hive.group.name = hcat_ctxs[0].config.ryba.hive.group.name ?= 'hive'
-      hive.group.system = hcat_ctxs[0].config.ryba.hive.group.system ?= true
-      hive.user.gid = hive.group.name
+      hive.user = merge hcat_ctxs[0].config.ryba.hive.user, hive.user
+      hive.group = merge hcat_ctxs[0].config.ryba.hive.group, hive.group
 
 ## Configuration
 
@@ -145,6 +130,10 @@ Example:
 
       hive.client.truststore_location ?= "#{hive.conf_dir}/truststore"
       hive.client.truststore_password ?= "ryba123"
+
+## Dependencies
+
+    {merge} = require 'nikita/lib/misc'
 
 ## Notes
 

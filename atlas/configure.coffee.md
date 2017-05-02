@@ -30,6 +30,16 @@ Atlas needs also kafka as a bus to broadcats message betwwen the different compo
       atlas.pid_dir ?= '/var/run/atlas'
       atlas.server_opts ?= ''
       atlas.server_heap ?= ''
+      atlas.cluster_name ?= 'atlas-on-ryba-cluster'
+      atlas.ranger_solr_plugin ?= @contexts('ryba/ranger/admin').length isnt -1
+
+## Identities
+
+      # Group
+      atlas.group = name: atlas.group if typeof atlas.group is 'string'
+      atlas.group ?= {}
+      atlas.group.name ?= 'atlas'
+      atlas.group.system ?= true
       # User
       atlas.user = name: atlas.user if typeof atlas.user is 'string'
       atlas.user ?= {}
@@ -38,21 +48,12 @@ Atlas needs also kafka as a bus to broadcats message betwwen the different compo
       atlas.user.comment ?= 'Atlas User'
       atlas.user.home ?= '/var/lib/atlas'
       atlas.user.groups ?= ['hadoop']
-      # Group
-      atlas.group = name: atlas.group if typeof atlas.group is 'string'
-      atlas.group ?= {}
-      atlas.group.name ?= 'atlas'
-      atlas.group.system ?= true
       atlas.user.gid = atlas.group.name
-      atlas.cluster_name ?= 'atlas-on-ryba-cluster'
-      atlas.ranger_solr_plugin ?= @contexts('ryba/ranger/admin').length isnt -1
-      # Internal Configuration
-      # Configuration
-      atlas.application ?= {}
-      atlas.application.properties ?= {}
 
 ## Configuration
-      
+
+      atlas.application ?= {}
+      atlas.application.properties ?= {}
       atlas.application.properties['atlas.server.bind.address'] ?= "#{@config.host}"
       atlas.application.properties['atlas.taxonomy.default.name'] ?= 'Catalog'
       atlas.application.properties['atlas.rest-csrf.enabled'] ?= 'true'

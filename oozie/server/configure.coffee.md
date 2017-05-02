@@ -24,9 +24,21 @@ Example
       # Internal properties
       zk_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       {ryba} = @config
-      ryba.force_war ?= false
-      # User
       oozie = ryba.oozie ?= {}
+
+## Environment
+
+      # Layout
+      oozie.conf_dir ?= '/etc/oozie/conf'
+      oozie.data ?= '/var/db/oozie'
+      oozie.log_dir ?= '/var/log/oozie'
+      oozie.pid_dir ?= '/var/run/oozie'
+      oozie.tmp_dir ?= '/var/tmp/oozie'
+      oozie.server_dir ?= '/usr/hdp/current/oozie-client/oozie-server'
+
+## Identities
+
+      # User
       oozie.user ?= {}
       oozie.user = name: oozie.user if typeof oozie.user is 'string'
       oozie.user.name ?= 'oozie'
@@ -39,29 +51,24 @@ Example
       oozie.group = name: oozie.group if typeof oozie.group is 'string'
       oozie.group.name ?= 'oozie'
       oozie.group.system ?= true
-      # Layout
-      oozie.conf_dir ?= '/etc/oozie/conf'
-      oozie.data ?= '/var/db/oozie'
-      oozie.log_dir ?= '/var/log/oozie'
-      oozie.pid_dir ?= '/var/run/oozie'
-      oozie.tmp_dir ?= '/var/tmp/oozie'
-      oozie.server_dir ?= '/usr/hdp/current/oozie-client/oozie-server'
+
+## Security
+
       # SSL
       oozie.secure ?= true
       # see comment in ../resources/oozie-env.sh.j2
-
       oozie.keystore_file ?= "#{oozie.conf_dir}/keystore"
       oozie.keystore_pass ?= 'oozie123'
       oozie.truststore_file ?= "#{oozie.conf_dir}/trustore"
       oozie.truststore_pass ?= 'oozie123'
       # Configuration
       oozie.site ?= {}
-      ryba.oozie.http_port ?= if oozie.secure then 11443 else 11000
-      ryba.oozie.admin_port ?= 11001
+      oozie.http_port ?= if oozie.secure then 11443 else 11000
+      oozie.admin_port ?= 11001
       if oozie.secure
-        oozie.site['oozie.base.url'] = "https://#{@config.host}:#{ryba.oozie.http_port}/oozie"
+        oozie.site['oozie.base.url'] = "https://#{@config.host}:#{oozie.http_port}/oozie"
       else
-        oozie.site['oozie.base.url'] = "http://#{@config.host}:#{ryba.oozie.http_port}/oozie"
+        oozie.site['oozie.base.url'] = "http://#{@config.host}:#{oozie.http_port}/oozie"
       # Configuration Database
       oozie.db ?= {}
       oozie.db.engine ?= 'mysql'
@@ -182,19 +189,19 @@ Example
 
 ## Configuration for Log4J
 
-      ryba.oozie.log4j ?= {}
-      ryba.oozie.log4j.opts ?= {}
-      ryba.oozie.log4j.opts[k] ?= v for k, v of @config.log4j
-      if ryba.oozie.log4j.opts.server_port?
-        ryba.oozie.log4j.opts['extra_appender'] = ",socket_server"
-      if ryba.oozie.log4j.opts.remote_host? && ryba.oozie.log4j.opts.remote_port?
-        ryba.oozie.log4j.opts['extra_appender'] = ",socket_client"
-      ryba.oozie.log4j_opts = ""
-      ryba.oozie.log4j_opts += " -Doozie.log4j.#{k}=#{v}" for k, v of ryba.oozie.log4j.opts
+      oozie.log4j ?= {}
+      oozie.log4j.opts ?= {}
+      oozie.log4j.opts[k] ?= v for k, v of @config.log4j
+      if oozie.log4j.opts.server_port?
+        oozie.log4j.opts['extra_appender'] = ",socket_server"
+      if oozie.log4j.opts.remote_host? && oozie.log4j.opts.remote_port?
+        oozie.log4j.opts['extra_appender'] = ",socket_client"
+      oozie.log4j_opts = ""
+      oozie.log4j_opts += " -Doozie.log4j.#{k}=#{v}" for k, v of oozie.log4j.opts
 
 ## Oozie Environment
 
-      ryba.oozie.heap_size ?= '256m'
+      oozie.heap_size ?= '256m'
 
 ## High Availability
 Config [High Availability][oozie-ha]. They should be configured against

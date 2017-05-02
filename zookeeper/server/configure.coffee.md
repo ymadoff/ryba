@@ -27,21 +27,18 @@ Example :
       @config.ryba ?= {}
       throw Error 'Missing configuration "ryba.realm"' unless @config.ryba?.realm
       zookeeper = @config.ryba.zookeeper ?= {}
+
+## Environment
+
       # Layout
       zookeeper.conf_dir ?= '/etc/zookeeper/conf'
       zookeeper.log_dir ?= '/var/log/zookeeper'
       zookeeper.pid_dir ?= '/var/run/zookeeper'
       zookeeper.port ?= 2181
       zookeeper.conf_dir ?= '/etc/zookeeper/conf'
-      # User
-      zookeeper.user ?= {}
-      zookeeper.user = name: @config.ryba.zookeeper.user if typeof @config.ryba.zookeeper.user is 'string'
-      zookeeper.user.name ?= 'zookeeper'
-      zookeeper.user.system ?= true
-      zookeeper.user.gid ?= 'zookeeper'
-      zookeeper.user.groups ?= 'hadoop'
-      zookeeper.user.comment ?= 'Zookeeper User'
-      zookeeper.user.home ?= '/var/lib/zookeeper'
+
+## Identities
+
       # Groups
       zookeeper.group = name: @config.ryba.zookeeper.group if typeof @config.ryba.zookeeper.group is 'string'
       zookeeper.group ?= {}
@@ -52,7 +49,18 @@ Example :
       @config.ryba.hadoop_group ?= {}
       @config.ryba.hadoop_group.name ?= 'hadoop'
       @config.ryba.hadoop_group.system ?= true
-      # Environnment
+      # User
+      zookeeper.user ?= {}
+      zookeeper.user = name: @config.ryba.zookeeper.user if typeof @config.ryba.zookeeper.user is 'string'
+      zookeeper.user.name ?= 'zookeeper'
+      zookeeper.user.system ?= true
+      zookeeper.user.gid ?= zookeeper.group.name
+      zookeeper.user.groups ?= 'hadoop'
+      zookeeper.user.comment ?= 'Zookeeper User'
+      zookeeper.user.home ?= '/var/lib/zookeeper'
+
+## Configuration
+      
       zookeeper.env ?= {}
       zookeeper.env['ZOOKEEPER_HOME'] ?= "/usr/hdp/current/zookeeper-client"
       zookeeper.env['ZOO_AUTH_TO_LOCAL'] ?= "RULE:[1:\\$1]RULE:[2:\\$1]"

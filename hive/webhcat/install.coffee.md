@@ -2,7 +2,7 @@
 # WebHCat
 
     module.exports =  header: 'WebHCat Install', handler: ->
-      {webhcat, hive, hadoop_group} = @config.ryba
+      {webhcat, hadoop_group} = @config.ryba
       port = webhcat.site['templeton.port']
 
 ## Register
@@ -34,7 +34,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-## Users & Groups
+## Identities
 
 By default, the "hive" and "hive-hcatalog" packages create the following
 entries:
@@ -46,8 +46,8 @@ cat /etc/group | grep hive
 hive:x:493:
 ```
 
-      @system.group hive.group
-      @system.user hive.user
+      @system.group header: 'Group', webhcat.group
+      @system.user header: 'User', webhcat.user
 
 
 ## Startup
@@ -71,7 +71,7 @@ inside "/etc/init.d" and activate it on startup.
         @system.tmpfs
           if_os: name: ['redhat','centos'], version: '7'
           mount: webhcat.pid_dir
-          uid: hive.user.name
+          uid: webhcat.user.name
           gid: hadoop_group.name
           perm: '0750'
         @system.execute
@@ -85,12 +85,12 @@ Create file system directories for log and pid.
       @call header: 'Layout', ->
         @system.mkdir
           target: webhcat.log_dir
-          uid: hive.user.name
+          uid: webhcat.user.name
           gid: hadoop_group.name
           mode: 0o755
         @system.mkdir
           target: webhcat.pid_dir
-          uid: hive.user.name
+          uid: webhcat.user.name
           gid: hadoop_group.name
           mode: 0o755
 
@@ -104,7 +104,7 @@ Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
         source: "#{__dirname}/../../resources/hive-webhcat/webhcat-site.xml"
         local: true
         properties: webhcat.site
-        uid: hive.user.name
+        uid: webhcat.user.name
         gid: hadoop_group.name
         mode: 0o0755
         merge: true
@@ -120,7 +120,7 @@ Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
           source: "#{__dirname}/../../resources/hive-webhcat/webhcat-env.sh"
           local: true
           target: "#{webhcat.conf_dir}/webhcat-env.sh"
-          uid: hive.user.name
+          uid: webhcat.user.name
           gid: hadoop_group.name
           mode: 0o0755
           write: [
@@ -164,7 +164,7 @@ Copy the spnego keytab with restricitive permissions
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
         target: webhcat.site['templeton.kerberos.keytab']
-        uid: hive.user.name
+        uid: webhcat.user.name
         gid: hadoop_group.name
         mode: 0o0660
 

@@ -7,7 +7,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
 [impersonation]: http://hbase.apache.org/book.html#security.rest.gateway
 
     module.exports = ->
-      m_ctxs = @contexts 'ryba/hbase/master'
+      hm_ctxs = @contexts 'ryba/hbase/master'
       rs_ctxs = @contexts 'ryba/hbase/regionserver'
       ryba = @config.ryba ?= {}
       {realm, core_site, ssl_server, hbase} = @config.ryba
@@ -15,28 +15,11 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase = @config.ryba.hbase ?= {}
       hbase.rest ?= {}
 
-# Users and Groups
+# Identities
 
-      hbase.user ?= {}
-      hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
-      hbase.user.name ?= m_ctxs[0].config.ryba.hbase.user.name
-      hbase.user.system ?= m_ctxs[0].config.ryba.hbase.user.system
-      hbase.user.comment ?= m_ctxs[0].config.ryba.hbase.user.comment
-      hbase.user.home ?= m_ctxs[0].config.ryba.hbase.user.home
-      hbase.user.groups ?= m_ctxs[0].config.ryba.hbase.user.groups
-      hbase.user.limits ?= {}
-      hbase.user.limits.nofile ?= m_ctxs[0].config.ryba.hbase.user.limits.nofile
-      hbase.user.limits.nproc ?= m_ctxs[0].config.ryba.hbase.user.limits.nproc
-      hbase.admin ?= {}
-      hbase.admin.name ?= hbase.user.name
-      hbase.admin.principal ?=m_ctxs[0].config.ryba.hbase.admin.principal
-      hbase.admin.password ?=m_ctxs[0].config.ryba.hbase.admin.password
-      # Group
-      hbase.group ?= {}
-      hbase.group = name: hbase.group if typeof hbase.group is 'string'
-      hbase.group.name ?= m_ctxs[0].config.ryba.hbase.group.name
-      hbase.group.system ?= m_ctxs[0].config.ryba.hbase.group.system
-      hbase.user.gid = hbase.group.name
+      hbase.group = merge hm_ctxs[0].config.ryba.hbase.group, hbase.group
+      hbase.user = merge hm_ctxs[0].config.ryba.hbase.user, hbase.user
+      hbase.admin = merge hm_ctxs[0].config.ryba.hbase.admin, hbase.admin
 
 ## Test
 
@@ -63,17 +46,17 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.rest.site['hbase.rest.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"
       # hbase.site['hbase.rest.authentication.kerberos.keytab'] ?= "#{hbase.conf_dir}/hbase.service.keytab"
       hbase.rest.site['hbase.rest.authentication.kerberos.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
-      hbase.rest.site['hbase.security.authentication'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.security.authentication']
-      hbase.rest.site['hbase.security.authorization'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.security.authorization']
-      hbase.rest.site['hbase.master.kerberos.principal'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
-      hbase.rest.site['hbase.regionserver.kerberos.principal'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.regionserver.kerberos.principal']
-      hbase.rest.site['hbase.rpc.engine'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.rpc.engine']
+      hbase.rest.site['hbase.security.authentication'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.security.authentication']
+      hbase.rest.site['hbase.security.authorization'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.security.authorization']
+      hbase.rest.site['hbase.master.kerberos.principal'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
+      hbase.rest.site['hbase.regionserver.kerberos.principal'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.regionserver.kerberos.principal']
+      hbase.rest.site['hbase.rpc.engine'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.rpc.engine']
       hbase.rest.env ?= {}
-      hbase.rest.env['JAVA_HOME'] ?= m_ctxs[0].config.ryba.hbase.master.env['JAVA_HOME']
+      hbase.rest.env['JAVA_HOME'] ?= hm_ctxs[0].config.ryba.hbase.master.env['JAVA_HOME']
 
 ## Proxy Users
 
-      for hbase_ctx in [m_ctxs..., rs_ctxs...]
+      for hbase_ctx in [hm_ctxs..., rs_ctxs...]
         match = /^(.+?)[@\/]/.exec hbase.rest.site['hbase.rest.kerberos.principal']
         throw Error 'Invalid HBase Rest principal' unless match
         hbase_ctx.config.ryba.hbase ?= {}
@@ -95,4 +78,8 @@ See [REST Gateway Impersonation Configuration][impersonation].
         'hbase.zookeeper.quorum'
         'hbase.zookeeper.property.clientPort'
         'dfs.domain.socket.path'
-      ] then hbase.rest.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]
+      ] then hbase.rest.site[property] ?= hm_ctxs[0].config.ryba.hbase.master.site[property]
+
+## Dependencies
+
+    {merge} = require 'nikita/lib/misc'

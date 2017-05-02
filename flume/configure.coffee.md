@@ -30,18 +30,23 @@ Example:
     module.exports = ->
       # require('masson/core/krb5_client').configure ctx
       flume = @config.ryba.flume ?= {}
-      # User
-      flume.user = name: flume.user if typeof flume.user is 'string'
-      flume.user ?= {}
-      flume.user.name ?= 'flume'
-      flume.user.system ?= true
-      flume.user.gid ?= 'flume'
-      flume.user.comment ?= 'Flume User'
-      flume.user.home ?= '/var/lib/flume'
+
+## Environment
+
+      flume.conf_dir = '/etc/flume/conf'
+
+## Identities
+
       # Group
       flume.group = name: flume.group if typeof flume.group is 'string'
       flume.group ?= {}
       flume.group.name ?= 'flume'
       flume.group.system ?= true
-      # Layout
-      flume.conf_dir = '/etc/flume/conf'
+      # User
+      flume.user = name: flume.user if typeof flume.user is 'string'
+      flume.user ?= {}
+      flume.user.name ?= 'flume'
+      flume.user.system ?= true
+      flume.user.gid ?= flume.group.name
+      flume.user.comment ?= 'Flume User'
+      flume.user.home ?= '/var/lib/flume'

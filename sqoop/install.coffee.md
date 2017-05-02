@@ -12,7 +12,7 @@ driver used by Sqoop.
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
 
-## Users & Groups
+## Identities
 
 By default, the "sqoop" package create the following entries:
 
@@ -23,8 +23,8 @@ cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-      @system.group hadoop_group
-      @system.user sqoop.user
+      @system.group header: 'Group', hadoop_group
+      @system.user header: 'User', sqoop.user
 
 ## Environment
 

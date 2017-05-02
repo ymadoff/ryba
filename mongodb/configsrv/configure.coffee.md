@@ -6,14 +6,11 @@ They can be installed and configured on their own.
 
     module.exports = ->
       mongodb_configsrvs = @contexts 'ryba/mongodb/configsrv'
+      configsrv_hosts = mongodb_configsrvs.map( (ctx)-> ctx.config.host)
       mongodb = @config.ryba.mongodb ?= {}
-      # User
-      mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
-      mongodb.user ?= {}
-      mongodb.user.name ?= 'mongod'
-      mongodb.user.system ?= true
-      mongodb.user.comment ?= 'MongoDB User'
-      mongodb.user.home ?= '/var/lib/mongod'
+
+## Identities
+
       # Group
       mongodb.group = name: mongodb.group if typeof mongodb.group is 'string'
       mongodb.group ?= {}
@@ -22,9 +19,17 @@ They can be installed and configured on their own.
       mongodb.user.limits ?= {}
       mongodb.user.limits.nofile ?= 64000
       mongodb.user.limits.nproc ?= true
+      # User
+      mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
+      mongodb.user ?= {}
+      mongodb.user.name ?= 'mongod'
       mongodb.user.gid = mongodb.group.name
-      configsrv_hosts = mongodb_configsrvs.map( (ctx)-> ctx.config.host)
-      # Config
+      mongodb.user.system ?= true
+      mongodb.user.comment ?= 'MongoDB User'
+      mongodb.user.home ?= '/var/lib/mongod'
+
+# Configuration
+
       mongodb.configsrv ?= {}
       mongodb.configsrv.conf_dir ?= '/etc/mongod-config-server/conf'
       mongodb.configsrv.pid_dir ?= '/var/run/mongod'

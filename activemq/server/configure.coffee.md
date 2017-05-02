@@ -4,11 +4,22 @@
 
     module.exports = ->
       activemq = @config.ryba.activemq ?= {}
+
+## Environment
+
       activemq.version ?= '5.14.3'
       activemq.server ?= {}
       activemq.conf_dir ?= '/etc/activemq/conf'
       activemq.log_dir ?= '/var/log/activemq'
       activemq.data_dir ?= '/var/activemq/data'
+
+## Identities
+
+      # Group
+      activemq.group ?= {}
+      activemq.group = name: activemq.group if typeof activemq.group is 'string'
+      activemq.group.name ?= 'activemq'
+      activemq.group.system ?= true
       # User
       activemq.user ?= {}
       activemq.user = name: activemq.user if typeof activemq.user is 'string'
@@ -17,13 +28,10 @@
       activemq.user.system ?= true
       activemq.user.comment ?= 'ActiveMQ User'
       activemq.user.groups ?= 'hadoop'
-      activemq.user.gid ?= 'activemq'
-      # Group
-      activemq.group ?= {}
-      activemq.group = name: activemq.group if typeof activemq.group is 'string'
-      activemq.group.name ?= 'activemq'
-      activemq.group.system ?= true
-      # Ports
+      activemq.user.gid ?= activemq.group.name
+
+## Ports
+
       activemq.server.port ?= {}
       activemq.server.port.jms ?= '61616'
       activemq.server.port.ui ?= '8161'
@@ -35,7 +43,9 @@
         mqtt:     { protocol: 'mqtt',  port: 1883  },
         ws:       { protocol: 'ws',    port: 61614 }
       }
-      # ActiveMQ config file
+
+## Configuration
+
       activemq.conf ?= {}
       activemq.conf['beans'] = {
         '@xmlns': "http://www.springframework.org/schema/beans"

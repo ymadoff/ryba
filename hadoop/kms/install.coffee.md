@@ -10,10 +10,10 @@
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
 
-## Users & Groups
+## Identities
 
-      @system.group kms.group
-      @system.user kms.user
+      @system.group header: 'Group', kms.group
+      @system.user header: 'User', kms.user
 
 ## Packages
 

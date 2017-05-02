@@ -12,10 +12,10 @@
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
-## Users & Groups
+## Identities
 
-      @system.group knox.group
-      @system.user knox.user
+      @system.group header: 'Group', knox.group
+      @system.user header: 'User', knox.user
 
 ## IPTables
 

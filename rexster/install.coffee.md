@@ -7,10 +7,10 @@
 
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
-## Users & Groups
+## Identities
 
-      @system.group rexster.group
-      @system.user rexster.user
+      @system.group header: 'Group', rexster.group
+      @system.user header: 'User', rexster.user
 
 ## IPTables
 

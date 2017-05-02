@@ -31,7 +31,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-## Users & Groups
+## Identities
 
 By default, the "hbase" package create the following entries:
 
@@ -42,8 +42,8 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ```
 
-      @system.group hbase.group
-      @system.user hbase.user
+      @system.group header: 'Group', hbase.group
+      @system.user header: 'User', hbase.user
 
 
 ## HBase Regionserver Layout

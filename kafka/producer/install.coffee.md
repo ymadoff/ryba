@@ -9,7 +9,7 @@
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
-## Users & Groups
+## Identities
 
 By default, the "kafka" package create the following entries:
 
@@ -20,8 +20,8 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-      @system.group kafka.group
-      @system.user kafka.user
+      @system.group header: 'Group', kafka.group
+      @system.user header: 'User', kafka.user
 
 ## Package
 

@@ -8,6 +8,9 @@ The default configuration is located inside the source code in the location
       {realm} = @config.ryba
       hdfs_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']
       httpfs = @config.ryba.httpfs ?= {}
+
+## Environment
+
       # layout
       httpfs.pid_dir ?= '/var/run/httpfs'
       httpfs.conf_dir ?= '/etc/hadoop-httpfs/conf'
@@ -20,6 +23,9 @@ The default configuration is located inside the source code in the location
       httpfs.catalina_home ?= '/etc/hadoop-httpfs/tomcat-deployment'
       httpfs.catalina_opts ?= ''
       httpfs.catalina.opts ?= {}
+
+## Identities
+
       # Group
       httpfs.group = name: httpfs.group if typeof httpfs.group is 'string'
       httpfs.group ?= {}
@@ -34,7 +40,9 @@ The default configuration is located inside the source code in the location
       httpfs.user.home = "/var/lib/#{httpfs.user.name}"
       httpfs.user.gid = httpfs.group.name
       httpfs.user.groups ?= 'hadoop'
-      # env
+
+## Configuration
+
       httpfs.env ?= {}
       httpfs.env.HTTPFS_SSL_ENABLED ?= 'true' # Default is "false"
       httpfs.env.HTTPFS_SSL_KEYSTORE_FILE ?= "#{httpfs.conf_dir}/keystore" # Default is "${HOME}/.keystore"

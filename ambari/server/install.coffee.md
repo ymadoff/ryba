@@ -11,8 +11,8 @@ executing this module.
 
 By default, the "ambari-server" package does not create any identities.
 
-      @system.group header: "Group", ambari_server.group
-      @system.user header: "User", ambari_server.user
+      @system.group header: 'Group', ambari_server.group
+      @system.user header: 'User', ambari_server.user
 
 ## Package & Repository
 

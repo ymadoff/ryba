@@ -28,10 +28,10 @@ Example:
       hive.conf_dir ?= '/etc/hive/conf'
       hive.client.aux_jars ?= hcat_ctxs[0].config.ryba.hive.hcatalog.aux_jars
 
-## Users & Groups
+## Identities
 
-      hive.user = merge hive.user, hs2_ctxs[0].config.ryba.hive.user
-      hive.group = merge hive.group, hs2_ctxs[0].config.ryba.hive.group
+      hive.user = merge hs2_ctxs[0].config.ryba.hive.user, hive.user
+      hive.group = merge hs2_ctxs[0].config.ryba.hive.group, hive.group
 
 ## Client HiveServer2 Configuration
 

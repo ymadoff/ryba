@@ -26,7 +26,7 @@ Note, this hasnt been verified.
       #   ]
       #   if: @config.iptables.action is 'start'
 
-## Users & Groups
+## Identities
 
 By default, the "druid" package create the following entries:
 
@@ -37,8 +37,8 @@ cat /etc/group | grep druid
 druid:x:2435:
 ```
 
-      @system.group druid.group
-      @system.user druid.user
+      @system.group header: 'Group', druid.group
+      @system.user header: 'User', druid.user
 
 ## Packages
 

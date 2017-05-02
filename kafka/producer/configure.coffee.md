@@ -4,11 +4,14 @@
     module.exports = ->
       {kafka} = @config.ryba ?= {}
       ks_ctxs = @contexts 'ryba/kafka/broker'
-      kafka.user ?= {}
-      kafka.user[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.user
-      kafka.group ?= {}
-      kafka.group[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.group
-      #Configuration
+
+## Identities
+
+      kafka.group = merge ks_ctxs[0].config.ryba.kafka.group, kafka.group
+      kafka.user = merge ks_ctxs[0].config.ryba.kafka.user, kafka.user
+
+## Configuration
+
       kafka.producer ?= {}
       kafka.producer.conf_dir ?= '/etc/kafka/conf'
       kafka.producer.config ?= {}
@@ -67,3 +70,7 @@
       kafka.producer.env ?= {}
       if ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.set.acl'] is 'true'
         kafka.producer.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.producer.conf_dir}/kafka-client.jaas"
+
+## Dependencies
+
+    {merge} = require 'nikita/lib/misc'

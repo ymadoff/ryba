@@ -13,6 +13,9 @@ associated processing and management tasks on Hadoop clusters.
       falcon.client ?= {}
       # Layout
       falcon.client.conf_dir ?= '/etc/falcon/conf'
+
+## Identities
+
       # User
       falcon.client.user ?= f_context.config.ryba.falcon.user
       # Group

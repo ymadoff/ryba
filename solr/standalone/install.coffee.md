@@ -32,10 +32,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         unless @config.iptables.action is 'start'
 
-## Users and Groups
+## Identities
 
-      @system.group solr.group
-      @system.user solr.user
+      @system.group header: 'Group', solr.group
+      @system.user header: 'User', solr.user
 
 ## Layout
 

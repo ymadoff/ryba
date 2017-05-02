@@ -15,15 +15,16 @@
       @call 'ryba/zookeeper/server/wait'
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
-## Users and Groups
+## Identities
+
 Create user and groups for solr user.
 
       @system.mkdir
         target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
-      @system.group solr.group
-      @system.user solr.user
+      @system.group header: 'Group', solr.group
+      @system.user header: 'User', solr.user
 
 ## Layout
 

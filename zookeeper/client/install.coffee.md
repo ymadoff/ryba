@@ -3,7 +3,7 @@
 
     module.exports = header: 'ZooKeeper Client Install', handler: (options) ->
       [zk_ctx] = @contexts 'ryba/zookeeper/server'
-      {zookeeper} = @config.ryba
+      {zookeeper_client} = @config.ryba
 
 ## Register
 
@@ -21,9 +21,9 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-      @system.group zk_ctx.config.ryba.zookeeper.group
-      @system.group zk_ctx.config.ryba.hadoop_group
-      @system.user zk_ctx.config.ryba.zookeeper.user
+      @system.group header: "Group #{zookeeper_client.hadoop_group.name}", zookeeper_client.hadoop_group
+      @system.group header: "Group #{zookeeper_client.group.name}", zookeeper_client.group
+      @system.user header: "User #{zookeeper_client.user.name}", zookeeper_client.user
 
 ## Packages
 
@@ -42,7 +42,7 @@ Create the JAAS client configuration file.
 
       @file.jaas
         header: 'Kerberos'
-        target: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
+        target: "#{zookeeper_client.conf_dir}/zookeeper-client.jaas"
         content: Client:
           useTicketCache: 'true'
         mode: 0o644
@@ -53,7 +53,7 @@ Generate the "zookeeper-env.sh" file.
 
       @file
         header: 'Environment'
-        target: "#{zookeeper.conf_dir}/zookeeper-env.sh"
-        content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
+        target: "#{zookeeper_client.conf_dir}/zookeeper-env.sh"
+        content: ("export #{k}=\"#{v}\"" for k, v of zookeeper_client.env).join '\n'
         backup: true
         eof: true

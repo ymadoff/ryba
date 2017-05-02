@@ -16,6 +16,9 @@ Example:
 
     module.exports = ->
       kafka = @config.ryba.kafka ?= {}
+
+## Identities
+
       # Group
       kafka.group = name: kafka.group if typeof kafka.group is 'string'
       kafka.group ?= {}
@@ -25,10 +28,11 @@ Example:
       kafka.user ?= {}
       kafka.user = name: kafka.user if typeof kafka.user is 'string'
       kafka.user.name ?= kafka.group.name
+      kafka.user.gid = kafka.group.name
       kafka.user.system ?= true
       kafka.user.comment ?= 'Kafka User'
       kafka.user.home = "/var/lib/#{kafka.user.name}"
-      kafka.user.gid = kafka.group.name
+      
       # ZooKeeper Quorun
       zoo_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       zookeeper_quorum = kafka.zookeeper_quorum ?= for zoo_ctx in zoo_ctxs

@@ -52,17 +52,14 @@ Example
       # require('../oozie/server').configure ctx
       # require('../hue/index').configure ctx
       nagios = @config.ryba.nagios ?= {}
+
+## Environment
+
       nagios.overwrite ?= false
       nagios.log_dir = '/var/log/nagios'
-      # User
-      nagios.user = name: nagios.user if typeof nagios.user is 'string'
-      nagios.user ?= {}
-      nagios.user.name ?= 'nagios'
-      nagios.user.system ?= true
-      nagios.user.gid = 'nagios'
-      nagios.user.comment ?= 'Nagios User'
-      nagios.user.home = '/var/log/nagios'
-      nagios.user.shell = '/bin/sh'
+
+## Identities
+
       # Groups
       nagios.group = name: nagios.group if typeof nagios.group is 'string'
       nagios.group ?= {}
@@ -71,7 +68,16 @@ Example
       nagios.groupcmd = name: nagios.group if typeof nagios.group is 'string'
       nagios.groupcmd ?= {}
       nagios.groupcmd.name ?= 'nagiocmd'
-      nagios.groupcmd.system ?= true      
+      nagios.groupcmd.system ?= true     
+      # User
+      nagios.user = name: nagios.user if typeof nagios.user is 'string'
+      nagios.user ?= {}
+      nagios.user.name ?= 'nagios'
+      nagios.user.system ?= true
+      nagios.user.gid = nagios.group.name
+      nagios.user.comment ?= 'Nagios User'
+      nagios.user.home = '/var/log/nagios'
+      nagios.user.shell = '/bin/sh' 
       # WebUI Users & Groups
       nagios.users ?= {}
       unless Object.keys(nagios.users).length
@@ -87,7 +93,9 @@ Example
         nagios.groups.admins =
           alias: 'Nagios Administrators'
           members: members
-      # Kerberos
+
+## Kerberos
+
       nagios.keytab ?= '/etc/security/keytabs/nagios.service.keytab'
       nagios.principal ?= "nagios/#{@config.host}@#{@config.ryba.realm}"
       nagios.kinit ?= '/usr/bin/kinit'

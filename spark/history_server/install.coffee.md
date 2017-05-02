@@ -18,10 +18,10 @@ web interface.
       @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
-# Users and Groups   
+# Identities
 
-      @system.group spark.group
-      @system.user spark.user
+      @system.group header: 'Group', spark.group
+      @system.user header: 'User', spark.user
 
 # Packages
 

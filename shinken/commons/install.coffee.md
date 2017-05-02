@@ -4,10 +4,10 @@
     module.exports = header: 'Shinken Install', handler: ->
       {shinken} = @config.ryba
 
-## Users & Groups
+## Identities
 
-      @system.group shinken.group
-      @system.user shinken.user
+      @system.group header: 'Group', shinken.group
+      @system.user header: 'User', shinken.user
 
 ## Commons Packages
 

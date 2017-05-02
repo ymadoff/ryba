@@ -15,10 +15,12 @@
 
 # Users & Groups
 
-*   `hbase.user` (object|string)
-    The Unix HBase login name or a user object (see Nikita User documentation).
-*   `hbase.group` (object|string)
-    The Unix HBase group name or a group object (see Nikita Group documentation).
+* `hbase.admin` (object|string)   
+  The Kerberos HBase principal.
+* `hbase.group` (object|string)   
+  The Unix HBase group name or a group object (see Nikita Group documentation).
+* `hbase.user` (object|string)   
+  The Unix HBase login name or a user object (see Nikita User documentation).
 
 Example
 
@@ -34,27 +36,28 @@ Example
     }
 ```
 
-      hbase.test ?= {}
+      # Group
+      hbase.group ?= {}
+      hbase.group = name: hbase.group if typeof hbase.group is 'string'
+      hbase.group.name ?= 'hbase'
+      hbase.group.system ?= true
+      # User
       hbase.user ?= {}
       hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
       hbase.user.name ?= 'hbase'
       hbase.user.system ?= true
+      hbase.user.gid = hbase.group.name
       hbase.user.comment ?= 'HBase User'
       hbase.user.home ?= '/var/run/hbase'
       hbase.user.groups ?= 'hadoop'
       hbase.user.limits ?= {}
       hbase.user.limits.nofile ?= 64000
       hbase.user.limits.nproc ?= true
+      # Admin Principal
       hbase.admin ?= {}
       hbase.admin.name ?= hbase.user.name
       hbase.admin.principal ?= "#{hbase.admin.name}@#{realm}"
       hbase.admin.password ?= "hbase123"
-      # Group
-      hbase.group ?= {}
-      hbase.group = name: hbase.group if typeof hbase.group is 'string'
-      hbase.group.name ?= 'hbase'
-      hbase.group.system ?= true
-      hbase.user.gid = hbase.group.name
 
 ## Master Configuration
 

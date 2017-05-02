@@ -5,33 +5,36 @@
       nifi = @config.ryba.nifi ?= {}
       # Set it to true if both hdf and hdp are installed on the cluster
       @config.ryba.hdf_hdp ?= false
+      zk_hosts = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
+
+## Environment
+
       nifi.conf_dir ?= '/etc/nifi/conf'
       nifi.log_dir ?= '/var/log/nifi'
-      zk_hosts = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
 
 ## User and Groups
 
-      # User
-      nifi.user = name: nifi.user if typeof nifi.user is 'string'
-      nifi.user ?= {}
-      nifi.user.name ?= 'nifi'
-      nifi.user.system ?= true
-      nifi.user.comment ?= 'NiFi User'
-      nifi.user.home ?= '/var/lib/nifi'
       # Group
       nifi.group = name: nifi.group if typeof nifi.group is 'string'
       nifi.group ?= {}
       nifi.group.name ?= 'nifi'
       nifi.group.system ?= true
+      # User
+      nifi.user = name: nifi.user if typeof nifi.user is 'string'
+      nifi.user ?= {}
+      nifi.user.name ?= 'nifi'
+      nifi.user.gid = nifi.group.name
+      nifi.user.system ?= true
+      nifi.user.comment ?= 'NiFi User'
+      nifi.user.home ?= '/var/lib/nifi'
       nifi.user.limits ?= {}
       nifi.user.limits.nofile ?= 64000
       nifi.user.limits.nproc ?= 10000
-      nifi.user.gid = nifi.group.name
+
+## Configuration
+
       nifi.config ?= {}
       properties = nifi.config.properties ?= {}
-
-## Core Properties
-
       properties['nifi.version'] ?= '1.1.0.2.1.2.0-10'
       properties['nifi.flow.configuration.file'] ?= "#{nifi.user.home}/flow.xml.gz"
       properties['nifi.flow.configuration.archive.dir'] ?= "#{nifi.user.home}/archive"

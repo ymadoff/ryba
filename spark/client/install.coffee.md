@@ -15,7 +15,7 @@ Resources:
 
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
-## Spark Users And Group
+## Identities
 
 By default, the "spark" package create the following entries:
 
@@ -26,8 +26,8 @@ cat /etc/group | grep spark
 spark:x:494:
 ```
 
-      @system.group spark.group
-      @system.user spark.user
+      @system.group header: 'Group', spark.group
+      @system.user header: 'User', spark.user
 
 ## Spark Service Installation
 

@@ -1,23 +1,23 @@
 
 # Apache Spark SQL Thrift Server
 
-
-
     module.exports =  header: 'Spark SQL Thrift Server Install', handler: (options) ->
       {spark, realm, ssl} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       {java_home} = @config.java
 
+## Register
+
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
-# Users and Groups   
+## Identities
 
-      @system.group spark.group
-      @system.user spark.user
+      @system.group header: 'Group', spark.group
+      @system.user header: 'User', spark.user
 
-# Packages
+## Packages
 
       @service
         name: 'spark'
@@ -37,7 +37,6 @@
         gid: @config.ryba.hadoop_group.gid
         perm: '0750'
 
-
 ## IPTables
 
 | Service              | Port  | Proto | Info              |
@@ -56,6 +55,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: @config.iptables.action is 'start'
 
 ## Layout
+
 Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log/spark
 
       @call header: 'Layout', ->

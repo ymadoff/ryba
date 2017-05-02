@@ -6,10 +6,20 @@
       {ryba} = @config
       throw Error "No Hive HCatalog Server Found" unless hcat_ctx
       webhcat = @config.ryba.webhcat ?= {}
+
+## Environment
+
       webhcat.conf_dir ?= '/etc/hive-webhcat/conf'
       webhcat.log_dir ?= '/var/log/webhcat'
       webhcat.pid_dir ?= '/var/run/webhcat'
-      # WebHCat configuration
+
+## Identities
+
+      webhcat.group = merge hcat_ctx.config.ryba.hive.group, webhcat.group
+      webhcat.user = merge hcat_ctx.config.ryba.hive.user, webhcat.user
+
+## Configuration
+
       webhcat.site ?= {}
       webhcat.site['templeton.storage.class'] ?= 'org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage' # Fix default value distributed in companion files
       webhcat.site['templeton.jar'] ?= '/usr/lib/hive-hcatalog/share/webhcat/svr/lib/hive-webhcat-0.13.0.2.1.2.0-402.jar' # Fix default value distributed in companion files

@@ -13,7 +13,7 @@
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
-## Users & Groups
+## Identities
 
 By default, the "zookeeper" package create the following entries:
 

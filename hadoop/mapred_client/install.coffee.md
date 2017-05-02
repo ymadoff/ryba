@@ -30,7 +30,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: iptables.action is 'start'
 
-## Users & Groups
+## Identities
 
       @system.group header: 'Group', hadoop_group
       @system.user header: 'User', mapred.user

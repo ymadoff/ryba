@@ -55,19 +55,9 @@ Example:
     module.exports  = ->
       es_ctxs = @contexts 'ryba/elasticsearch'
       elasticsearch = @config.ryba.elasticsearch ?= {}
-      elasticsearch.user ?= {}
-      elasticsearch.user = name: elasticsearch.user if typeof elasticsearch.user is 'string'
-      elasticsearch.user.name ?= 'elasticsearch'
-      #elasticsearch.user.home ?= ""
-      elasticsearch.user.system ?= true
-      elasticsearch.user.comment ?= 'ElasticSearch User'
-      # Group
-      elasticsearch.group ?= {}
-      elasticsearch.group = name: elasticsearch.group if typeof elasticsearch.group is 'string'
-      elasticsearch.group.name ?= 'elasticsearch'
-      elasticsearch.group.system ?= true
-      elasticsearch.user.gid ?= elasticsearch.group.name
-      # Layout
+
+## Environment
+
       elasticsearch.version ?= '5.0.0'
       # Kerberos
       elasticsearch.principal ?= "elasticsearch/#{@config.host}@#{@config.ryba.realm}"
@@ -76,6 +66,22 @@ Example:
       elasticsearch.cluster.name ?= 'elasticsearch'
       elasticsearch.number_of_shards ?= es_ctxs.length
       elasticsearch.number_of_replicas ?= 1
+
+## Identities
+
+      # Group
+      elasticsearch.group ?= {}
+      elasticsearch.group = name: elasticsearch.group if typeof elasticsearch.group is 'string'
+      elasticsearch.group.name ?= 'elasticsearch'
+      elasticsearch.group.system ?= true
+      # User
+      elasticsearch.user ?= {}
+      elasticsearch.user = name: elasticsearch.user if typeof elasticsearch.user is 'string'
+      elasticsearch.user.name ?= 'elasticsearch'
+      #elasticsearch.user.home ?= ""
+      elasticsearch.user.system ?= true
+      elasticsearch.user.comment ?= 'ElasticSearch User'
+      elasticsearch.user.gid ?= elasticsearch.group.name
 
 ElasticSearch can be found [here](https://www.elastic.co/downloads).
 
