@@ -66,12 +66,12 @@
 
       hbase.site['hbase.replication'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.replication']
 
-## Client Configuration HA
+## Client Configuration HA Reads
 
-      if hm_ctxs.length > 1
+      if parseInt(hm_ctxs[0].config.ryba.hbase.master.site['hbase.meta.replica.count']) > 1
         hbase.site['hbase.ipc.client.specificThreadForWriting'] ?= 'true'
         hbase.site['hbase.client.primaryCallTimeout.get'] ?= '10000'
-        hbase.site['hbase.client.primaryCallTimeout. multiget'] ?= '10000'
+        hbase.site['hbase.client.primaryCallTimeout.multiget'] ?= '10000'
         hbase.site['hbase.client.primaryCallTimeout.scan'] ?= '1000000'
         hbase.site['hbase.meta.replicas.use'] ?= 'true'
 

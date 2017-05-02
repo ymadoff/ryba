@@ -81,23 +81,21 @@
         'dfs.domain.socket.path'
       ] then hbase.rs.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]
 
-## Configuration for HA
+## Configuration for HA Reads
 
 HA properties must be available to masters and regionservers.
 
-      if m_ctxs.length > 1
-        properties = [
-          'hbase.regionserver.storefile.refresh.all'
-          'hbase.regionserver.storefile.refresh.period'
-          'hbase.region.replica.replication.enabled'
-          'hbase.regionserver.storefile.refresh.all'
-          'hbase.master.hfilecleaner.ttl'
-          'hbase.master.loadbalancer.class'
-          'hbase.meta.replica.count'
-          'hbase.region.replica.wait.for.primary.flush'
-          'hbase.region.replica.storefile.refresh.memstore.multiplier'
-        ]
-        for property in properties then hbase.rs.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]
+      properties = [
+        'hbase.regionserver.storefile.refresh.period'
+        'hbase.regionserver.meta.storefile.refresh.period'
+        'hbase.region.replica.replication.enabled'
+        'hbase.master.hfilecleaner.ttl' 
+        'hbase.master.loadbalancer.class'
+        'hbase.meta.replica.count'
+        'hbase.region.replica.wait.for.primary.flush'
+        'hbase.region.replica.storefile.refresh.memstore.multiplier'
+      ]
+      for property in properties then hbase.rs.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]
 
 ## Configuration for security
 

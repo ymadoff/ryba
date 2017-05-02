@@ -7,6 +7,7 @@
       dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
       hadoop_ctxs = @contexts ['ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       hbase_ctxs = @contexts 'ryba/hbase/master'
+      rs_ctxs = @contexts 'ryba/hbase/regionserver'
       ryba = @config.ryba ?= {}
       {realm, hbase, ganglia, graphite} = @config.ryba
       {java_home} = @config.java
@@ -147,37 +148,38 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
         users.push 'hbase' unless 'hbase' in users
         dn_ctx.config.ryba.hdfs.site['dfs.block.local-path-access.user'] = users.sort().join ','
 
-## Configuration for High Availability (HA)
+## Configuration for High Availability Reads (HA Reads)
 
 *   [Hortonworks presentation of HBase HA][ha-next-level]
-*   [HDP 2.3 Read HA instruction][hdp23]
+*   [HDP 2.5 Read HA instruction][hdp25]
 *   [Bring quorum based write ahead log (write HA)][HBASE-12259]
 
 [ha-next-level]: http://hortonworks.com/blog/apache-hbase-high-availability-next-level/
-[hdp23]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_hadoop-ha/content/ch_HA-HBase.html
+[hdp25]: https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_hadoop-high-availability/content/config-ha-reads-hbase.html
 [HBASE-12259]: https://issues.apache.org/jira/browse/HBASE-12259
 
-      if hbase_ctxs.length > 1 # HA enabled
-          # StoreFile Refresher
-          hbase.master.site['hbase.regionserver.storefile.refresh.all'] ?= 'true'
-          # Store File TTL
-          hbase.master.site['hbase.regionserver.storefile.refresh.period'] ?= '30000' # Default to '0'
-          # Async WAL Replication
-          hbase.master.site['hbase.region.replica.replication.enabled'] ?= 'true'
-          hbase.master.site['hbase.regionserver.storefile.refresh.all'] ?= 'false'
-          # Store File TTL
-          hbase.master.site['hbase.master.hfilecleaner.ttl'] ?= '3600000' # 1 hour
-          hbase.master.site['hbase.master.loadbalancer.class'] ?= 'org.apache.hadoop.hbase.master.balancer.StochasticLoadBalancer' # Default value
-          hbase.master.site['hbase.meta.replica.count'] ?= '3' # Default to '1'
-          hbase.master.site['hbase.region.replica.wait.for.primary.flush'] ?= 'true'
-          hbase.master.site['hbase.region.replica.storefile.refresh.memstore.multiplier'] ?= '4'
+      # Async WAL Replication
+      if rs_ctxs.length > 2
+        # enable hbase:meta region replication
+        hbase.master.site['hbase.meta.replica.count'] ?= '3' # Default to '1'
+        # enable replication for ervery regions
+        hbase.master.site['hbase.region.replica.replication.enabled'] ?= 'true'
+        # increase default time when 'hbase.region.replica.replication.enabled' is true
+        hbase.master.site['hbase.region.replica.wait.for.primary.flush'] ?= 'true'
+        hbase.master.site['hbase.master.loadbalancer.class'] = 'org.apache.hadoop.hbase.master.balancer.StochasticLoadBalancer' # Default value
+        # StoreFile Refresher
+        hbase.master.site['hbase.regionserver.storefile.refresh.period'] ?= '30000' # Default to '0'
+        hbase.master.site['hbase.regionserver.meta.storefile.refresh.period'] ?= '30000' # Default to '0'
+        hbase.master.site['hbase.region.replica.storefile.refresh.memstore.multiplier'] ?= '4'
+        # HFile TTL must be greater than refresher period
+        hbase.master.site['hbase.master.hfilecleaner.ttl'] ?= '3600000' # 1 hour
 
 ## Configuration Region Server Groups
 
-        # see https://hbase.apache.org/book.html#rsgroup
-        if hbase.rsgroups_enabled
-          hbase.master.site['hbase.master.loadbalancer.class'] = 'org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer'
-          hbase.master.site['hbase.coprocessor.master.classes'].push 'org.apache.hadoop.hbase.rsgroup.RSGroupAdminEndpoint' unless 'org.apache.hadoop.hbase.rsgroup.RSGroupAdminEndpoint' in hbase.master.site['hbase.coprocessor.master.classes']
+      # see https://hbase.apache.org/book.html#rsgroup
+      if hbase.rsgroups_enabled
+        hbase.master.site['hbase.master.loadbalancer.class'] = 'org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer'
+        hbase.master.site['hbase.coprocessor.master.classes'].push 'org.apache.hadoop.hbase.rsgroup.RSGroupAdminEndpoint' unless 'org.apache.hadoop.hbase.rsgroup.RSGroupAdminEndpoint' in hbase.master.site['hbase.coprocessor.master.classes']
 
 ## Configuration Cluster Replication
 
