@@ -460,7 +460,7 @@ Theses functions are used to generate business rules
             services['HDFS JN - Certificate'].use ?= 'process-service'
             services['HDFS JN - Certificate'].check_command ?= "check_cert!#{https}!120!60"
             create_dependency 'HDFS JN - Certificate', 'HDFS JN - TCP SSL', host
-          if '/ryba/hadoop/hdfs_dn' in ctx.services
+          if 'ryba/hadoop/hdfs_dn' in ctx.services
             w.modules.push 'hdfs_dn' if 'hdfs_dn' not in w.modules
             h.hostgroups.push 'hdfs_dn' if 'hdfs_dn' not in h.hostgroups
             services['HDFS DN - TCP SSL'] ?= {}
