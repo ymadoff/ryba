@@ -918,7 +918,7 @@ Theses functions are used to generate business rules
           services['ZKFC - Available'].servicegroups ?= ['hdfs_zkfc']
           services['ZKFC - Available'].use ?= 'bp-service'
           services['ZKFC - Available'].check_command ?= bp_has_all 'ZKFC - TCP', '$HOSTNAME$'
-          create_dependency 'ZKFC - Available', 'Zookeeper Server - Available', name
+          create_dependency 'ZKFC - Available', 'Zookeeper Server - Available', clustername
         if 'hdfs_jn' in w.modules
           services['HDFS JN - Available'] ?= {}
           services['HDFS JN - Available'].hosts ?= []
@@ -953,42 +953,42 @@ Theses functions are used to generate business rules
           services['YARN RM - Available'].servicegroups ?= ['yarn_rm']
           services['YARN RM - Available'].use ?= 'bp-service'
           services['YARN RM - Available'].check_command ?= bp_has_one 'YARN RM - Admin TCP', '$HOSTNAME$'
-          create_dependency 'YARN RM - Available', 'Zookeeper Server - Available', name
+          create_dependency 'YARN RM - Available', 'Zookeeper Server - Available', clustername
           services['YARN RM - Active Node'] ?= {}
           services['YARN RM - Active Node'].hosts ?= []
           services['YARN RM - Active Node'].hosts.push clustername
           services['YARN RM - Active Node'].servicegroups ?= ['hdfs_nn']
           services['YARN RM - Active Node'].use ?= 'unit-service'
           services['YARN RM - Active Node'].check_command ?= 'check_active_rm!8090!-S'
-          create_dependency 'YARN RM - Active Node', 'YARN RM - Available', name
+          create_dependency 'YARN RM - Active Node', 'YARN RM - Available', clustername
           services['YARN RM - TCP SSL'] ?= {}
           services['YARN RM - TCP SSL'].hosts ?= []
           services['YARN RM - TCP SSL'].hosts.push clustername
           services['YARN RM - TCP SSL'].servicegroups ?= ['yarn_rm']
           services['YARN RM - TCP SSL'].use ?= 'unit-service'
           services['YARN RM - TCP SSL'].check_command ?= "check_tcp_ha!'YARN RM - Active Node'!8050"
-          create_dependency 'YARN RM - TCP SSL', 'YARN RM - Active Node', name
+          create_dependency 'YARN RM - TCP SSL', 'YARN RM - Active Node', clustername
           services['YARN RM - Scheduler TCP'] ?= {}
           services['YARN RM - Scheduler TCP'].hosts ?= []
           services['YARN RM - Scheduler TCP'].hosts.push clustername
           services['YARN RM - Scheduler TCP'].servicegroups ?= ['yarn_rm']
           services['YARN RM - Scheduler TCP'].use ?= 'unit-service'
           services['YARN RM - Scheduler TCP'].check_command ?= "check_tcp_ha!'YARN RM - Active Node'!8030"
-          create_dependency 'YARN RM - Scheduler TCP', 'YARN RM - Active Node', name
+          create_dependency 'YARN RM - Scheduler TCP', 'YARN RM - Active Node', clustername
           services['YARN RM - Tracker TCP'] ?= {}
           services['YARN RM - Tracker TCP'].hosts ?= []
           services['YARN RM - Tracker TCP'].hosts.push clustername
           services['YARN RM - Tracker TCP'].servicegroups ?= ['yarn_rm']
           services['YARN RM - Tracker TCP'].use ?= 'unit-service'
           services['YARN RM - Tracker TCP'].check_command ?= "check_tcp_ha!'YARN RM - Active Node'!8025"
-          create_dependency 'YARN RM - Tracker TCP', 'YARN RM - Active Node', name
+          create_dependency 'YARN RM - Tracker TCP', 'YARN RM - Active Node', clustername
           services['YARN RM - RPC latency'] ?= {}
           services['YARN RM - RPC latency'].hosts ?= []
           services['YARN RM - RPC latency'].hosts.push clustername
           services['YARN RM - RPC latency'].servicegroups ?= ['yarn_rm']
           services['YARN RM - RPC latency'].use ?= 'unit-service'
           services['YARN RM - RPC latency'].check_command ?= "check_rpc_latency_ha!'YARN RM - Active Node'!ResourceManager!8090!3000!5000!-S"
-          create_dependency 'YARN RM - RPC latency', 'YARN RM - Active Node', name
+          create_dependency 'YARN RM - RPC latency', 'YARN RM - Active Node', clustername
         if 'yarn_nm' in w.modules
           services['YARN NM - Available'] ?= {}
           services['YARN NM - Available'].hosts ?= []
@@ -1003,8 +1003,8 @@ Theses functions are used to generate business rules
           services['HBase Master - Available'].servicegroups ?= ['hbase_master']
           services['HBase Master - Available'].use ?= 'bp-service'
           services['HBase Master - Available'].check_command ?= bp_has_one 'HBase Master - TCP', '$HOSTNAME$'
-          create_dependency 'HBase Master - Available', 'Zookeeper Server - Available', name
-          create_dependency 'HBase Master - Available', 'HDFS - Available', name
+          create_dependency 'HBase Master - Available', 'Zookeeper Server - Available', clustername
+          create_dependency 'HBase Master - Available', 'HDFS - Available', clustername
           services['HBase - Replication logs'] ?= {}
           services['HBase - Replication logs'].hosts ?= []
           services['HBase - Replication logs'].hosts.push clustername
@@ -1018,7 +1018,7 @@ Theses functions are used to generate business rules
           services['HBase RegionServer - Available'].servicegroups ?= ['hbase_regionserver']
           services['HBase RegionServer - Available'].use ?= 'bp-service'
           services['HBase RegionServer - Available'].check_command ?= bp_miss '20%', 'HBase RegionServer - TCP', '$HOSTNAME$'
-          create_dependency 'HBase RegionServer - Available', 'Zookeeper Server - Available', name
+          create_dependency 'HBase RegionServer - Available', 'Zookeeper Server - Available', clustername
         if 'hbase_rest' in w.modules
           services['HBase REST - Available'] ?= {}
           services['HBase REST - Available'].hosts ?= []
@@ -1040,7 +1040,7 @@ Theses functions are used to generate business rules
           services['HCatalog - Available'].servicegroups ?= ['hcatalog']
           services['HCatalog - Available'].use ?= 'bp-service'
           services['HCatalog - Available'].check_command ?= bp_has_one 'HCatalog - TCP', '$HOSTNAME$'
-          create_dependency 'Kafka Broker - Available', 'MySQL - Available', name
+          create_dependency 'Kafka Broker - Available', 'MySQL - Available', clustername
         if 'hiveserver2' in w.modules
           services['Hiveserver2 - Available'] ?= {}
           services['Hiveserver2 - Available'].hosts ?= []
@@ -1062,7 +1062,7 @@ Theses functions are used to generate business rules
           services['Kafka Broker - Available'].servicegroups ?= ['kafka_broker']
           services['Kafka Broker - Available'].use ?= 'bp-service'
           services['Kafka Broker - Available'].check_command ?= bp_miss 3, 'Kafka Broker - TCPs', '$HOSTNAME$'
-          create_dependency 'Kafka Broker - Available', 'Zookeeper Server - Available', name
+          create_dependency 'Kafka Broker - Available', 'Zookeeper Server - Available', clustername
         if 'opentsdb' in w.modules
           services['OpenTSDB - Available'] ?= {}
           services['OpenTSDB - Available'].hosts ?= []
@@ -1070,7 +1070,7 @@ Theses functions are used to generate business rules
           services['OpenTSDB - Available'].servicegroups ?= ['opentsdb']
           services['OpenTSDB - Available'].use ?= 'bp-service'
           services['OpenTSDB - Available'].check_command ?= bp_has_one 'OpenTSDB - WebService', '$HOSTNAME$'
-          create_dependency 'OpenTSDB - Available', 'HBase - Available', name
+          create_dependency 'OpenTSDB - Available', 'HBase - Available', clustername
         if 'elasticsearch' in w.modules
           services['ElasticSearch - Available'] ?= {}
           services['ElasticSearch - Available'].hosts ?= []
