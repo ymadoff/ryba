@@ -716,7 +716,7 @@ The commands a divided per user, as the hive bridge is not mandatory.
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
           """
           code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
-        @execute
+        @system.execute
           header: 'Add policy request'
           cmd: """
             curl --fail -H "Content-Type: application/json" -k -X POST \
