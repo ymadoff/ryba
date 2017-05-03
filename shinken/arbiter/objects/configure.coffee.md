@@ -832,9 +832,9 @@ Theses functions are used to generate business rules
               services['Hue - Certificate'].servicegroups ?= ['hue']
               services['Hue - Certificate'].use ?= 'cert-service'
               services['Hue - Certificate'].check_command ?= "check_cert!#{ryba.hue_docker.ini.desktop.http_port}!120!60"
+              create_dependency 'Hue - Certificate', 'Hue - WebUI', host
             else
               services['Hue - WebUI'].check_command ?= "check_tcp!#{ryba.hue_docker.ini.desktop.http_port}"
-            create_dependency 'Hue - Certificate', 'Hue - WebUI', host
           if 'ryba/knox' in ctx.services
             w.modules.push 'knox' if 'knox' not in w.modules
             h.hostgroups.push 'knox' if 'knox' not in h.hostgroups
