@@ -309,7 +309,7 @@
 
 Set local path of additional libs (for custom processors) in this array.
 
-      nifi.additional_libs ?= []
+      nifi.custom_libs_dir ?= []
 
 ## Data Directories Layout
 
