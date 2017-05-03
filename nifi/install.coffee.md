@@ -333,7 +333,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 ## Additional Libs
 
-      @call header: 'Additional Libs', ->
+      @call header: 'Additional Libs', if: nifi.custom_libs_dir.length, ->
         for lib in glob.sync nifi.custom_libs_dir
           @file.download
             target: "/usr/hdf/current/nifi/lib/extras/#{path.basename lib}"
