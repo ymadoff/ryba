@@ -4,7 +4,7 @@
 Apache Kafka is publish-subscribe messaging rethought as a distributed commit
 log. It is fast, scalable, durable and distributed by design.
 
-    module.exports = 
+    module.exports =
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
         java: implicit: true, module: 'masson/commons/java'
