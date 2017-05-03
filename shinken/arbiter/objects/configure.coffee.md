@@ -1040,7 +1040,7 @@ Theses functions are used to generate business rules
           services['HCatalog - Available'].servicegroups ?= ['hcatalog']
           services['HCatalog - Available'].use ?= 'bp-service'
           services['HCatalog - Available'].check_command ?= bp_has_one 'HCatalog - TCP', '$HOSTNAME$'
-          create_dependency 'Kafka Broker - Available', 'MySQL - Available', clustername
+          create_dependency 'HCatalog - Available', 'MySQL - Available', clustername
         if 'hiveserver2' in w.modules
           services['Hiveserver2 - Available'] ?= {}
           services['Hiveserver2 - Available'].hosts ?= []
