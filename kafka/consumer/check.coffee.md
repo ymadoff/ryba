@@ -2,6 +2,7 @@
 # Kafka Check
 
     module.exports = header: 'Kafka Consumer Check', label_true: 'CHECKED', handler: ->
+      ks_ctxs = @contexts 'ryba/kafka/broker'
       {kafka, ssl, user} = @config.ryba
       [ranger_admin] = @contexts 'ryba/ranger/admin'
       protocols = kafka.consumer.protocols
@@ -93,11 +94,12 @@ protocols.
       @call
         header: 'Check PLAINTEXT'
         label_true: 'CHECKED'
-        if: -> @has_service 'ryba/kafka/producer'
+        if: [
+          'PLAINTEXT' in ks_ctxs[0].config.ryba.kafka.broker.protocols
+          -> @has_service 'ryba/kafka/producer'
+        ]
         retry: 3
       , ->
-        ks_ctxs = @contexts 'ryba/kafka/broker'
-        return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('PLAINTEXT') == -1
         test_topic = "check-#{@config.host}-consumer-plaintext-topic"
         brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
           "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.ports['PLAINTEXT']}"
@@ -129,9 +131,10 @@ protocols.
           if:  kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
           cmd: mkcmd.kafka @, """
             (
-            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-              --add --allow-principal User:ANONYMOUS  \
-              --operation Read --operation Write --topic #{test_topic}
+              sleep 1
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add --allow-principal User:ANONYMOUS  \
+                --operation Read --operation Write --topic #{test_topic}
             )&
             (
             /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -148,9 +151,10 @@ protocols.
           unless:  kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
           cmd: """
             (
-            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-              --add --allow-principal User:ANONYMOUS  \
-              --operation Read --operation Write --topic #{test_topic}
+              sleep 1
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add --allow-principal User:ANONYMOUS  \
+                --operation Read --operation Write --topic #{test_topic}
             )&
             (
             /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -166,6 +170,7 @@ protocols.
         @system.execute
           cmd: """
           (
+            sleep 1
             echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
               --producer-property security.protocol=PLAINTEXT \
               --broker-list #{brokers} \
@@ -194,9 +199,8 @@ Trustore location and password given to line command because if executed before 
         header: 'Check SSL'
         label_true: 'CHECKED'
         retry: 3
+        if: 'SSL' in ks_ctxs[0].config.ryba.kafka.broker.protocols
       , ->
-        ks_ctxs = @contexts 'ryba/kafka/broker'
-        return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SSL') == -1
         brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
           "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.ports['SSL']}"
         ).join ','
@@ -215,9 +219,10 @@ Trustore location and password given to line command because if executed before 
         @system.execute
           cmd: mkcmd.kafka @, """
             (
-            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-              --add --allow-principal User:ANONYMOUS  \
-              --operation Read --operation Write --topic #{test_topic}
+              sleep 1
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add --allow-principal User:ANONYMOUS  \
+                --operation Read --operation Write --topic #{test_topic}
             )&
             (
             /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -264,10 +269,8 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
         header: 'Check SASL_PLAINTEXT'
         label_true: 'CHECKED'
         retry: 3
-        # skip: true
+        if: SASL_PLAINTEXT in ks_ctxs[0].config.ryba.kafka.broker.protocols
       , ->
-        ks_ctxs = @contexts 'ryba/kafka/broker'
-        return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SASL_PLAINTEXT') == -1
         brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
           "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.ports['SASL_PLAINTEXT']}"
         ).join ','
@@ -286,9 +289,10 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
         @system.execute
           cmd: mkcmd.kafka @, """
             (
-            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-              --add --allow-principal User:#{user.name}  \
-              --operation Read --operation Write --topic #{test_topic}
+              sleep 1
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add --allow-principal User:#{user.name}  \
+                --operation Read --operation Write --topic #{test_topic}
             )&
             (
             /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -304,6 +308,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
         @system.execute
           cmd:  mkcmd.test @, """
             (
+              sleep 1
               echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
                 --producer-property security.protocol=SASL_PLAINTEXT \
                 --broker-list #{brokers} \
@@ -353,9 +358,10 @@ Trustore location and password given to line command because if executed before 
         @system.execute
           cmd: mkcmd.kafka @, """
             (
-            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-              --add --allow-principal User:#{user.name}  \
-              --operation Read --operation Write --topic #{test_topic}
+              sleep 1
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add --allow-principal User:#{user.name}  \
+                --operation Read --operation Write --topic #{test_topic}
             )&
             (
             /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -371,6 +377,7 @@ Trustore location and password given to line command because if executed before 
         @system.execute
           cmd:  mkcmd.test @, """
             (
+              sleep 1
               echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
                 --producer-property security.protocol=SASL_SSL \
                 --broker-list #{brokers} \

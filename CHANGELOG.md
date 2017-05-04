@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* kafka: refactor and sleep 1s before producers
 * src: fix backup renamed as remove
 * yarn: cgroup labels
 * lib mkcmd: generic command

@@ -18,14 +18,14 @@
 
 ## Configuration
 
+      kafka.admin ?= {}
+      kafka.admin.principal ?= ks_ctxs[0].config.ryba.kafka.admin.principal
+      kafka.admin.password ?= ks_ctxs[0].config.ryba.kafka.admin.password
       kafka.consumer ?= {}
       kafka.consumer.conf_dir ?= '/etc/kafka/conf'
       kafka.consumer.config ?= {}
       kafka.consumer.config['zookeeper.connect'] ?= zookeeper_quorum
       kafka.consumer.config['group.id'] ?= 'ryba-consumer-group'
-      kafka.admin ?= {}
-      kafka.admin.principal ?= ks_ctxs[0].config.ryba.kafka.admin.principal
-      kafka.admin.password ?= ks_ctxs[0].config.ryba.kafka.admin.password
       # for now the prop 'sasl.kerberos.service.name' has to be deleted because of
       # https://issues.apache.org/jira/browse/KAFKA-2974
       # http://mail-archives.apache.org/mod_mbox/kafka-commits/201512.mbox/%3Cacb73f26d3bd440ab8a9f33686db0020@git.apache.org%3E
