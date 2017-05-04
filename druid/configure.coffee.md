@@ -87,7 +87,7 @@ Example:
       druid.db[k] ?= v for k, v of @config.ryba.db_admin[druid.db.engine]
       druid.db.database ?= 'druid'
       druid.db.username ?= 'druid'
-      druid.db.password ?= 'druid123'
+      throw Error "Require Property: druid.db.password" unless druid.db.password
       switch druid.db.engine
         when 'postgres'
           druid.common_runtime['druid.metadata.storage.type'] ?= 'postgresql'
