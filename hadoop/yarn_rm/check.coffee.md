@@ -23,9 +23,9 @@ mode.
         header: 'HA Health'
         if: @contexts('ryba/hadoop/yarn_rm').length > 1
         cmd: mkcmd.hdfs @, "yarn --config #{yarn.rm.conf_dir} rmadmin -checkHealth #{@config.shortname}"
+        retry: 3
+        wait: 5000
 
 # Dependencies
 
     mkcmd = require '../../lib/mkcmd'
-
-

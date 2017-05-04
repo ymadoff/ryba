@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* yarn rm: retry ha check 3 times
 * kafka: refactor and sleep 1s before producers
 * src: fix backup renamed as remove
 * yarn: cgroup labels
