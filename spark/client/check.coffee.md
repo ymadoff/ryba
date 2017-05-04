@@ -25,13 +25,13 @@ In this mode the driver is the yarn application master (running inside yarn).
         applicationId = null
         @system.execute
           cmd: mkcmd.test @, """
-            spark-submit \
-              --class org.apache.spark.examples.SparkPi \
-              --queue default \
-              --master yarn-cluster --num-executors 2 --driver-memory 512m \
-              --executor-memory 512m --executor-cores 1 \
-              #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null \
-            | grep -m 1 "proxy\/application_";
+          spark-submit \
+            --class org.apache.spark.examples.SparkPi \
+            --queue default \
+            --master yarn-cluster --num-executors 2 --driver-memory 512m \
+            --executor-memory 512m --executor-cores 1 \
+            #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null \
+          | grep -m 1 "proxy\/application_";
           """
           unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
         , (err, executed, stdout, stderr) ->
@@ -44,8 +44,8 @@ In this mode the driver is the yarn application master (running inside yarn).
           handler:->
             @system.execute
               cmd: mkcmd.test @, """
-                yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly";
-                """
+              yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly";
+              """
             , (err, executed, stdout, stderr) ->
               return err if err
               return unless executed
@@ -74,13 +74,13 @@ driver does not copy metrics.properties file as it should. This is fixed in vers
         applicationId = null
         @system.execute
           cmd: mkcmd.test @, """
-            spark-submit \
-              --class org.apache.spark.examples.SparkPi \
-              --queue default \
-              --master yarn-client --num-executors 2 --driver-memory 512m \
-              --executor-memory 512m --executor-cores 1 \
-              #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null \
-            | grep -m 1 "Pi is roughly";
+          spark-submit \
+            --class org.apache.spark.examples.SparkPi \
+            --queue default \
+            --master yarn-client --num-executors 2 --driver-memory 512m \
+            --executor-memory 512m --executor-cores 1 \
+            #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null \
+          | grep -m 1 "Pi is roughly";
           """
           unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
         , (err, executed, stdout, stderr) ->

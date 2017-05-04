@@ -104,12 +104,12 @@ Example:
         hive.server2.env["$JMXSSL"] ?= false
         hive.server2.env["$JMXAUTH"] ?= false
         hive.server2.env["JMX_OPTS"] += """
-          -Dcom.sun.management.jmxremote \
-          -Dcom.sun.management.jmxremote.authenticate=#{hive.server2.env["$JMXAUTH"]} \
-          -Dcom.sun.management.jmxremote.ssl=#{hive.server2.env["$JMXSSL"]} \
-          -Dcom.sun.management.jmxremote.port=#{hive.server2.env["JMXPORT"]} \
-          -Dcom.sun.management.jmxremote.rmi.port=#{hive.server2.env["JMXPORT"]} \
-          """
+        -Dcom.sun.management.jmxremote \
+        -Dcom.sun.management.jmxremote.authenticate=#{hive.server2.env["$JMXAUTH"]} \
+        -Dcom.sun.management.jmxremote.ssl=#{hive.server2.env["$JMXSSL"]} \
+        -Dcom.sun.management.jmxremote.port=#{hive.server2.env["JMXPORT"]} \
+        -Dcom.sun.management.jmxremote.rmi.port=#{hive.server2.env["JMXPORT"]} \
+        """
       aux_jars = hcat_ctxs[0].config.ryba.hive.hcatalog.aux_jars
       # fix bug where phoenix-server and phoenix-client do not contain same
       # version of class used.

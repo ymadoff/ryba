@@ -44,20 +44,20 @@ This module check the Hive Server2 servers using the `beeline` command.
           	}]
         @wait.execute
           cmd: """
-            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+          curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
           """
           code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
         @system.execute
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST \
+          curl --fail -H "Content-Type: application/json" -k -X POST \
             -d '#{JSON.stringify hive_policy}' \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/api/policy\"
           """
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy-#{@config.host}\"
           """

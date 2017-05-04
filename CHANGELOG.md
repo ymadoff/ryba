@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* src: factor multi string indentation
 * yarn rm: retry ha check 3 times
 * kafka: refactor and sleep 1s before producers
 * src: fix backup renamed as remove

@@ -245,9 +245,9 @@ Create HDFS solr user and its home directory
       @system.execute
         header: 'Zookeeper bootstrap'
         cmd: """
-          cd #{solr.cloud.latest_dir}
-          server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zkhosts} \ 
-          -cmd bootstrap -solrhome #{solr.user.home}
+        cd #{solr.cloud.latest_dir}
+        server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zkhosts} \ 
+        -cmd bootstrap -solrhome #{solr.user.home}
         """
         unless_exec: "zookeeper-client -server #{solr.cloud.zk_connect} ls /#{solr.cloud.zk_node} | grep '#{solr.cloud.zk_node}'"
 
@@ -259,9 +259,9 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
         header: "Upload Security conf"
         if: (@contexts('ryba/solr/cloud')[0].config.host is @config.host)
         cmd: """
-          cd #{solr.cloud.latest_dir}
-          server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zk_connect} \
-          -cmd put /solr/security.json '#{JSON.stringify solr.cloud.security}'
+        cd #{solr.cloud.latest_dir}
+        server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zk_connect} \
+        -cmd put /solr/security.json '#{JSON.stringify solr.cloud.security}'
         """
 
 ## SSL
@@ -286,9 +286,9 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
       @system.execute
         header: "Enable SSL Scheme"
         cmd: """
-          cd #{solr.cloud.latest_dir}
-          server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zkhosts} \
-          -cmd clusterprop -name urlScheme -val #{protocol}
+        cd #{solr.cloud.latest_dir}
+        server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zkhosts} \
+        -cmd clusterprop -name urlScheme -val #{protocol}
         """
 
 ## Dependencies

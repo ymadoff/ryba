@@ -38,12 +38,12 @@ Set the server's hostname in the agent's configuration
         mysql_exec = "mysql -uroot -p#{mysql_pwd} -h#{db.host} -P#{db.port}"
         @system.execute (
           cmd: """
-            #{mysql_exec} -e \"
-            create database IF NOT EXISTS #{params.db_name} DEFAULT CHARACTER SET utf8;
-            grant all on #{params.db_name}.* TO '#{params.user}'@'localhost' IDENTIFIED BY '#{params.password}';
-            grant all on #{params.db_name}.* TO '#{params.user}'@'%' IDENTIFIED BY '#{params.password}';
-            flush privileges;
-            \"
+          #{mysql_exec} -e \"
+          create database IF NOT EXISTS #{params.db_name} DEFAULT CHARACTER SET utf8;
+          grant all on #{params.db_name}.* TO '#{params.user}'@'localhost' IDENTIFIED BY '#{params.password}';
+          grant all on #{params.db_name}.* TO '#{params.user}'@'%' IDENTIFIED BY '#{params.password}';
+          flush privileges;
+          \"
           """
           unless_exec: "#{mysql_exec} -e 'use #{params.user}'"
         ) for account, params of db.accounts

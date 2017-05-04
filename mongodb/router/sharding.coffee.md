@@ -51,30 +51,28 @@ We must connect to each server og the replica set manually and check if it is th
           shard_quorum = shard_hosts.map( (host) -> "#{host}:#{shard_port}").join(',')
           @call
             unless_exec: """
-               #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
+             #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
                -u #{shard_root.name} --password '#{shard_root.password}' \
                --eval 'sh.status()' | grep '.*#{shard}.*#{shard}/#{shard_quorum}'
-              """
+            """
           , ->
             @each shard_hosts, (options) ->
               host = options.key
               @system.execute
                 code_skipped: 1
                 cmd: """
-                    #{mongo_shell_exec} --host #{host} \
-                     --port #{shard_port} -u #{shard_root.name} --password '#{shard_root.password}' \
-                     --eval 'db.isMaster().primary' | grep '#{host}:#{shard_port}' \
-                      | grep -v 'MongoDB.*version' | grep -v 'connecting to:'
-                  """
-              @call 
-                if: -> @status -1
-              , -> primary_host = host
+                #{mongo_shell_exec} --host #{host} \
+                  --port #{shard_port} -u #{shard_root.name} --password '#{shard_root.password}' \
+                  --eval 'db.isMaster().primary' | grep '#{host}:#{shard_port}' \
+                  | grep -v 'MongoDB.*version' | grep -v 'connecting to:'
+                """
+              @call if: (-> @status -1), -> primary_host = host
             @call ->
               @system.execute
                 if: -> primary_host
                 cmd: """
-                   #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
-                   -u #{shard_root.name} --password '#{shard_root.password}' \
-                   --eval 'sh.addShard(\"#{shard}/#{primary_host}:#{shard_port}\")'
-                  """
+                #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
+                  -u #{shard_root.name} --password '#{shard_root.password}' \
+                  --eval 'sh.addShard(\"#{shard}/#{primary_host}:#{shard_port}\")'
+                """
           @then next

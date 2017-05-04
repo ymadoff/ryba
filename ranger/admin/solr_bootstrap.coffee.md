@@ -106,9 +106,9 @@ We manage creating the ranger_audits core/collection in the three modes.
         | grep '\"schema\":\"managed-schema\"'
          """
         cmd: """
-          #{solr["#{ranger.admin.solr_type}"]['latest_dir']}/bin/solr create_core -c ranger_audits \
-          -d  #{solr.user.home}/ranger_audits
-          """
+        #{solr["#{ranger.admin.solr_type}"]['latest_dir']}/bin/solr create_core -c ranger_audits \
+        -d  #{solr.user.home}/ranger_audits
+        """
 
 ### Solr Cloud
 
@@ -118,9 +118,9 @@ We manage creating the ranger_audits core/collection in the three modes.
         return unless (mode is 'cloud')
         @system.execute
           cmd: """
-            #{solr["#{ranger.admin.solr_type}"]['latest_dir']}/bin/solr create_collection -c ranger_audits \
-            -d  #{tmp_dir}/ranger_audits
-            """
+          #{solr["#{ranger.admin.solr_type}"]['latest_dir']}/bin/solr create_collection -c ranger_audits \
+          -d  #{tmp_dir}/ranger_audits
+          """
           unless_exec: "#{solr[ranger.admin.solr_type]['latest_dir']}/bin/solr healthcheck -c ranger_audits"
 
 ### Solr Cloud On Docker
@@ -143,7 +143,7 @@ Note: Compatible with every version of docker available at this time.
           unless: -> @status -1
           container: cluster_config.master_container_runtime_name
           cmd: """
-            /usr/solr-cloud/current/bin/solr create_collection -c ranger_audits \
+          /usr/solr-cloud/current/bin/solr create_collection -c ranger_audits \
             -shards #{@contexts('ryba/solr/cloud_docker').length}  \
             -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
             -d /ranger_audits
@@ -159,7 +159,7 @@ Note: Compatible with every version of docker available at this time.
             for user in ranger.admin.solr_users
               @system.execute
                 cmd: """
-                  #{cmd} \
+                #{cmd} \
                   #{url} -H 'Content-type:application/json' \
                   -d '#{JSON.stringify('set-user':"#{user.name}":"#{user.secret}")}'
                 """
@@ -171,7 +171,7 @@ Note: Compatible with every version of docker available at this time.
               new_role = "#{user.name}": ['read','update','admin']
               @system.execute
                 cmd: """
-                  #{cmd} \
+                #{cmd} \
                   #{url} -H 'Content-type:application/json' \
                   -d '#{JSON.stringify('set-user-role': new_role )}'
                 """
@@ -181,11 +181,11 @@ Note: Compatible with every version of docker available at this time.
       @system.execute
         header: 'Zookeeper SolrCloud Znode ACL'
         unless_exec: mkcmd.solr @, """
-          zookeeper-client -server #{zk_connect} \
+        zookeeper-client -server #{zk_connect} \
           getAcl /#{zk_node} | grep \"'sasl,'#{solr.user.name}\"
         """
         cmd: mkcmd.solr @, """
-          zookeeper-client -server #{zk_connect} \
+        zookeeper-client -server #{zk_connect} \
           setAcl /#{zk_node} sasl:#{solr.user.name}:cdrwa
         """
 

@@ -46,11 +46,11 @@
         rm_address = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address#{shortname}"]
         @file
           content: """
-            nameNode=#{core_site['fs.defaultFS']}
-            jobTracker=#{rm_address}
-            queueName=default
-            basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-fs
-            oozie.wf.application.path=${basedir}
+          nameNode=#{core_site['fs.defaultFS']}
+          jobTracker=#{rm_address}
+          queueName=default
+          basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-fs
+          oozie.wf.application.path=${basedir}
           """
           target: "#{user.home}/check_oozie_fs/job.properties"
           uid: user.name
@@ -112,13 +112,13 @@
         {oozie} = os_ctxs[0].config.ryba
         @file
           content: """
-            nameNode=#{core_site['fs.defaultFS']}
-            jobTracker=#{rm_address}
-            oozie.libpath=/user/#{oozie.user.name}/share/lib
-            queueName=default
-            basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-mr
-            oozie.wf.application.path=${basedir}
-            oozie.use.system.libpath=true
+          nameNode=#{core_site['fs.defaultFS']}
+          jobTracker=#{rm_address}
+          oozie.libpath=/user/#{oozie.user.name}/share/lib
+          queueName=default
+          basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-mr
+          oozie.wf.application.path=${basedir}
+          oozie.use.system.libpath=true
           """
           target: "#{user.home}/check_oozie_mr/job.properties"
           uid: user.name
@@ -474,20 +474,20 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
           }]
         @wait.execute
           cmd: """
-            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+          curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
           """
           code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
         @system.execute
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST \
+          curl --fail -H "Content-Type: application/json" -k -X POST \
             -d '#{JSON.stringify hive_policy}' \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/api/policy\"
           """
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy-#{@config.host}\"
           """
@@ -591,13 +591,13 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
             eof: true
           @file
             content: """
-              DROP TABLE IF EXISTS #{db}.first_table;
-              DROP DATABASE IF EXISTS #{db};
-              CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{user.name}/#{db}';
-              USE #{db};
-              CREATE EXTERNAL TABLE first_table (mynumber INT) STORED AS TEXTFILE LOCATION '${INPUT}';
-              select SUM(mynumber) from first_table;
-              INSERT OVERWRITE DIRECTORY '${OUTPUT}' SELECT * FROM first_table;
+            DROP TABLE IF EXISTS #{db}.first_table;
+            DROP DATABASE IF EXISTS #{db};
+            CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{user.name}/#{db}';
+            USE #{db};
+            CREATE EXTERNAL TABLE first_table (mynumber INT) STORED AS TEXTFILE LOCATION '${INPUT}';
+            select SUM(mynumber) from first_table;
+            INSERT OVERWRITE DIRECTORY '${OUTPUT}' SELECT * FROM first_table;
             """
             target: "#{user.home}/#{workflow_dir}/hive.q"
             uid: user.name
@@ -639,14 +639,14 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
         {oozie} = os_ctxs[0].config.ryba
         @file
           content: """
-            nameNode=#{core_site['fs.defaultFS']}
-            jobTracker=#{rm_address}
-            oozie.libpath=/user/#{oozie.user.name}/share/lib
-            queueName=default
-            basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-spark
-            oozie.wf.application.path=${basedir}
-            oozie.use.system.libpath=true
-            master=yarn-cluster
+          nameNode=#{core_site['fs.defaultFS']}
+          jobTracker=#{rm_address}
+          oozie.libpath=/user/#{oozie.user.name}/share/lib
+          queueName=default
+          basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-spark
+          oozie.wf.application.path=${basedir}
+          oozie.use.system.libpath=true
+          master=yarn-cluster
           """
           target: "#{user.home}/check_oozie_spark/job.properties"
           uid: user.name

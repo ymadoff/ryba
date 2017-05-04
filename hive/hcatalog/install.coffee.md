@@ -208,7 +208,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
           header: 'Init Schema'
           cmd: """
           hive --config #{@config.ryba.hive.hcatalog.conf_dir} \
-          --service schemaTool -dbType #{hive.hcatalog.db.engine} -initSchema
+            --service schemaTool -dbType #{hive.hcatalog.db.engine} -initSchema
           """
         @system.execute
           header: 'Read Versions'

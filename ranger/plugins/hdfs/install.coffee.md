@@ -19,7 +19,7 @@
           header: 'Setup Execution'
           shy:true
           cmd: """
-            hdp-select versions | tail -1
+          hdp-select versions | tail -1
           """
          , (err, executed,stdout, stderr) ->
             return  err if err or not executed
@@ -71,7 +71,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
             append: true
         @system.execute
           cmd: """
-            echo '' | keytool -list \
+          echo '' | keytool -list \
             -storetype jceks \
             -keystore /etc/ranger/#{ranger.hdfs_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
           """
@@ -109,11 +109,11 @@ Not documented be taken from [github-source][hdfs-plugin-source]
           header: 'Execution'
           shy: true
           cmd: """
-            export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
-             if /usr/hdp/#{version}/ranger-hdfs-plugin/enable-hdfs-plugin.sh ;
-            then exit 0 ;
-            else exit 1 ;
-            fi;
+          export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
+          if /usr/hdp/#{version}/ranger-hdfs-plugin/enable-hdfs-plugin.sh ;
+          then exit 0 ;
+          else exit 1 ;
+          fi;
           """
         @hconfigure
           header: 'Fix Conf'

@@ -75,7 +75,7 @@ Wait for the HBase master to be started.
         @wait.execute
           header: 'Wait HBase Ranger repository'
           cmd: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \
             -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
           """
@@ -83,13 +83,13 @@ Wait for the HBase master to be started.
         @system.execute
           header: 'Ranger Ryba Policy'
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST \
+          curl --fail -H "Content-Type: application/json" -k -X POST \
             -d '#{JSON.stringify hbase_policy}' \
             -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
           """
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
             -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
           """
@@ -164,11 +164,11 @@ Note, we are re-using the namespace created above.
       @call header: 'MapReduce', timeout: -1, label_true: 'CHECKED', ->
         @system.execute
           cmd: mkcmd.test @, """
-            hdfs dfs -rm -skipTrash check-#{@config.host}-hbase-mapred
-            echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
-            hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value #{hbase.client.test.namespace}:#{hbase.client.test.table} /user/ryba/test_import.csv
-            hdfs dfs -touchz check-#{@config.host}-hbase-mapred
-            """
+          hdfs dfs -rm -skipTrash check-#{@config.host}-hbase-mapred
+          echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
+          hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value #{hbase.client.test.namespace}:#{hbase.client.test.table} /user/ryba/test_import.csv
+          hdfs dfs -touchz check-#{@config.host}-hbase-mapred
+          """
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-hbase-mapred"
 
 ## Check Splits
@@ -178,10 +178,10 @@ Note, we are re-using the namespace created above.
         table = "#{hbase.client.test.namespace}:check_#{@config.shortname}_test_splits"
         @system.execute
           cmd: mkcmd.hbase @, """
-            if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.client.test.namespace}'" | grep 'test_splits'; then echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null; fi
-            echo "create '#{table}', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
-            echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('#{table}')\\"}" | hbase shell 2>/dev/null
-            """
+          if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.client.test.namespace}'" | grep 'test_splits'; then echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null; fi
+          echo "create '#{table}', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
+          echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('#{table}')\\"}" | hbase shell 2>/dev/null
+          """
           unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list '#{hbase.client.test.namespace}'\" | grep -w 'test_splits'"
         , (err, executed, stdout) ->
           throw err if err
@@ -222,14 +222,14 @@ This check is only executed if more than two HBase Master are declared.
         table = "#{hbase.client.test.namespace}:check_#{@config.shortname}_ha"
         @system.execute
           cmd: mkcmd.hbase @, """
-            # Create new table
-            echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null
-            echo "create '#{table}', 'cf1', {REGION_REPLICATION => 2}" | hbase shell 2>/dev/null;
-            # Insert records
-            echo "put '#{table}', 'my_row', 'cf1:my_column', 10" | hbase shell 2>/dev/null
-            echo "scan '#{table}',  { CONSISTENCY => 'STRONG' }" | hbase shell 2>/dev/null
-            echo "scan '#{table}',  { CONSISTENCY => 'TIMELINE' }" | hbase shell 2>/dev/null
-            """
+          # Create new table
+          echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null
+          echo "create '#{table}', 'cf1', {REGION_REPLICATION => 2}" | hbase shell 2>/dev/null;
+          # Insert records
+          echo "put '#{table}', 'my_row', 'cf1:my_column', 10" | hbase shell 2>/dev/null
+          echo "scan '#{table}',  { CONSISTENCY => 'STRONG' }" | hbase shell 2>/dev/null
+          echo "scan '#{table}',  { CONSISTENCY => 'TIMELINE' }" | hbase shell 2>/dev/null
+          """
           # unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list '#{table}'\" | grep -w '#{table}'"
 
 ## Dependencies

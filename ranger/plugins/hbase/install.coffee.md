@@ -24,7 +24,7 @@
           header: 'Setup Execution'
           shy:true
           cmd: """
-            hdp-select versions | tail -1
+          hdp-select versions | tail -1
           """
          , (err, executed,stdout, stderr) ->
             return  err if err or not executed
@@ -100,24 +100,24 @@ we execute this task using the rest api.
         @system.execute
           header: 'Ranger Admin Policy'
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST \
+          curl --fail -H "Content-Type: application/json" -k -X POST \
             -d '#{JSON.stringify hbase_policy}' \
             -u admin:#{password} \
             \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
           """
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \
             -u admin:#{password} \
             \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/hbase-ranger-plugin-audit\"
           """
         @system.execute
           header: 'Ranger Admin Repository'
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
+          curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
             -u admin:#{password} \"#{ranger.hbase_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.hbase_plugin.install['REPOSITORY_NAME']}\"
           """
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.hbase_plugin.service_repo}' \
+          curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.hbase_plugin.service_repo}' \
             -u admin:#{password} \"#{ranger.hbase_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
           """
 
@@ -178,7 +178,7 @@ TODO: remove CA from JAVA_HOME cacerts in a future version.
           files_exists = {}
           @system.execute
             cmd: """
-              echo '' | keytool -list \
+            echo '' | keytool -list \
               -storetype jceks \
               -keystore /etc/ranger/#{ranger.hbase_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
             """
@@ -200,10 +200,10 @@ TODO: remove CA from JAVA_HOME cacerts in a future version.
           @system.execute
             header: 'Script Execution'
             cmd: """
-              if /usr/hdp/#{version}/ranger-hbase-plugin/enable-hbase-plugin.sh ;
-              then exit 0 ;
-              else exit 1 ;
-              fi;
+            if /usr/hdp/#{version}/ranger-hbase-plugin/enable-hbase-plugin.sh ;
+            then exit 0 ;
+            else exit 1 ;
+            fi;
             """
           @system.execute
             header: "Fix Plugin repository permission"

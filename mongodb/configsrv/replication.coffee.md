@@ -35,8 +35,8 @@ The root user is needed for replication and has role `root`
         header: 'Roles Admin DB',
         if: @config.host is mongodb.configsrv.replica_master
         unless_exec: """
-          echo exit | #{mongo_shell_admin_exec}
-          echo exit | #{mongo_shell_root_exec}
+        echo exit | #{mongo_shell_admin_exec}
+        echo exit | #{mongo_shell_root_exec}
         """
       , ->
         @service.stop
@@ -57,15 +57,15 @@ The root user is needed for replication and has role `root`
           port: mongodb.configsrv.config.net.port
         @system.execute
           cmd: """
-            #{mongo_shell_exec} --eval <<-EOF \
-            'printjson( db.createUser( \
-              { user: \"#{mongodb.admin.name}\", pwd: \"#{mongodb.admin.password}\", roles: [ { role: \"userAdminAnyDatabase\", db: \"admin\" }]} \
-            ))'
-            EOF
+          #{mongo_shell_exec} --eval <<-EOF \
+          'printjson( db.createUser( \
+            { user: \"#{mongodb.admin.name}\", pwd: \"#{mongodb.admin.password}\", roles: [ { role: \"userAdminAnyDatabase\", db: \"admin\" }]} \
+          ))'
+          EOF
           """
           unless_exec: """
-            echo exit | #{mongo_shell_admin_exec} -u #{mongodb.admin.name} --password  '#{mongodb.admin.password}'
-            """
+          echo exit | #{mongo_shell_admin_exec} -u #{mongodb.admin.name} --password  '#{mongodb.admin.password}'
+          """
           code_skipped: 252
         @system.execute
           cmd: """

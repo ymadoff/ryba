@@ -495,8 +495,8 @@ the ShareLib contents without having to go into HDFS.
         # Extract the released sharelib locally
         @call
           unless_exec:"""
-            version=`ls /usr/hdp/current/oozie-server/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
-            cat /usr/hdp/current/oozie-server/share/lib/sharelib.properties | grep build.version | grep $version
+          version=`ls /usr/hdp/current/oozie-server/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
+          cat /usr/hdp/current/oozie-server/share/lib/sharelib.properties | grep build.version | grep $version
           """
         , ->
           @system.execute
@@ -533,19 +533,19 @@ the ShareLib contents without having to go into HDFS.
             header: 'Copy jars'
             code_skipped: 2
             cmd: """
-              count=0
-              for name in `ls -l /usr/hdp/current/hbase-client/lib/ | grep ^- | egrep '(htrace)|(hbase-)' | grep -v test | awk '{print $9}'`;
-              do
-                if test -f /usr/hdp/current/oozie-server/share/lib/hbase/$name;
-                  then
-                    echo "file: $name  status: ok";
-                  else
-                    cp /usr/hdp/current/hbase-client/lib/$name /usr/hdp/current/oozie-server/share/lib/hbase/$name
-                    count=$((count+1))
-                    echo "file: $name  status: copied";
-                fi;
-                done;
-              if [ $count -eq 0 ] ; then exit 2 ; else exit 0; fi
+            count=0
+            for name in `ls -l /usr/hdp/current/hbase-client/lib/ | grep ^- | egrep '(htrace)|(hbase-)' | grep -v test | awk '{print $9}'`;
+            do
+              if test -f /usr/hdp/current/oozie-server/share/lib/hbase/$name;
+                then
+                  echo "file: $name  status: ok";
+                else
+                  cp /usr/hdp/current/hbase-client/lib/$name /usr/hdp/current/oozie-server/share/lib/hbase/$name
+                  count=$((count+1))
+                  echo "file: $name  status: copied";
+              fi;
+              done;
+            if [ $count -eq 0 ] ; then exit 2 ; else exit 0; fi
             """
         # Deploy a versionned sharelib
         @system.execute

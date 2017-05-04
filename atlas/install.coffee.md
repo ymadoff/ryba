@@ -359,10 +359,10 @@ set to other than the default
       @system.execute
         header: 'Create HBase Namespace'
         cmd: mkcmd.hbase @, """
-            hbase shell 2>/dev/null <<-CMD
-              create_namespace 'atlas'
-            CMD
-          """
+        hbase shell 2>/dev/null <<-CMD
+          create_namespace 'atlas'
+        CMD
+        """
         if_exec: mkcmd.hbase @, "hbase shell 2>/dev/null <<< \"list_namespace_tables 'atlas'\" | grep 'ERROR: Unknown namespace atlas!'"
 
 ## HBase Permission
@@ -422,34 +422,34 @@ Grant Permission to atlas for its titan' tables through ranger or from hbase she
         @wait.execute
           header: 'Wait HBase Ranger repository'
           cmd: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
-            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+          -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
           """
           code_skipped: 22
         @system.execute
           cmd: """
-            curl --fail -H "Content-Type: application/json"   -k -X POST \ 
-            -d '#{JSON.stringify atlas.ranger_user}' -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/secure/users\"
+          curl --fail -H "Content-Type: application/json"   -k -X POST \ 
+          -d '#{JSON.stringify atlas.ranger_user}' -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+          \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/secure/users\"
           """
           unless_exec: """
-            curl --fail -H "Content-Type: application/json"   -k -X GET \ 
-            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/users/userName/#{atlas.ranger_user.name}\"
+          curl --fail -H "Content-Type: application/json"   -k -X GET \ 
+          -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+          \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/users/userName/#{atlas.ranger_user.name}\"
           """
         @system.execute
           header: 'Ranger Ryba Policy'
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST \
-            -d '#{JSON.stringify hbase_policy}' \
-            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+          curl --fail -H "Content-Type: application/json" -k -X POST \
+          -d '#{JSON.stringify hbase_policy}' \
+          -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
           """
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
-            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+          -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
           """
       @call
         unless: -> ranger_admin?
@@ -459,9 +459,9 @@ Grant Permission to atlas for its titan' tables through ranger or from hbase she
           header: 'Grant Permissions'
           unless_exec: mkcmd.hbase @, "hbase shell 2>/dev/null <<< \"user_permission '@#{atlas.application.namespace}'\" |  egrep \"^\\s(#{atlas.user.name})\\s*(#{atlas.user.name}).*\\[Permission: actions=(READ|EXEC|WRITE|CREATE|ADMIN|,){9}\\]$\""
           cmd: mkcmd.hbase @, """
-            hbase shell 2>/dev/null <<-CMD
-              grant '#{atlas.user.name}', 'RWCA', '@#{atlas.application.namespace}'
-            CMD
+          hbase shell 2>/dev/null <<-CMD
+            grant '#{atlas.user.name}', 'RWCA', '@#{atlas.application.namespace}'
+          CMD
           """
           trap: true
 
@@ -543,26 +543,26 @@ kakfa client become an implicit dependance. Its properties can be used.
             header: "Create #{topic} (Kerberos)"
             if: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
             cmd: mkcmd.kafka @, """
-              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-                --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
-                --topic #{topic}
-              """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+              --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
+              --topic #{topic}
+            """
             unless_exec: mkcmd.kafka @, """
-              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
-              --zookeeper #{zoo_connect} | grep #{topic}
-              """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+            --zookeeper #{zoo_connect} | grep #{topic}
+            """
           @system.execute
             header: "Create #{topic} (Simple)"
             unless: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
             cmd: """
-              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-                --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
-                --topic #{topic}
-              """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+              --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
+              --topic #{topic}
+            """
             unless_exec: """
-              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
-              --zookeeper #{zoo_connect} | grep #{topic}
-              """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+            --zookeeper #{zoo_connect} | grep #{topic}
+            """
 
 ### Add Ranger ACL
 
@@ -615,23 +615,23 @@ kakfa client become an implicit dependance. Its properties can be used.
             @wait.execute
               header: 'Wait Ranger Kafka Plugin'
               cmd: """
-                curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
-                -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-                \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+              curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
               """
               code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
             @system.execute
               header: 'Add policy request'
               cmd: """
-                curl --fail -H "Content-Type: application/json" -k -X POST \
-                -d '#{JSON.stringify kafka_policy}' \
-                -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-                \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+              curl --fail -H "Content-Type: application/json" -k -X POST \
+              -d '#{JSON.stringify kafka_policy}' \
+              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
               """
               unless_exec: """
-                curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
-                -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-                \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+              curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
               """
             @wait
               time: 10000
@@ -645,28 +645,28 @@ The commands a divided per user, as the hive bridge is not mandatory.
           @system.execute
             header: 'KafKa Topic ACL Atlas User (Simple)'
             cmd: mkcmd.kafka @, """
-              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-                --add --allow-principal User:#{atlas.user.name}  --group #{group_id} \
-                --operation All --topic #{topic}
-              """
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+              --add --allow-principal User:#{atlas.user.name}  --group #{group_id} \
+              --operation All --topic #{topic}
+            """
             unless_exec: mkcmd.kafka @, """
-              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
-                --authorizer-properties zookeeper.connect=#{zoo_connect}  \
-                --topic #{topic} | grep 'User:#{atlas.user.name} has Allow permission for operations: Write from hosts: *'
-              """
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+              --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+              --topic #{topic} | grep 'User:#{atlas.user.name} has Allow permission for operations: Write from hosts: *'
+            """
           @system.execute
             header: 'KafKa Topic ACL Hive User (Simple)'
             if: atlas.hive_bridge_enabled
             cmd: mkcmd.kafka @, """
-              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-                --add --allow-principal User:#{hive_ctx.config.ryba.hive.user.name}  --group #{group_id} \
-                --operation All --topic #{topic}
-              """
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+              --add --allow-principal User:#{hive_ctx.config.ryba.hive.user.name}  --group #{group_id} \
+              --operation All --topic #{topic}
+            """
             unless_exec: mkcmd.kafka @, """
-              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
-                --authorizer-properties zookeeper.connect=#{zoo_connect}  \
-                --topic #{topic} | grep 'User:#{hive_ctx.config.ryba.hive.user.name} has Allow permission for operations: Write from hosts: *'
-              """
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+              --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+              --topic #{topic} | grep 'User:#{hive_ctx.config.ryba.hive.user.name} has Allow permission for operations: Write from hosts: *'
+            """
 
 ### Add Ranger Solr ACL
 
@@ -711,23 +711,23 @@ The commands a divided per user, as the hive bridge is not mandatory.
         @wait.execute
           header: 'Wait Ranger Solr Plugin'
           cmd: """
-            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
-            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+          curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+          -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
           """
           code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
         @system.execute
           header: 'Add policy request'
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST \
-            -d '#{JSON.stringify solr_policy}' \
-            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+          curl --fail -H "Content-Type: application/json" -k -X POST \
+          -d '#{JSON.stringify solr_policy}' \
+          -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
           """
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
-            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+          -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
           """
         @wait
           time: 10000
@@ -745,7 +745,7 @@ Populates the Oozie directory with the Atlas server JAR files.
         @system.execute
           header: 'Discover Oozie Sharelib latest version'
           cmd: mkcmd.hdfs @, """
-            hdfs dfs -ls  '/user/oozie/share/lib' | awk '{ print $8 }' | tail -n1
+          hdfs dfs -ls  '/user/oozie/share/lib' | awk '{ print $8 }' | tail -n1
           """
         , (err, executed, stdout, stderr) ->
           throw err if err
@@ -759,8 +759,8 @@ Populates the Oozie directory with the Atlas server JAR files.
               @system.execute
                 retry: 2
                 cmd: mkcmd.hdfs @, """
-                  hdfs dfs -put /usr/hdp/current/atlas-client/hook/hive/atlas-hive-plugin-impl/#{options.key} \
-                  #{sharelib}/hive/
+                hdfs dfs -put /usr/hdp/current/atlas-client/hook/hive/atlas-hive-plugin-impl/#{options.key} \
+                #{sharelib}/hive/
                 """
                 unless_exec: mkcmd.hdfs @, "hdfs dfs -stat #{sharelib}/hive/#{options.key}"
               @system.execute

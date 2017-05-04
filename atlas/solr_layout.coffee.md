@@ -50,10 +50,10 @@
           header: 'Create vertex_index collection'
           container: cluster_config.master_container_runtime_name
           cmd: """
-            /usr/solr-cloud/current/bin/solr create_collection -c vertex_index \
-            -shards #{@contexts('ryba/solr/cloud_docker').length}  \
-            -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
-            -d /atlas_solr
+          /usr/solr-cloud/current/bin/solr create_collection -c vertex_index \
+          -shards #{@contexts('ryba/solr/cloud_docker').length}  \
+          -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
+          -d /atlas_solr
           """
         @docker.exec
           container: cluster_config.master_container_runtime_name
@@ -64,10 +64,10 @@
           header: 'Create edge_index collection'
           container: cluster_config.master_container_runtime_name
           cmd: """
-            /usr/solr-cloud/current/bin/solr create_collection -c edge_index \
-            -shards #{@contexts('ryba/solr/cloud_docker').length}  \
-            -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
-            -d /atlas_solr
+          /usr/solr-cloud/current/bin/solr create_collection -c edge_index \
+          -shards #{@contexts('ryba/solr/cloud_docker').length}  \
+          -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
+          -d /atlas_solr
           """
         @docker.exec
           container: cluster_config.master_container_runtime_name
@@ -78,10 +78,10 @@
           header: 'Create fulltext_index collection'
           container: cluster_config.master_container_runtime_name
           cmd: """
-            /usr/solr-cloud/current/bin/solr create_collection -c fulltext_index \
-            -shards #{@contexts('ryba/solr/cloud_docker').length}  \
-            -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
-            -d /atlas_solr
+          /usr/solr-cloud/current/bin/solr create_collection -c fulltext_index \
+          -shards #{@contexts('ryba/solr/cloud_docker').length}  \
+          -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
+          -d /atlas_solr
           """
       @call
         if: [
@@ -97,24 +97,24 @@
         @system.execute
           unless_exec: "/usr/solr-cloud/current/bin/solr healthcheck -c vertex_index"
           cmd: """
-            /usr/solr-cloud/current/bin/solr create_collection -c vertex_index \
-            -shards #{cluster_config.hosts.length}  \
-            -replicationFactor #{cluster_config.hosts.length} \
-            -d #{cluster_config.atlas_collection_dir}
+          /usr/solr-cloud/current/bin/solr create_collection -c vertex_index \
+          -shards #{cluster_config.hosts.length}  \
+          -replicationFactor #{cluster_config.hosts.length} \
+          -d #{cluster_config.atlas_collection_dir}
           """
         @system.execute
           unless_exec: "/usr/solr-cloud/current/bin/solr healthcheck -c edge_index"
           cmd: """
-            /usr/solr-cloud/current/bin/solr create_collection -c edge_index \
-            -shards #{cluster_config.hosts.length}  \
-            -replicationFactor #{cluster_config.hosts.length} \
-            -d #{cluster_config.atlas_collection_dir}
+          /usr/solr-cloud/current/bin/solr create_collection -c edge_index \
+          -shards #{cluster_config.hosts.length}  \
+          -replicationFactor #{cluster_config.hosts.length} \
+          -d #{cluster_config.atlas_collection_dir}
           """
         @system.execute
           unless_exec: "/usr/solr-cloud/current/bin/solr healthcheck -c fulltext_index"
           cmd: """
-            /usr/solr-cloud/current/bin/solr create_collection -c fulltext_index \
-            -shards #{cluster_config.hosts.length}  \
-            -replicationFactor #{cluster_config.hosts.length} \
-            -d #{cluster_config.atlas_collection_dir}
+          /usr/solr-cloud/current/bin/solr create_collection -c fulltext_index \
+          -shards #{cluster_config.hosts.length}  \
+          -replicationFactor #{cluster_config.hosts.length} \
+          -d #{cluster_config.atlas_collection_dir}
           """

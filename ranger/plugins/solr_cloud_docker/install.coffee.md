@@ -24,12 +24,12 @@
 
       @system.execute
         cmd: """
-          curl --fail -H "Content-Type: application/json"   -k -X POST \
+        curl --fail -H "Content-Type: application/json"   -k -X POST \
           -d '#{JSON.stringify solr_plugin.ranger_user}' -u admin:#{admin.password} \
           \"#{admin.install['policymgr_external_url']}/service/xusers/secure/users\"
         """
         unless_exec: """
-          curl --fail -H "Content-Type: application/json"   -k -X GET \
+        curl --fail -H "Content-Type: application/json"   -k -X GET \
           -u admin:#{admin.password} \
           \"#{admin.install['policymgr_external_url']}/service/xusers/users/userName/#{solr_plugin.ranger_user.name}\"
         """
@@ -80,13 +80,13 @@
               }]
           @system.execute
             cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST \
+            curl --fail -H "Content-Type: application/json" -k -X POST \
               -d '#{JSON.stringify solr_policy}' \
               -u admin:#{password} \
               \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
             """
             unless_exec: """
-              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
               -u admin:#{password} \
               \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/#{policy_name}\"
             """
@@ -106,7 +106,7 @@
           header: 'Setup Execution Version'
           shy:true
           cmd: """
-            hdp-select versions | tail -1
+          hdp-select versions | tail -1
           """
          , (err, executed,stdout, stderr) ->
             return  err if err or not executed
@@ -132,11 +132,11 @@ we execute this task using the rest api.
       , ->
         @system.execute
           unless_exec: """
-            curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
+          curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
             -u admin:#{password} \"#{solr_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{solr_plugin.install['REPOSITORY_NAME']}\"
           """
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify solr_plugin.service_repo}' \
+          curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify solr_plugin.service_repo}' \
             -u admin:#{password} \"#{solr_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
           """
 
@@ -177,7 +177,7 @@ loads the lib directory found in the `SOLR_HOME`.
         files_exists = {}
         @system.execute
           cmd: """
-            echo '' | keytool -list \
+          echo '' | keytool -list \
             -storetype jceks \
             -keystore /etc/ranger/#{solr_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
           """
@@ -199,10 +199,10 @@ loads the lib directory found in the `SOLR_HOME`.
         @system.execute
           header: 'Script Execution'
           cmd: """
-            if /usr/hdp/#{version}/ranger-solr-plugin/enable-solr-plugin.sh ;
-            then exit 0 ;
-            else exit 1 ;
-            fi;
+          if /usr/hdp/#{version}/ranger-solr-plugin/enable-solr-plugin.sh ;
+          then exit 0 ;
+          else exit 1 ;
+          fi;
           """
         @hconfigure
           header: 'Fix ranger-solr-security conf'
@@ -252,25 +252,25 @@ loads the lib directory found in the `SOLR_HOME`.
       , ->
         @system.execute
           cmd:  """
-            version=`hdp-select versions | tail -1`
-            lib=`ls /usr/hdp/$version/ranger-solr-plugin/lib`
-            for file in $lib ;
-              do
-                echo "link $file ranger/plugins/solr_cloud_docker/install"
-                target="#{solr_cluster.config.data_dir}/lib/$file"
-                source="/usr/hdp/$version/ranger-solr-plugin/lib/$file"
-                if [ -L "$target" ] || [ -e "$target" ] ;
-                  then
-                    current=`readlink $target`
-                    if [ "$source" != "$current" ] ; then
-                      rm -f $target ;
-                      ln -sf $source $target ;
-                    fi
-                  else
-                    rm -f $target;
-                    ln -sf $source $target;
-                fi
-              done;
+          version=`hdp-select versions | tail -1`
+          lib=`ls /usr/hdp/$version/ranger-solr-plugin/lib`
+          for file in $lib ;
+            do
+              echo "link $file ranger/plugins/solr_cloud_docker/install"
+              target="#{solr_cluster.config.data_dir}/lib/$file"
+              source="/usr/hdp/$version/ranger-solr-plugin/lib/$file"
+              if [ -L "$target" ] || [ -e "$target" ] ;
+                then
+                  current=`readlink $target`
+                  if [ "$source" != "$current" ] ; then
+                    rm -f $target ;
+                    ln -sf $source $target ;
+                  fi
+                else
+                  rm -f $target;
+                  ln -sf $source $target;
+              fi
+            done;
             echo finished;
             exit 0;
             """

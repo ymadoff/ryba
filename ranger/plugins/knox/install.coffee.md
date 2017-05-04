@@ -17,7 +17,7 @@
           header: 'Setup Execution'
           shy:true
           cmd: """
-            hdp-select versions | tail -1
+          hdp-select versions | tail -1
           """
          , (err, executed,stdout, stderr) ->
             return  err if err or not executed
@@ -51,11 +51,11 @@ we execute this task using the rest api.
       , ->
           @system.execute
             unless_exec: """
-              curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
+            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
               -u admin:#{password} \"#{ranger.knox_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.knox_plugin.install['REPOSITORY_NAME']}\"
             """
             cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.knox_plugin.service_repo}' \
+            curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.knox_plugin.service_repo}' \
               -u admin:#{password} \"#{ranger.knox_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
             """
           @krb5.addprinc krb5,
@@ -67,9 +67,9 @@ we execute this task using the rest api.
           @system.execute
             header: 'Knox plugin audit to HDFS'
             cmd: mkcmd.hdfs @, """
-              hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/knox
-              hdfs dfs -chown -R #{knox.user.name}:#{knox.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/knox
-              hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/knox
+            hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/knox
+            hdfs dfs -chown -R #{knox.user.name}:#{knox.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/knox
+            hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/knox
             """
 
 # Plugin Scripts 
@@ -99,11 +99,11 @@ we execute this task using the rest api.
         @system.execute
           header: 'Script Execution'
           cmd: """
-            export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
-             if /usr/hdp/#{version}/ranger-knox-plugin/enable-knox-plugin.sh ;
-            then exit 0 ; 
-            else exit 1 ; 
-            fi;
+          export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
+          if /usr/hdp/#{version}/ranger-knox-plugin/enable-knox-plugin.sh ;
+          then exit 0 ; 
+          else exit 1 ; 
+          fi;
           """
 
 ## Dependencies

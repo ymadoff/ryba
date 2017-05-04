@@ -118,8 +118,8 @@ to allow user to create none-determisitic functions.
         header: 'Setup Execution'
         shy: true
         cmd: """
-          cd /usr/hdp/current/ranger-admin/
-          ./setup.sh
+        cd /usr/hdp/current/ranger-admin/
+        ./setup.sh
         """
       @system.execute
         header: 'Fix Setup Execution'

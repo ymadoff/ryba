@@ -109,8 +109,8 @@ Update the file "install.properties" with the properties defined by the
       @system.execute
         header: 'Execute Setup Scripts'
         cmd: """
-          cd /usr/hdp/current/ranger-usersync/
-          ./setup.sh
+        cd /usr/hdp/current/ranger-usersync/
+        ./setup.sh
         """
 
       # the setup scripts already render an init.d script but it does not respect 

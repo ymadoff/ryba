@@ -11,7 +11,7 @@ su -l spark -c '/usr/hdp/current/spark-historyserver/sbin/start-history-server.s
       {spark, hadoop_group} = @config.ryba
       @wait.execute
         cmd: mkcmd.hdfs @, """
-          hdfs dfs -stat \"%u:%g\" #{spark.history.conf['spark.eventLog.dir']} | grep #{spark.user.name}:#{hadoop_group.name}
+        hdfs dfs -stat \"%u:%g\" #{spark.history.conf['spark.eventLog.dir']} | grep #{spark.user.name}:#{hadoop_group.name}
         """
       @service.start
         name: 'spark-history-server'

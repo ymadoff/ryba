@@ -23,11 +23,11 @@ we execute this task using the rest api.
       , ->
         @system.execute
           unless_exec: """
-            curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
+          curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
             -u admin:#{password} \"#{ranger.hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.hdfs_plugin.install['REPOSITORY_NAME']}\"
           """
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.hdfs_plugin.service_repo}' \
+          curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.hdfs_plugin.service_repo}' \
             -u admin:#{password} \"#{ranger.hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
           """
       @krb5.addprinc krb5,

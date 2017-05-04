@@ -131,17 +131,17 @@
           for service,node of es.nodes then do (service,node) =>
             @system.execute
               cmd:"""
-                #{export_vars}
-                pushd /etc/elasticsearch/#{es_name}
-                docker-compose --verbose scale #{service}=#{node.number}
+              #{export_vars}
+              pushd /etc/elasticsearch/#{es_name}
+              docker-compose --verbose scale #{service}=#{node.number}
               """
               unless: -> @status -1
 
           @system.execute
             cmd:"""
-              #{export_vars}
-              pushd /etc/elasticsearch/#{es_name}
-              docker-compose --verbose up -d #{es_name}_kibana
+            #{export_vars}
+            pushd /etc/elasticsearch/#{es_name}
+            docker-compose --verbose up -d #{es_name}_kibana
             """
             if: -> es.kibana is true and @status (-1)
 

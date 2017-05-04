@@ -19,7 +19,7 @@
           header: 'Setup Execution'
           shy: true
           cmd: """
-            hdp-select versions | tail -1
+          hdp-select versions | tail -1
           """
          , (err, executed,stdout, stderr) ->
             return  err if err or not executed
@@ -52,11 +52,11 @@ we execute this task using the rest api.
       , ->
         @system.execute
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \
             -u admin:#{password} \"#{ranger.yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.yarn_plugin.install['REPOSITORY_NAME']}\"
           """
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.yarn_plugin.service_repo}' \
+          curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.yarn_plugin.service_repo}' \
             -u admin:#{password} \"#{ranger.yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
           """
         @krb5.addprinc krb5,
@@ -68,9 +68,9 @@ we execute this task using the rest api.
         @system.execute
           header: 'Ranger Audit HDFS Layout'
           cmd: mkcmd.hdfs @, """
-            hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/yarn
-            hdfs dfs -chown -R #{yarn.user.name}:#{yarn.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/yarn
-            hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/yarn
+          hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/yarn
+          hdfs dfs -chown -R #{yarn.user.name}:#{yarn.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/yarn
+          hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/yarn
           """
 
 # Plugin Scripts 
@@ -105,9 +105,9 @@ we execute this task using the rest api.
         @system.execute
           header: 'Script Execution'
           cmd: """
-            export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
-            cd /usr/hdp/#{version}/ranger-yarn-plugin/
-            ./enable-yarn-plugin.sh
+          export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
+          cd /usr/hdp/#{version}/ranger-yarn-plugin/
+          ./enable-yarn-plugin.sh
           """
         @system.execute
           header: "Fix repository "

@@ -76,12 +76,12 @@ Example:
         hive.hcatalog.env["$JMXSSL"] ?= false
         hive.hcatalog.env["$JMXAUTH"] ?= false
         hive.hcatalog.env["JMX_OPTS"] += """
-          -Dcom.sun.management.jmxremote \
-          -Dcom.sun.management.jmxremote.authenticate=#{hive.hcatalog.env["$JMXAUTH"]} \
-          -Dcom.sun.management.jmxremote.ssl=#{hive.hcatalog.env["$JMXSSL"]} \
-          -Dcom.sun.management.jmxremote.port=#{hive.hcatalog.env["JMXPORT"]} \
-          -Dcom.sun.management.jmxremote.rmi.port=#{hive.hcatalog.env["JMXPORT"]} \
-          """
+        -Dcom.sun.management.jmxremote \
+        -Dcom.sun.management.jmxremote.authenticate=#{hive.hcatalog.env["$JMXAUTH"]} \
+        -Dcom.sun.management.jmxremote.ssl=#{hive.hcatalog.env["$JMXSSL"]} \
+        -Dcom.sun.management.jmxremote.port=#{hive.hcatalog.env["JMXPORT"]} \
+        -Dcom.sun.management.jmxremote.rmi.port=#{hive.hcatalog.env["JMXPORT"]} \
+        """
       paths = []
       hive.hcatalog.aux_jars_paths ?= []
       #adding defaults jars

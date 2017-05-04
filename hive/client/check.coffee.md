@@ -62,13 +62,13 @@ managed cluster, ACL must be set on HDFS an not on hive.
             }]
         @system.execute
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST \
+          curl --fail -H "Content-Type: application/json" -k -X POST \
             -d '#{JSON.stringify hdfs_policy}' \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
           """
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{hdfs_policy.name}"
           """

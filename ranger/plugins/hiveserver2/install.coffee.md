@@ -59,13 +59,13 @@
               }]
           @system.execute
             cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST \
+            curl --fail -H "Content-Type: application/json" -k -X POST \
               -d '#{JSON.stringify hive_policy}' \
               -u admin:#{password} \
               \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
             """
             unless_exec: """
-              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
               -u admin:#{password} \
               \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/hive-ranger-plugin-audit\"
             """
@@ -78,7 +78,7 @@
           header: 'Setup Execution Version'
           shy:true
           cmd: """
-            hdp-select versions | tail -1
+          hdp-select versions | tail -1
           """
          , (err, executed,stdout, stderr) ->
             return  err if err or not executed
@@ -105,11 +105,11 @@ we execute this task using the rest api.
       , ->
         @system.execute
           unless_exec: """
-            curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
+          curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
             -u admin:#{password} \"#{ranger.hive_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.hive_plugin.install['REPOSITORY_NAME']}\"
           """
           cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.hive_plugin.service_repo}' \
+          curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.hive_plugin.service_repo}' \
             -u admin:#{password} \"#{ranger.hive_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
           """
         @krb5.addprinc krb5,
@@ -165,7 +165,7 @@ we execute this task using the rest api.
           files_exists = {}
           @system.execute
             cmd: """
-              echo '' | keytool -list \
+            echo '' | keytool -list \
               -storetype jceks \
               -keystore /etc/ranger/#{ranger.hive_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
             """
@@ -187,10 +187,10 @@ we execute this task using the rest api.
           @system.execute
             header: 'Script Execution'
             cmd: """
-              if /usr/hdp/#{version}/ranger-hive-plugin/enable-hive-plugin.sh ;
-              then exit 0 ;
-              else exit 1 ;
-              fi;
+            if /usr/hdp/#{version}/ranger-hive-plugin/enable-hive-plugin.sh ;
+            then exit 0 ;
+            else exit 1 ;
+            fi;
             """
           @hconfigure
             header: 'Fix ranger-hive-security conf'

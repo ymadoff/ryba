@@ -137,7 +137,7 @@ These can be used to validate data repartition in the cluster.
               node = options.key
               @system.execute
                 cmd: """
-                  curl  --fail -k --negotiate -u: \
+                curl  --fail -k --negotiate -u: \
                   -H "Content-Type: application/json" -k \
                   -X GET #{node.urls.metrics}
                 """

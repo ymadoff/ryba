@@ -78,26 +78,26 @@ inside "/etc/init.d" and activate it on startup.
             name: 'spark_*-yarn-shuffle'
           @system.execute
             cmd: """
-              file_lib=`ls /usr/hdp/current/spark-client/lib/* | grep yarn-shuffle.jar`
-              file_aux=`ls /usr/hdp/current/spark-client/aux/* | grep yarn-shuffle.jar`
-              file=''
-              if [ -f "$file_lib" ] ; 
-                then file=$file_lib ; 
-              else if [ -f "$file_aux" ] ; 
-                then file=$file_aux ; 
-              fi;
-              name=`basename $file`
-              target="/usr/hdp/current/hadoop-yarn-nodemanager/lib/${name}"
-              source=`readlink $target`
-              if [ "$source" == "$file" ] ;
-                then exit 3 ;
-                else
-                  rm -f $target;
-                  ln -s $file $target;
-                  exit 0;
-                  fi;
-              fi;
-              """
+            file_lib=`ls /usr/hdp/current/spark-client/lib/* | grep yarn-shuffle.jar`
+            file_aux=`ls /usr/hdp/current/spark-client/aux/* | grep yarn-shuffle.jar`
+            file=''
+            if [ -f "$file_lib" ] ; 
+              then file=$file_lib ; 
+            else if [ -f "$file_aux" ] ; 
+              then file=$file_aux ; 
+            fi;
+            name=`basename $file`
+            target="/usr/hdp/current/hadoop-yarn-nodemanager/lib/${name}"
+            source=`readlink $target`
+            if [ "$source" == "$file" ] ;
+              then exit 3 ;
+              else
+                rm -f $target;
+                ln -s $file $target;
+                exit 0;
+                fi;
+            fi;
+            """
             code_skipped: 3
 
       @call header: 'Layout', ->
