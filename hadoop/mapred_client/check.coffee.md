@@ -3,7 +3,7 @@
 
     module.exports = header: 'MapReduce Client Check', label_true: 'CHECKED', handler: ->
       {shortname} = @config
-      {force_check} = @config.ryba
+      {force_check, user} = @config.ryba
 
 ## Wait
 
@@ -14,6 +14,41 @@ started.
       @call once: true, 'ryba/hadoop/yarn_ts/wait'
       @call once: true, 'ryba/hadoop/yarn_nm/wait'
       @call once: true, 'ryba/hadoop/yarn_rm/wait'
+
+## Check Distributed Shell
+
+The distributed shell is a yarn client application which submit a command or a
+Shell script to be executed inside one or multiple YARN containers.
+
+      # Note: should be moved to mapred since it requires mapred-site with memory settings
+      @call header: 'Distributed Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+        appname = "ryba_check_#{shortname}_distributed_cache_#{Date.now()}"
+        scriptpath = "#{user.home}/check_distributed_shell.sh"
+        @file
+          target: "#{scriptpath}"
+          content: """
+          #!/usr/bin/env bash
+          echo Ryba Ryba NM hostname: `hostname`
+          """
+          mode: 0o0640
+        @system.execute
+          cmd: mkcmd.test @, """
+          yarn org.apache.hadoop.yarn.applications.distributedshell.Client \
+            -jar /usr/hdp/current/hadoop-yarn-client/hadoop-yarn-applications-distributedshell.jar \
+            -shell_script #{scriptpath} \
+            -appname #{appname} \
+            -num_containers 1
+          # Valid states: ALL, NEW, NEW_SAVING, SUBMITTED, ACCEPTED, RUNNING, FINISHED, FAILED, KILLED 
+          # Wait for application to run
+          done_cmd="yarn application -list -appStates ALL | grep #{appname} | egrep 'FINISHED|FAILED|KILLED'"
+          i=0; while [[ $i -lt 1000 ]] && [[ ! `$done_cmd` ]]; do ((i++)); sleep 1; done
+          # Get application id
+          application=`yarn application -list -appStates ALL | grep #{appname} | sed -e 's/^\\(application_[0-9_]\\+\\).*/\\1/'`
+          if [ ! "$application" ]; then exit 1; fi
+          rm=`yarn logs -applicationId $application 2>/dev/null | grep 'Ryba NM hostname' | sed 's/Ryba NM hostname: \\(.*\\)/\\1/'`
+          [ "$rm" ]
+          """
+          unless_exists: unless force_check then scriptpath
 
 ## Check
 
