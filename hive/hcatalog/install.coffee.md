@@ -103,6 +103,8 @@ isnt yet started.
           cmd: "service hive-hcatalog-server restart"
           if: -> @status -4
 
+## Configuration
+
       @hconfigure
         header: 'Hive Site'
         target: "#{hive.hcatalog.conf_dir}/hive-site.xml"
@@ -203,28 +205,28 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
           unless_exec: info_cmd
           header: 'Init Schema'
           cmd: """
-              hive --config #{@config.ryba.hive.hcatalog.conf_dir} \
-              --service schemaTool -dbType #{hive.hcatalog.db.engine} -initSchema
-            """
+          hive --config #{@config.ryba.hive.hcatalog.conf_dir} \
+          --service schemaTool -dbType #{hive.hcatalog.db.engine} -initSchema
+          """
         @system.execute
           header: 'Read Versions'
           cmd: """
-              engine="#{hive.hcatalog.db.engine}"
-              cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
-              target_version=`#{target_version}`
-              current_version=`#{current_version}`
-              if [ "$target_version" == "$current_version" ] ; then exit 0; else exit 1; fi
-            """
+          engine="#{hive.hcatalog.db.engine}"
+          cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
+          target_version=`#{target_version}`
+          current_version=`#{current_version}`
+          if [ "$target_version" == "$current_version" ] ; then exit 0; else exit 1; fi
+          """
           code_skipped: 1
         @system.execute
           if: -> !@status(-1) and !@status(-2)
           cmd: """
-              engine="#{hive.hcatalog.db.engine}"
-              cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
-              current_version=`#{current_version}`
-              hive --config #{@config.ryba.hive.hcatalog.conf_dir} \
-              --service schemaTool -dbType #{hive.hcatalog.db.engine} -upgradeSchemaFrom $current_version
-            """
+          engine="#{hive.hcatalog.db.engine}"
+          cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
+          current_version=`#{current_version}`
+          hive --config #{@config.ryba.hive.hcatalog.conf_dir} \
+          --service schemaTool -dbType #{hive.hcatalog.db.engine} -upgradeSchemaFrom $current_version
+          """
 
 
 ## Kerberos

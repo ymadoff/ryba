@@ -21,10 +21,7 @@ Example:
         "heapsize": "1024"
       },
       "site": {
-        "javax.jdo.option.ConnectionURL": "jdbc:mysql://front1.hadoop:3306/hive?createDatabaseIfNotExist=true",
-        "javax.jdo.option.ConnectionDriverName": "com.mysql.jdbc.Driver",
-        "javax.jdo.option.ConnectionUserName": "hive",
-        "javax.jdo.option.ConnectionPassword": "hive123"
+        "hive.server2.transport.mode": "http"
       }
     }
   }
@@ -152,7 +149,7 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
 
       hive.hcatalog.db ?= {}
       hive.hcatalog.db.username ?= 'hive'
-      hive.hcatalog.db.password ?= 'hive123'
+      throw Error "Required Property: hive.hcatalog.db.password" unless hive.hcatalog.db.password
       if hive.hcatalog.site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.ryba.db_admin
         jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']

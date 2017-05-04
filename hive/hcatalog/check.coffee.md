@@ -3,8 +3,6 @@
 
     module.exports =  header: 'Hive HCatalog Check', label_true: 'CHECKED', handler: ->
       {hive} = @config.ryba
-      username = hive.hcatalog.site['javax.jdo.option.ConnectionUserName']
-      password = hive.hcatalog.site['javax.jdo.option.ConnectionPassword']
       jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
 
 ## Wait
