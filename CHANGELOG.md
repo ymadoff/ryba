@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* src: fix backup renamed as remove
 * yarn: cgroup labels
 * lib mkcmd: generic command
 * hadoop: move distributed shell into mapreduce

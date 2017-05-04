@@ -15,7 +15,7 @@ configuration.
       engines_cmd =
         mysql: "mysqldump -u#{user} -p#{password} -h#{jdbc.hostname} -P#{jdbc.port} #{jdbc.database}"
       throw Error 'Database engine not supported' unless engines_cmd[jdbc.engine]
-      @tools.remove
+      @tools.backup
         timeout: -1
         label_true: 'BACKUPED'
         header: 'Backup Database'
@@ -29,7 +29,7 @@ configuration.
 
 Backup the active Hive configuration.
 
-      @tools.remove
+      @tools.backup
         header: 'Configuration'
         label_true: 'BACKUPED'
         name: 'conf'
