@@ -10,6 +10,7 @@ built atop Apache Hadoop YARN.
     module.exports =
       use:
         java: implicit: true, module: 'masson/commons/java'
+        http: 'masson/commons/httpd'
         hadoop_core: 'ryba/hadoop/core/configure'
         hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
         yarn_rm: 'ryba/hadoop/yarn_rm'
