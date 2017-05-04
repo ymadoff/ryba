@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* hive hcatalog: port defined in configuration
 * hadoop: honors user environmental variables #74
 * hdfs: fix log cleanup in jn and zkfc
 * pig: disabled old fix

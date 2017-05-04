@@ -30,9 +30,11 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
+Note, since Hive 1.3, the port is defined by "'hive.metastore.port'"
+
       rules =  [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 9083, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 9999, protocol: 'tcp', state: 'NEW', comment: "Hive Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hive.hcatalog.site['hive.metastore.port'], protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hive.hcatalog.site['hive.hwi.listen.port'], protocol: 'tcp', state: 'NEW', comment: "Hive Web UI" }
         ]
       rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: parseInt(hive.hcatalog.env["JMXPORT"],10), protocol: 'tcp', state: 'NEW', comment: "Metastore JMX" } if hive.hcatalog.env["JMXPORT"]?
       @tools.iptables

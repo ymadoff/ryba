@@ -99,11 +99,13 @@ Example:
       hive.hcatalog.site ?= {}
       # by default BONECP could lead to BLOCKED thread for class reading from DB
       hive.hcatalog.site['datanucleus.connectionPoolingType'] ?= 'DBCP'
+      hive.hcatalog.site['hive.metastore.port'] ?= '9083'
+      hive.hcatalog.site['hive.hwi.listen.port'] ?= '9999'
       hive.hcatalog.site['hive.metastore.uris'] ?= null
       unless hive.hcatalog.site['hive.metastore.uris']
         hive.hcatalog.site['hive.metastore.uris'] = []
         for host in hive_hcatalog.map( (ctx) -> ctx.config.host)
-          hive.hcatalog.site['hive.metastore.uris'].push "thrift://#{host}:9083"
+          hive.hcatalog.site['hive.metastore.uris'].push "thrift://#{host}:#{hive.hcatalog.site['hive.metastore.port']}"
         hive.hcatalog.site['hive.metastore.uris'] = hive.hcatalog.site['hive.metastore.uris'].join ','
       hive.hcatalog.site['datanucleus.autoCreateTables'] ?= 'true'
       hive.hcatalog.site['hive.security.authorization.enabled'] ?= 'true'
