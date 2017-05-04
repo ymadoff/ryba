@@ -52,17 +52,6 @@ companion file defines no properties while the YUM package does.
         ]
         mode: 0o755
         backup: true
-      @file
-        header: 'Fix Pig'
-        write: [
-          match: /^(\s)*slfJarVersion=.*/mg
-          replace: "$1slfJarVersion=''"
-        ,
-          match: new RegExp quote('/usr/lib/hcatalog'), 'g'
-          replace: '/usr/lib/hive-hcatalog'
-        ]
-        target: '/usr/lib/pig/bin/pig'
-        backup: true
 
 ## Dependencies
 

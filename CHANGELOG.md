@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* pig: disabled old fix
 * druid: database password now required
 * oozie: database password now required
 * hive: database password now required
