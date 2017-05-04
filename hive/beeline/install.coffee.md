@@ -18,6 +18,26 @@
         name: 'hive'
       @hdp_select 'hive-webhcat'
 
+## Configure
+
+See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap6-3.html)
+
+      @hconfigure
+        header: 'Hive Site'
+        target: "#{hive.conf_dir}/hive-site.xml"
+        source: "#{__dirname}/../../resources/hive/hive-site.xml"
+        local: true
+        properties: hive.site
+        merge: true
+        backup: true
+      @system.execute
+        header: 'Permissions'
+        cmd: """
+        chown -R #{hive.user.name}:#{hadoop_group.name} #{hive.conf_dir}
+        chmod -R 755 #{hive.conf_dir}
+        """
+        shy: true # TODO: indempotence by detecting ownerships and permissions
+
 ## Env
 
       @file.render
