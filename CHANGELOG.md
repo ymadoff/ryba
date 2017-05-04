@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* lib mkcmd: generic command
 * hadoop: move distributed shell into mapreduce
 * hive hcatalog: port defined in configuration
 * hadoop: honors user environmental variables #74
