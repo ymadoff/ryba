@@ -99,11 +99,18 @@ Example:
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ryba.hdfs.site['dfs.webhdfs.enabled'] isnt 'true'
       hue_docker.ca_bundle ?= "#{hue_docker.conf_dir}/trust.pem"
-      hue_docker = ssl if hue_docker is true
-      hue_docker.ssl ?= false
-      throw Error "Required Option: ssl.client_ca" if hue_docker.ssl and not hue_docker.ssl.client_ca
-      throw Error "Required Option: ssl.cert" if hue_docker.ssl and not hue_docker.ssl.cert
-      throw Error "Required Option: ssl.key" if hue_docker.ssl and not hue_docker.ssl.key
+
+## Hue Webui TLS
+
+      hue_docker.ssl_enabled ?= true
+      if hue_docker.ssl_enabled
+        hue_docker.ssl ?=
+          cacert: ssl.cacert
+          cert: ssl.cert
+          key: ssl.key
+      throw Error "Required Option: ssl.cacert" if hue_docker.ssl_enabled and not hue_docker.ssl.cacert?
+      throw Error "Required Option: ssl.cert" if hue_docker.ssl_enabled and not hue_docker.ssl.cert?
+      throw Error "Required Option: ssl.key" if hue_docker.ssl_enabled and not hue_docker.ssl.key?
       # HDFS & YARN url
       # NOTE: default to unencrypted HTTP
       # error is "SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed"
