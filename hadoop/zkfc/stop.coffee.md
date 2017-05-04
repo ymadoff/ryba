@@ -25,5 +25,5 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-zkfc.pid".
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: clean_logs
-        cmd: 'rm /var/log/hadoop-hdfs/*/*-zkfc-*'
+        cmd: 'rm /var/log/hadoop-hdfs/*-zkfc-*'
         code_skipped: 1

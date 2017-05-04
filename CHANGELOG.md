@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* hdfs: fix log cleanup in jn and zkfc
 * pig: disabled old fix
 * druid: database password now required
 * oozie: database password now required
