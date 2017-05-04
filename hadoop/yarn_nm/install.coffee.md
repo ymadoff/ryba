@@ -297,7 +297,7 @@ Note: For now (December 2016 - HDP 2.5.3.0), yarn does not support `systemctl` c
 on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (masson/core/cgroups)
 
       @call
-        header: 'Cgroups Layout YARN Mounting'
+        header: 'Cgroups Auto'
         if: -> yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
       , ->
         @service
@@ -310,7 +310,7 @@ on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (ma
           mode: 0o1777
           parent: true
       @call
-        header: 'Cgroups Layout Configuration'
+        header: 'Cgroups Manual'
         unless: -> yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
       , (options) ->
         hierarchy = yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= "/#{ryba.yarn.user.name}"
