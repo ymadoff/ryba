@@ -405,31 +405,40 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
 ## SQL Database Creation
 
       @call header: 'SQL Database Creation', ->
-        username = oozie.site['oozie.service.JPAService.jdbc.username']
-        password = oozie.site['oozie.service.JPAService.jdbc.password']
-        # jdbc = db.jdbc oozie.site['oozie.service.JPAService.jdbc.url']
         switch oozie.db.engine
           when 'mysql'
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
             version_local = db.cmd(oozie.db, "select data from OOZIE_SYS where name='oozie.version'") + "| tail -1"
             version_remote = "ls /usr/hdp/current/oozie-server/lib/oozie-client-*.jar | sed 's/.*client\\-\\(.*\\).jar/\\1/'"
-            properties =
-              'engine': oozie.db.engine
-              'host': oozie.db.host
-              'admin_username': oozie.db.admin_username
-              'admin_password': oozie.db.admin_password
-              'username': username
-              'password': password
-            @db.user properties
-            @db.database.exists oozie.db
-            @system.execute
-              cmd: db.cmd properties, """
-              create database #{oozie.db.database};
-              grant all privileges on #{oozie.db.database}.* to '#{username}'@'localhost' identified by '#{password}';
-              grant all privileges on #{oozie.db.database}.* to '#{username}'@'%' identified by '#{password}';
-              flush privileges;
-              """
-              unless: -> @status -1 # true if exists
+            # properties =
+            #   'engine': oozie.db.engine
+            #   'host': oozie.db.host
+            #   'admin_username': oozie.db.admin_username
+            #   'admin_password': oozie.db.admin_password
+            #   'username': username
+            #   'password': password
+            @db.user oozie.db, database: null,
+              header: 'User'
+              if: oozie.db.engine in ['mysql', 'postgres']
+            @db.database oozie.db,
+              header: 'Database'
+              user: oozie.db.username
+              if: oozie.db.engine in ['mysql', 'postgres']
+            @db.schema oozie.db,
+              header: 'Schema'
+              if: oozie.db.engine is 'postgres'
+              schema: oozie.db.schema or oozie.db.database
+              database: oozie.db.database
+              owner: oozie.db.username
+            # @db.database.exists oozie.db
+            # @system.execute
+            #   cmd: db.cmd oozie.db, """
+            #   create database #{oozie.db.database};
+            #   grant all privileges on #{oozie.db.database}.* to '#{oozie.db.username}'@'localhost' identified by '#{oozie.db.password}';
+            #   grant all privileges on #{oozie.db.database}.* to '#{oozie.db.username}'@'%' identified by '#{oozie.db.password}';
+            #   flush privileges;
+            #   """
+            #   unless: -> @status -1 # true if exists
             @system.execute
                cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh create -sqlfile /tmp/oozie.sql -run Validate DB Connection'"
                unless_exec: db.cmd oozie.db, "select data from OOZIE_SYS where name='oozie.version'"

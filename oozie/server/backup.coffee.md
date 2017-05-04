@@ -17,10 +17,13 @@ mysqldump -uroot -ppassword --hex-blob oozie > /data/1/oozie.sql
 
       @call header: 'Backup Database', timeout: -1, label_true: 'BACKUPED', ->
         jdbc = db.jdbc oozie.site['oozie.service.JPAService.jdbc.url']
-        user = oozie.site['oozie.service.JPAService.jdbc.username']
-        password = oozie.site['oozie.service.JPAService.jdbc.password']
         engines_cmd =
-          mysql: "mysqldump -u#{user} -p#{password} --hex-blob -h#{jdbc.addresses[0].host} -P#{jdbc.addresses[0].port} #{jdbc.database}"
+          mysql: """
+          mysqldump \
+            -u#{oozie.db.username} -p#{oozie.db.password} \
+            -h#{jdbc.addresses[0].host} -P#{jdbc.addresses[0].port} \
+            --hex-blob #{jdbc.database}
+          """
         throw Error 'Database engine not supported' unless engines_cmd[jdbc.engine]
         @tools.remove
           name: 'oozie-db'

@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* oozie: database password now required
 * hive: database password now required
 * src: normalize identies creation
 * hdfs nn: fix fsck check by using nn config

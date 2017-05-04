@@ -16,6 +16,9 @@ Example
       },
       "group": {
         "name": "Oozie", "system": true
+      },
+      "db": {
+        "password": "Oozie123!"
       }
     }
 ```
@@ -74,13 +77,15 @@ Example
       oozie.db.engine ?= 'mysql'
       oozie.db[k] ?= v for k, v of ryba.db_admin[oozie.db.engine]
       oozie.db.database ?= 'oozie'
+      oozie.db.username ?= 'oozie'
+      throw Error "Require Property: oozie.db.password" unless oozie.db.password
       #jdbc provided by ryba/commons/db_admin
       #for now only setting the first host as Oozie fails to parse jdbc url.
       #JIRA: [OOZIE-2136]
       oozie.site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{oozie.db.host}:#{oozie.db.port}/#{oozie.db.database}?createDatabaseIfNotExist=true"
       oozie.site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
-      oozie.site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
-      oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
+      oozie.site['oozie.service.JPAService.jdbc.username'] = oozie.db.username
+      oozie.site['oozie.service.JPAService.jdbc.password'] = oozie.db.password
       # Path to hadoop configuration is required when running 'sharelib upgrade'
       # or an error will complain that the hdfs url is invalid
       oozie.site['oozie.services.ext']?= []
