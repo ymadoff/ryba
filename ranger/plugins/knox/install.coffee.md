@@ -105,6 +105,15 @@ we execute this task using the rest api.
           else exit 1 ; 
           fi;
           """
+        @system.execute
+          header: 'fix topologies perms'
+          cmd: "chown -R #{knox.user.name}:#{knox.user.group} /usr/hdp/current/knox-server/data/security/keystores/*"
+        @system.copy
+          source: '/etc/hadoop/conf/core-site.xml'
+          target: "#{knox.conf_dir}/core-site.xml"
+        @system.copy
+          source: '/etc/hadoop/conf/hdfs-site.xml'
+          target: "#{knox.conf_dir}/hdfs-site.xml"
 
 ## Dependencies
 
