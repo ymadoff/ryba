@@ -102,33 +102,6 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
             merge: true
             backup: true
 
-## HBase
-
-Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
-
-      @call header: 'HBase Site', ->
-        [hbase_ctx] = @contexts 'ryba/hbase/thrift'
-        if hbase_ctx?
-          {hbase} = hbase_ctx.config.ryba
-          # props = {}
-          # props['hbase.security.authentication'] = hbase.site['hbase.security.authentication']
-          # props['hbase.security.authorization'] = hbase.site['hbase.security.authorization']
-          # for k, v of hbase.site
-          #   props[k] = v if  k.indexOf('thrift') isnt  -1
-          @hconfigure
-            target: "#{hbase.conf_dir}/hbase-site.xml"
-            properties: {
-              'hbase.thrift.port': "#{hbase.thrift.site['hbase.thrift.port']}"
-              'hbase.thrift.info.port': "#{hbase.thrift.site['hbase.thrift.info.port']}"
-              'hbase.thrift.support.proxyuser': "#{hbase.thrift.site['hbase.thrift.support.proxyuser']}"
-              'hbase.thrift.security.qop': "#{hbase.site['hbase.thrift.thrift.security.qop']}"
-              'hbase.thrift.authentication.type': "#{hbase.thrift.site['hbase.thrift.authentication.type']}"
-              'hbase.thrift.kerberos.principal': "#{hbase.thrift.site['hbase.thrift.kerberos.principal']}"
-              'hbase.thrift.ssl.enabled': "#{hbase.thrift.site['hbase.thrift.ssl.enabled']}"
-            }
-            backup: true
-            merge: true
-
 ## Configure
 
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html)
@@ -201,9 +174,9 @@ path  during docker run.
       @file
         header: 'SSL Client'
         target: "#{hue_docker.ca_bundle}"
-        source: "#{hue_docker.ssl.client_ca}"
+        source: "#{hue_docker.ssl.cacert}"
         local: true
-        if: hue_docker.ssl.client_ca
+        if: hue_docker.ssl.cacert
         backup: true
 
 ## SSL Server

@@ -129,7 +129,7 @@ Example:
       else
         # Hue Install defines a dependency on HDFS client
         nn_protocol = if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-        nn_protocol = 'http' if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
+        nn_protocol = 'http' if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl.cacert
         if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.ha.automatic-failover.enabled'] is 'true'
           nn_host = nn_ctxs[0].config.ryba.active_nn_host
           shortname = @contexts(hosts: nn_host)[0].config.shortname
@@ -311,6 +311,15 @@ Example:
           hbase_thrift_cluster +=  if key == '0' then "(Cluster|#{host_adress})" else ",(Cluster|https://#{host_adress})"
         hue_docker.ini['hbase'] ?= {}
         hue_docker.ini['hbase']['hbase_conf_dir'] ?= hbase_cli_ctx.config.ryba.hbase.conf_dir
+        @config.ryba.hbase.site[prop] ?= hbase_thrift_ctxs[0].config.ryba.hbase.thrift.site[prop] for prop in [
+          'hbase.thrift.port'
+          'hbase.thrift.info.port'
+          'hbase.thrift.support.proxyuser'
+          'hbase.thrift.security.qop'
+          'hbase.thrift.authentication.type'
+          'hbase.thrift.kerberos.principal'
+          'hbase.thrift.ssl.enabled'
+          ]
         hue_docker.ini['hbase']['hbase_clusters'] ?= hbase_thrift_cluster
         # Hard limit of rows or columns per row fetched before truncating.
         hue_docker.ini['hbase']['truncate_limit'] ?= '500'
