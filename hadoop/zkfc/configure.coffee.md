@@ -21,10 +21,13 @@ Optional, activate digest type access to zookeeper to manage the zkfc znode:
 
     module.exports = ->
       zkfc_ctxs = @contexts 'ryba/hadoop/zkfc'
+      zk_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       throw Error "Require 2 ZKFCs" unless zkfc_ctxs.length is 2
       {ryba, host} = @config
       ryba.zkfc ?= {}
       ryba.zkfc.conf_dir ?= '/etc/hadoop-hdfs-zkfc/conf'
+      ryba.zkfc.core_site ?= {}
+      ryba.zkfc.core_site['ha.zookeeper.quorum'] ?= zk_ctxs.map( (ctx)-> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}" ).map(',')
       # Validation
       ryba.zkfc.principal ?= ryba.hdfs.nn.site['dfs.namenode.kerberos.principal']
       ryba.zkfc.keytab ?= ryba.hdfs.nn.site['dfs.namenode.keytab.file']

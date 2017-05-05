@@ -57,7 +57,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           target: "#{zkfc.conf_dir}"
         @hconfigure
           target: "#{zkfc.conf_dir}/core-site.xml"
-          properties: core_site
+          properties: merge {}, core_site, zkfc.core_site
           backup: true
         @hconfigure
           target: "#{zkfc.conf_dir}/hdfs-site.xml"
@@ -271,3 +271,4 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
 
     fs = require 'fs'
     mkcmd = require '../../lib/mkcmd'
+    {merge} = require 'nikita/lib/misc' 
