@@ -771,7 +771,9 @@ Populates the Oozie directory with the Atlas server JAR files.
 
 ## Ranger Atlas Plugin Install
 
-      @call if: -> @contexts('ryba/ranger/admin').length > 0, 'ryba/ranger/plugins/atlas/install'
+      @call 
+        if: -> @contexts('ryba/ranger/admin').length > 0
+      , -> @call 'ryba/ranger/plugins/atlas/install'
 
 ## Dependencies
 
