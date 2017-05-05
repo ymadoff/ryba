@@ -140,7 +140,7 @@ on the swarm cluster level
           target: '/etc/profile.d/docker.sh'
           write: [
             match: /^export DOCKER_HOST=.*$/mg
-            replace: "export DOCKER_HOST=tcp://#{primary_ctx.config.host}:#{primary_ctx.config.ryba.swarm.manager.listen_port}" 
+            replace: "export DOCKER_HOST=tcp://#{@config.host}:#{@config.docker.default_port}" 
             append: true
           ,
             match: /^export DOCKER_CERT_PATH=.*$/mg
