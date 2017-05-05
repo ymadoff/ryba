@@ -10,6 +10,7 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
 ## Register
 
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hdp_select', 'ryba/lib/hdp_select'
 
 ## Identities
 
@@ -28,6 +29,11 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: phoenix.queryserver.site['phoenix.queryserver.http.port'], protocol: 'tcp', state: 'NEW', comment: "Phoenix QueryServer port" }
         ]
+
+## Packages
+
+      @service header: 'Packages', name: 'phoenix'
+      @hdp_select name: 'phoenix-server'
 
 ## Kerberos
 
