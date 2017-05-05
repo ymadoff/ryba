@@ -446,7 +446,7 @@ in or out of docker.
               , -> @call 'ryba/atlas/solr_layout'
           when 'cloud_docker'
             throw Error 'No Solr Cloud Server configured' unless scd_ctxs.length > 0
-            cluster_name = atlas.solr_cluster_name ?= 'atlas_cluster'
+            cluster_name = atlas.solr_cluster_name ?= 'atlas_infra'
             atlas.solr_admin_user ?= 'solr'
             atlas.solr_admin_password ?= 'SolrRocks' #Default
             atlas.solr_users ?= [
