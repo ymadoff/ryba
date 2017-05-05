@@ -311,7 +311,7 @@ Theses functions are used to generate business rules
 ###  Declare services
 
           # TODO: put db_admin username/password
-          if 'masson/commons/mysql/server' in ctx.services
+          if 'masson/commons/mysql/server' in ctx.services or 'masson/commons/mariadb/server' in ctx.services
             w.modules.push 'mysql_server' if 'mysql_server' not in w.modules
             h.hostgroups.push 'mysql_server' if 'mysql_server' not in h.hostgroups
             services['MySQL - TCP'] ?= {}
@@ -888,7 +888,7 @@ Theses functions are used to generate business rules
           services['MySQL - Available'] ?= {}
           services['MySQL - Available'].hosts ?= []
           services['MySQL - Available'].hosts.push clustername
-          services['MySQL - Available'].servicegroups ?= ['hadoop']
+          services['MySQL - Available'].servicegroups ?= ['mysql_server']
           services['MySQL - Available'].use ?= 'bp-service'
           services['MySQL - Available'].check_command ?= bp_has_one 'MySQL - TCP', '$HOSTNAME$'
         if 'zookeeper_server' in w.modules
