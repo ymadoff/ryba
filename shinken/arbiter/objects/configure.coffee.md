@@ -760,12 +760,12 @@ Theses functions are used to generate business rules
             services['Kafka Broker - TCPs']['_process_name'] ?= 'kafka-broker'
             services['Kafka Broker - TCPs'].check_command ?= "bp_rule!($HOSTNAME$,r:^Kafka Broker - TCP .*$)"
           if 'ryba/ranger/admin' in ctx.services
-            w.modules.push 'ranger-admin' if 'ranger-admin' not in w.modules
-            h.hostgroups.push 'ranger-admin' if 'ranger-admin' not in h.hostgroups
+            w.modules.push 'ranger' if 'ranger' not in w.modules
+            h.hostgroups.push 'ranger' if 'ranger' not in h.hostgroups
             services['Ranger - WebUI'] ?= {}
             services['Ranger - WebUI'].hosts ?= []
             services['Ranger - WebUI'].hosts.push host
-            services['Ranger - WebUI'].servicegroups ?= ['ranger-admin']
+            services['Ranger - WebUI'].servicegroups ?= ['ranger']
             services['Ranger - WebUI'].use ?= 'process-service'
             services['Ranger - WebUI']['_process_name'] ?= 'ranger-admin'
             if ryba.ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true'
@@ -773,7 +773,7 @@ Theses functions are used to generate business rules
               services['Ranger - Certificate'] ?= {}
               services['Ranger - Certificate'].hosts ?= []
               services['Ranger - Certificate'].hosts.push host
-              services['Ranger - Certificate'].servicegroups ?= ['ranger-admin']
+              services['Ranger - Certificate'].servicegroups ?= ['ranger']
               services['Ranger - Certificate'].use ?= 'cert-service'
               services['Ranger - Certificate'].check_command ?= "check_cert!#{ryba.ranger.admin.site['ranger.service.https.port']}!120!60"
               create_dependency 'Ranger - Certificate', 'Ranger - WebUI', host
@@ -1061,7 +1061,7 @@ Theses functions are used to generate business rules
           services['Kafka Broker - Available'].hosts.push clustername
           services['Kafka Broker - Available'].servicegroups ?= ['kafka_broker']
           services['Kafka Broker - Available'].use ?= 'bp-service'
-          services['Kafka Broker - Available'].check_command ?= bp_miss 3, 'Kafka Broker - TCPs', '$HOSTNAME$'
+          services['Kafka Broker - Available'].check_command ?= bp_has_one 'Kafka Broker - TCPs', '$HOSTNAME$'
           create_dependency 'Kafka Broker - Available', 'Zookeeper Server - Available', clustername
         if 'opentsdb' in w.modules
           services['OpenTSDB - Available'] ?= {}
@@ -1084,14 +1084,14 @@ Theses functions are used to generate business rules
           services['Knox - Available'].hosts.push clustername
           services['Knox - Available'].servicegroups ?= ['knox']
           services['Knox - Available'].use ?= 'bp-service'
-          services['Knox - Available'].check_command ?= bp_has_quorum 'Knox - WebService', '$HOSTNAME$'
+          services['Knox - Available'].check_command ?= bp_has_one 'Knox - WebService', '$HOSTNAME$'
         if 'hue' in w.modules
           services['Hue - Available'] ?= {}
           services['Hue - Available'].hosts ?= []
           services['Hue - Available'].hosts.push clustername
           services['Hue - Available'].servicegroups ?= ['hue']
           services['Hue - Available'].use ?= 'bp-service'
-          services['Hue - Available'].check_command ?= bp_has_quorum 'Hue - WebUI', '$HOSTNAME$'
+          services['Hue - Available'].check_command ?= bp_has_one 'Hue - WebUI', '$HOSTNAME$'
         if 'nifi' in w.modules
           services['NiFi - Available'] ?= {}
           services['NiFi - Available'].hosts ?= []
