@@ -148,10 +148,6 @@ Be carefull, notes from Ambari 2.4.2:
         @system.execute
           shy: true
           cmd: """
-          [ -n "ambari_server.master_key" ] && ambari-server setup-security \
-            --security-option=encrypt-passwords \
-            --master-key=#{ambari_server.master_key} \
-            --master-key-persist=true
           ambari-server setup \
             -s \
             -j #{ambari_server.java_home} \
@@ -164,6 +160,10 @@ Be carefull, notes from Ambari 2.4.2:
             # --jdbc-db=mysql \
             # --jdbc-driver=/usr/share/java/mysql-connector-java.jar \
             # --cluster-name=#{ambari_server.cluster_name} \
+          [ -n "ambari_server.master_key" ] && ambari-server setup-security \
+            --security-option=encrypt-passwords \
+            --master-key=#{ambari_server.master_key} \
+            --master-key-persist=true
           """
         @call (options, callback) ->
           properties '/etc/ambari-server/conf/ambari.properties', ssh: options.ssh, (err, data) ->
