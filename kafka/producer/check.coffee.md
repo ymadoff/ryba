@@ -123,9 +123,10 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
           if:  kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
           cmd: mkcmd.kafka @, """
           (
-          /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-            --add --allow-principal User:ANONYMOUS  \
-            --operation Read --operation Write --topic #{test_topic}
+            sleep 1
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+              --add --allow-principal User:ANONYMOUS  \
+              --operation Read --operation Write --topic #{test_topic}
           )&
           (
           /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -142,9 +143,10 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
           unless:  kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
           cmd: """
           (
-          /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-            --add --allow-principal User:ANONYMOUS  \
-            --operation Read --operation Write --topic #{test_topic}
+            sleep 1
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+              --add --allow-principal User:ANONYMOUS  \
+              --operation Read --operation Write --topic #{test_topic}
           )&
           (
           /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -160,6 +162,7 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
         @system.execute
           cmd: """
           (
+            sleep 1
             echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
               --producer-property security.protocol=PLAINTEXT \
               --broker-list #{brokers} \
@@ -209,9 +212,10 @@ We specify the trustore location and password because if executed before consume
         @system.execute
           cmd: mkcmd.kafka @, """
           (
-          /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-            --add --allow-principal User:ANONYMOUS  \
-            --operation Read --operation Write --topic #{test_topic}
+            sleep 1
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+              --add --allow-principal User:ANONYMOUS  \
+              --operation Read --operation Write --topic #{test_topic}
           )&
           (
           /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
