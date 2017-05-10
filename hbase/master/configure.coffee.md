@@ -164,6 +164,7 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       # Async WAL Replication
       if rs_ctxs.length > 2
         # enable hbase:meta region replication
+        hbase.master.site['hbase.meta.replicas.use'] ?= 'true'
         hbase.master.site['hbase.meta.replica.count'] ?= '3' # Default to '1'
         # enable replication for ervery regions
         hbase.master.site['hbase.region.replica.replication.enabled'] ?= 'true'
