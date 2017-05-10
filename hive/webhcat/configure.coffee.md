@@ -49,11 +49,10 @@
 
 ## Logj4 Properties
 
-      webhcat.opts['webhcat.root.logger'] = 'INFO, RFA, socket'
       webhcat.log4j ?= {}
       webhcat.log4j[k] ?= v for k, v of @config.log4j
-      webhcat.opts['webhcat.root.logger'] = 'INFO, RFA'
       if @config.log4j?.services?
+        webhcat.opts['webhcat.root.logger'] ?= 'INFO,RFA'
         if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hive/webhcat' in @config.log4j?.services)
           # adding SOCKET appender
           ryba.webhcat.socket_client ?= "SOCKET"
@@ -76,6 +75,8 @@
             name: ryba.webhcat.socket_client
             logj4: ryba.webhcat.log4j
             properties: ryba.webhcat.socket_opts
+      else
+        webhcat.opts['webhcat.root.logger'] ?= 'INFO,RFA'
 
 ## Dependencies
 
