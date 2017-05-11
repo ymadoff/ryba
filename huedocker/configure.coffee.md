@@ -82,7 +82,7 @@ Example:
       # Group
       hue_docker.group = name: hue_docker.group if typeof hue_docker.group is 'string'
       hue_docker.group ?= {}
-      hue_docker.group.name ?= hue_docker.user.name
+      hue_docker.group.name ?= 'hue'
       hue_docker.group.system ?= true
       # User
       hue_docker.user ?= {}
@@ -91,7 +91,7 @@ Example:
       hue_docker.user.gid ?= hue_docker.group.name
       hue_docker.user.system ?= true
       hue_docker.user.comment ?= 'Hue User'
-      hue_docker.user.home = '/var/lib/hue_docker'
+      hue_docker.user.home = '/var/lib/hue_docker' # TODO: shall be "/var/lib/hue" to not conflict with hue service
 
 ## Configuration
 
@@ -102,15 +102,11 @@ Example:
 
 ## Hue Webui TLS
 
-      hue_docker.ssl_enabled ?= true
-      if hue_docker.ssl_enabled
-        hue_docker.ssl ?=
-          cacert: ssl.cacert
-          cert: ssl.cert
-          key: ssl.key
-      throw Error "Required Option: ssl.cacert" if hue_docker.ssl_enabled and not hue_docker.ssl.cacert?
-      throw Error "Required Option: ssl.cert" if hue_docker.ssl_enabled and not hue_docker.ssl.cert?
-      throw Error "Required Option: ssl.key" if hue_docker.ssl_enabled and not hue_docker.ssl.key?
+      # hue_docker = ssl if hue_docker is true
+      hue_docker.ssl ?= ssl
+      throw Error "Required Option: ssl.cacert" if hue_docker.ssl and not hue_docker.ssl.cacert
+      throw Error "Required Option: ssl.cert" if hue_docker.ssl and not hue_docker.ssl.cert
+      throw Error "Required Option: ssl.key" if hue_docker.ssl and not hue_docker.ssl.key
       # HDFS & YARN url
       # NOTE: default to unencrypted HTTP
       # error is "SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed"
@@ -129,7 +125,7 @@ Example:
       else
         # Hue Install defines a dependency on HDFS client
         nn_protocol = if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-        nn_protocol = 'http' if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl.cacert
+        nn_protocol = 'http' if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP' # _AND_HTTPS and not hue.ssl?.cacert
         if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.ha.automatic-failover.enabled'] is 'true'
           nn_host = nn_ctxs[0].config.ryba.active_nn_host
           shortname = @contexts(hosts: nn_host)[0].config.shortname

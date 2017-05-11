@@ -170,7 +170,7 @@ Write trustore into /etc/hue/conf folder for hue to be able to connect as a
 client over ssl. Then the REQUESTS_CA_BUNDLE environment variable is set to the
 path  during docker run.
 
-      # hue_docker.ca_bundle = '' unless hue_docker.ssl.client_ca
+      # hue_docker.ca_bundle = '' unless hue_docker.ssl.cacert
       @file
         header: 'SSL Client'
         target: "#{hue_docker.ca_bundle}"

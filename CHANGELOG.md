@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* huedocker: refactor ssl usage
 * webhcat: fix metastore principal
 * webhcat: fix log4j
 * yarn: config normalisation when site not defined
