@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* webhcat: fix metastore principal
 * webhcat: fix log4j
 * yarn: config normalisation when site not defined
 * hdfs: krb5 password now required
