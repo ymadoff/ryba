@@ -74,9 +74,6 @@ inside "/etc/init.d" and activate it on startup.
           uid: hdfs.user.name
           gid: hadoop_group.name
           perm: '0750'
-        @system.execute
-          cmd: "service hadoop-hdfs-namenode restart"
-          if: -> @status -4
 
 ## Layout
 

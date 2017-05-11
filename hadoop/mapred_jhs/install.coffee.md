@@ -69,9 +69,6 @@ script inside "/etc/init.d" and activate it on startup.
           uid: mapred.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @system.execute
-          cmd: "service hadoop-mapreduce-historyserver restart"
-          if: -> @status -3
 
 ## Layout
 

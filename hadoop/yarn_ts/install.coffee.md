@@ -65,9 +65,6 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           uid: yarn.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @system.execute
-          cmd: "service hadoop-yarn-timelineserver restart"
-          if: -> @status -4
 
 # Layout
 

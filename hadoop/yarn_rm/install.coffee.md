@@ -92,9 +92,6 @@ inside "/etc/init.d" and activate it on startup.
           uid: yarn.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @system.execute
-          cmd: "service hadoop-yarn-resourcemanager restart"
-          if: -> @status -4
 
       @call header: 'Layout', ->
         {yarn, hadoop_group} = @config.ryba
