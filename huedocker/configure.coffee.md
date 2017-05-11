@@ -27,7 +27,7 @@ Example:
     "desktop": {
       "database":
         "engine": "mysql",
-        "password": "hue123"
+        "password": "Hue123-"
       "custom": {
         "banner_top_html": "HADOOP : PROD"
       }
@@ -251,7 +251,7 @@ Example:
       hue_docker.ini['desktop']['time_zone'] ?= 'Etc/UCT'
       hue_docker.ini.desktop.database ?= {}
       hue_docker.ini.desktop.database.user ?= 'hue'
-      hue_docker.ini.desktop.database.password ?= 'hue123'
+      throw Error "Required Property: hue_docker.ini.desktop.database.password" unless hue_docker.ini.desktop.database.password
       hue_docker.ini.desktop.database.name ?= 'hue3'
       # Desktop database
       hue_docker.ini['desktop']['database'] ?= {}

@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* huedocker: password required
 * huedocker: refactor ssl usage
 * webhcat: fix metastore principal
 * webhcat: fix log4j
