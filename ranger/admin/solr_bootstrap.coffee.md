@@ -119,6 +119,8 @@ We manage creating the ranger_audits core/collection in the three modes.
         @system.execute
           cmd: """
           #{solr["#{ranger.admin.solr_type}"]['latest_dir']}/bin/solr create_collection -c ranger_audits \
+          -shards #{@contexts('ryba/solr/cloud').length}  \
+          -replicationFactor #{@contexts('ryba/solr/cloud').length-1}
           -d  #{tmp_dir}/ranger_audits
           """
           unless_exec: "#{solr[ranger.admin.solr_type]['latest_dir']}/bin/solr healthcheck -c ranger_audits"
@@ -131,50 +133,60 @@ Note: Compatible with every version of docker available at this time.
         if: ranger.admin.solr_type is 'cloud_docker'
         header:'Create Ranger Collection (cloud_docker)'
         retry: 2 #needed whensolr node are slow to start
-      , ->
-        @connection.wait
-          host: cluster_config['master']
-          port: cluster_config['port']
-        @docker.exec
-          container: cluster_config.master_container_runtime_name
-          cmd: "/usr/solr-cloud/current/bin/solr healthcheck -c ranger_audits"
-          code_skipped: [1,126]
-        @docker.exec
-          unless: -> @status -1
-          container: cluster_config.master_container_runtime_name
-          cmd: """
-          /usr/solr-cloud/current/bin/solr create_collection -c ranger_audits \
-            -shards #{@contexts('ryba/solr/cloud_docker').length}  \
-            -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
-            -d /ranger_audits
-          """
-        @call
-          header: 'Create Users and Permissions'
-          if: cluster_config.security.authentication['class'] is 'solr.BasicAuthPlugin'
-        , ->
-          @call header: 'Create Users', ->
-            url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authentication"
-            cmd = 'curl --fail --insecure'
-            cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
-            for user in ranger.admin.solr_users
-              @system.execute
-                cmd: """
-                #{cmd} \
-                  #{url} -H 'Content-type:application/json' \
-                  -d '#{JSON.stringify('set-user':"#{user.name}":"#{user.secret}")}'
+      , (options) ->
+          container = null
+          @connection.wait
+            host: cluster_config['master']
+            port: cluster_config['port']
+          @system.execute
+            debug: true
+            cmd: docker.wrap options, "ps | grep #{ranger.admin.cluster_name.split('_').join('')} | grep #{cluster_config['master']} | awk '{print $1}'"
+          , (err, status, stdout) ->
+            throw err if err
+            container = stdout.trim()
+          @call
+            header: 'Create Collection'
+          , ->
+            @docker.exec
+              container: container
+              cmd: "/usr/solr-cloud/current/bin/solr healthcheck -c ranger_audits"
+              code_skipped: [1,126]
+            @docker.exec
+              unless: -> @status -1
+              container: container
+              cmd: """
+                /usr/solr-cloud/current/bin/solr create_collection -c ranger_audits \
+                  -shards #{@contexts('ryba/solr/cloud_docker').length}  \
+                  -replicationFactor #{@contexts('ryba/solr/cloud_docker').length-1} \
+                  -d /ranger_audits
                 """
-          @call header: 'Set ACL Users', ->
-            url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authorization"
-            cmd = 'curl --fail --insecure'
-            cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
-            for user in cluster_config.ranger.solr_users
-              new_role = "#{user.name}": ['read','update','admin']
-              @system.execute
-                cmd: """
-                #{cmd} \
-                  #{url} -H 'Content-type:application/json' \
-                  -d '#{JSON.stringify('set-user-role': new_role )}'
-                """
+          @call
+            header: 'Create Users and Permissions'
+            if: cluster_config.security.authentication['class'] is 'solr.BasicAuthPlugin'
+          , ->
+            @call header: 'Create Users', ->
+              url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authentication"
+              cmd = 'curl --fail --insecure'
+              cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
+              for user in ranger.admin.solr_users
+                @system.execute
+                  cmd: """
+                  #{cmd} \
+                    #{url} -H 'Content-type:application/json' \
+                    -d '#{JSON.stringify('set-user':"#{user.name}":"#{user.secret}")}'
+                  """
+            @call header: 'Set ACL Users', ->
+              url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authorization"
+              cmd = 'curl --fail --insecure'
+              cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
+              for user in cluster_config.ranger.solr_users
+                new_role = "#{user.name}": ['read','update','admin']
+                @system.execute
+                  cmd: """
+                  #{cmd} \
+                    #{url} -H 'Content-type:application/json' \
+                    -d '#{JSON.stringify('set-user-role': new_role )}'
+                  """
 
 ## Zookeeper Znode ACL
 
@@ -189,6 +201,9 @@ Note: Compatible with every version of docker available at this time.
           setAcl /#{zk_node} sasl:#{solr.user.name}:cdrwa
         """
 
-    mkcmd = require '../../lib/mkcmd'
+## Dependencies
 
+    mkcmd = require '../../lib/mkcmd'
+    docker = require 'nikita/lib/misc/docker'
+    
 [ranger-solr-script]:(https://community.hortonworks.com/questions/29291/ranger-solr-script-create-ranger-audits-collection.html)
