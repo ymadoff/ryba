@@ -1,23 +1,93 @@
 # Elasticsearch (Docker) Install
 
     module.exports =  header: 'Docker ES Install', handler: ->
-      {swarm_manager,clusters,ssl} = @config.ryba.es_docker
+      {swarm_manager,clusters,ssl,sysctl} = @config.ryba.es_docker
+      elasticsearch = @config.ryba.elasticsearch
+
+      @system.group elasticsearch.group
+      @system.user elasticsearch.user
+
+      @system.limits
+        header: 'Ulimit'
+        user: elasticsearch.user.name
+      , elasticsearch.user.limits
+
+      @call header: 'Kernel', (_, next) ->
+        @system.execute
+          if: Object.keys(sysctl).length
+          cmd: 'sysctl -a'
+          stdout: null
+          shy: true
+        , (err, _, content) ->
+          throw err if err
+          content = misc.ini.parse content
+          properties = {}
+          for k, v of sysctl
+            v = "#{v}"
+            properties[k] = v if content[k] isnt v
+          return next null, false unless Object.keys(properties).length
+          @fs.readFile '/etc/sysctl.conf', 'ascii', (err, config) =>
+            current = misc.ini.parse config
+            #merge properties from current config
+            for k, v of current
+              properties[k] = v if sysctl[k] isnt v
+            @file
+              header: 'Write Kernel Parameters'
+              target: '/etc/sysctl.conf'
+              content: misc.ini.stringify_single_key properties
+              backup: true
+              eof: true
+            , (err) ->
+              throw err if err
+              properties = for k, v of properties then "#{k}='#{v}'"
+              properties = properties.join ' '
+              @system.execute
+                cmd: "sysctl #{properties}"
+              , next
+
+## SSL Certificate
+
+      @file.download
+        source: ssl.cacert
+        target: ssl.dest_cacert
+        mode: 0o0640
+        shy: true
+      @file.download
+        source: ssl.cert
+        target: ssl.dest_cert
+        mode: 0o0640
+        shy: true
+      @file.download
+        source: ssl.key
+        target: ssl.dest_key
+        mode: 0o0640
+        shy: true
 
       es_servers =  @contexts('ryba/esdocker').map((ctx) -> ctx.config.host)
       for es_name,es of clusters then do (es_name,es) =>
         docker_services = {}
         docker_networks = {}
 
+
         @file.yaml
-          header: 'elasticsearch'
+          header: 'elasticsearch config file'
           target: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
           content:es.config
           backup: true
 
+
+        @file.render
+          header: 'elasticsearch java policy'
+          target: "/etc/elasticsearch/#{es_name}/conf/java.policy"
+          source: "#{__dirname}/resources/java.policy.j2"
+          local: true
+          context: {es: logs_path: "#{es.logs_path}/#{es_name}"}
+          backup: true
+
         @file
           header: 'elasticsearch logging'
-          target: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
-          source: "#{__dirname}/resources/logging.yml"
+          target: "/etc/elasticsearch/#{es_name}/conf/log4j2.properties"
+          source: "#{__dirname}/resources/log4j2.properties"
           local: true
           backup: true
 
@@ -33,7 +103,7 @@
           extract_target  = if options.value.indexOf("github") != -1  then "#{es.plugins_path}/#{es.es_version}/" else "#{es.plugins_path}/#{es.es_version}/#{options.key}"
           @call header: "Plugin #{options.key} installation...", ->
             @file.download
-              cache_file: "/apps/Downloads/ryba/cache/#{options.key}.zip"
+              cache_file: "./#{options.key}.zip"
               source: options.value
               target: "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip"
               uid: "elasticsearch"
@@ -48,23 +118,6 @@
             @system.remove "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip", shy: true
           @then callback
 
-## SSL Certificate
-
-        @file.download
-          source: ssl.cacert
-          target: ssl.dest_cacert
-          mode: 0o0640
-          shy: true
-        @file.download
-          source: ssl.cert
-          target: ssl.dest_cert
-          mode: 0o0640
-          shy: true
-        @file.download
-          source: ssl.key
-          target: ssl.dest_key
-          mode: 0o0640
-          shy: true
 
 ## Generate compose file
 
@@ -77,18 +130,20 @@
             "#{es.normalized_name}_master_data"
           es.volumes = [
             "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml",
-            "/etc/elasticsearch/#{es_name}/conf/logging.yml:/usr/share/elasticsearch/config/logging.yml",
+            "/etc/elasticsearch/#{es_name}/conf/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties",
             "/etc/elasticsearch/#{es_name}/scripts:/usr/share/elasticsearch/config/scripts",
-            "#{es.logs_path}/#{es_name}:#{es.config['path.logs']}"
+            "#{es.logs_path}/#{es_name}:#{es.config['path.logs']}",
+            "/etc/elasticsearch/#{es_name}/conf/java.policy:/usr/share/elasticsearch/config/java.policy"
 
           ].concat es.volumes
           es.volumes.push "#{path}/#{es_name}/:#{path}" for path in es.data_path
+          # es.volumes.push "#{es.plugins_path}/#{es.es_version}/#{plugin}:/usr/share/elasticsearch/plugins/#{plugin}" for plugin in es.plugins
           for type,es_node of es.nodes
             command = switch type
-              when "master" then "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{master_node}_1 -Des.node.master=true -Des.node.data=false"
-              when "master_data" then "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{master_node}_1 -Des.node.master=true -Des.node.data=true"
-              when "data" then "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{master_node}_1 -Des.node.master=false -Des.node.data=true"
-            docker_services[type] = {'environment' : [es.environment,"ES_HEAP_SIZE=#{es_node.heap_size}","bootstrap.memory_lock=true"] }
+              when "master" then "elasticsearch -Ediscovery.zen.ping.unicast.hosts=#{master_node}_1 -Enode.master=true -Enode.data=false"
+              when "master_data" then "elasticsearch -Ediscovery.zen.ping.unicast.hosts=#{master_node}_1 -Enode.master=true -Enode.data=true"
+              when "data" then "elasticsearch -Ediscovery.zen.ping.unicast.hosts=#{master_node}_1 -Enode.master=false -Enode.data=true"
+            docker_services[type] = {'environment' : [es.environment,"ES_JAVA_OPTS=-Xms#{es_node.heap_size} -Xmx#{es_node.heap_size} -Djava.security.policy=/usr/share/elasticsearch/config/java.policy","bootstrap.memory_lock=true"] }
             service_def = 
               image : es.docker_es_image
               restart: "always"
@@ -108,7 +163,7 @@
             misc.merge docker_services[type], service_def
           if es.kibana?
             docker_services["#{es_name}_kibana"] = 
-              image: es.kibana_image
+              image: es.docker_kibana_image
               container_name: "#{es_name}_kibana"
               environment: ["ELASTICSEARCH_URL=http://#{master_node}_1:9200"]
               ports: ["#{es.kibana.port}:5601"]
@@ -127,7 +182,6 @@
             "export DOCKER_HOST=#{swarm_manager};export DOCKER_CERT_PATH=#{ssl.dest_dir};export DOCKER_TLS_VERIFY=1"
             ]
 
-          @docker_status container:"#{master_node}_1", docker:docker_args
           for service,node of es.nodes then do (service,node) =>
             @system.execute
               cmd:"""
@@ -135,7 +189,6 @@
               pushd /etc/elasticsearch/#{es_name}
               docker-compose --verbose scale #{service}=#{node.number}
               """
-              unless: -> @status -1
 
           @system.execute
             cmd:"""
@@ -143,7 +196,7 @@
             pushd /etc/elasticsearch/#{es_name}
             docker-compose --verbose up -d #{es_name}_kibana
             """
-            if: -> es.kibana is true and @status (-1)
+            if: -> es.kibana is true
 
 ## Dependencies
 

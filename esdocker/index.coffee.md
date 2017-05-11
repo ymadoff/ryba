@@ -9,7 +9,7 @@ Ryba can deploy Elasticsearch in the  secured Hadoop cluster.
 
 Elastic search configuration for hadoop can be found at [Hortonworks Section](hortonworks.com/blog/configure-elastic-search-hadoop-hdp-2-0)
 
-    module.exports = ->
+    module.exports =
       configure: 
         'ryba/esdocker/configure'
       commands:

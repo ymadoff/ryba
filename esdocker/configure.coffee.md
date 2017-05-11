@@ -43,8 +43,31 @@
 
 ## Source Code
 
-    module.exports = handler: ->
+    module.exports = ->
+      elasticsearch = @config.ryba.elasticsearch ?= {}
       es_docker = @config.ryba.es_docker ?= {}
+
+## User and Groups
+
+      # User
+      elasticsearch.user = name: elasticsearch.user if typeof elasticsearch.user is 'string'
+      elasticsearch.user ?= {}
+      elasticsearch.user.name ?= 'elasticsearch'
+      elasticsearch.user.system ?= true
+      elasticsearch.user.comment ?= 'elasticsearch User'
+      elasticsearch.user.home ?= '/var/lib/elasticsearch'
+      # Group
+      elasticsearch.group = name: elasticsearch.group if typeof elasticsearch.group is 'string'
+      elasticsearch.group ?= {}
+      elasticsearch.group.name ?= 'elasticsearch'
+      elasticsearch.group.system ?= true
+      elasticsearch.user.limits ?= {}
+      elasticsearch.user.limits.nofile ?= 65536
+      elasticsearch.user.limits.nproc ?= 10000
+      elasticsearch.user.gid = elasticsearch.group.name
+
+## Elastic config
+
       es_docker.clusters ?= {}
       es_docker.ssl ?= {}
       throw Error 'Required property "ryba.ssl.cacert" or "ryba.es_docker.ssl.cacert"' unless @config.ryba.ssl?.cacert? or es_docker.ssl.cacert?
@@ -58,16 +81,18 @@
       es_docker.ssl.dest_cert = "#{es_docker.ssl.dest_dir}/cert.pem"
       es_docker.ssl.dest_key = "#{es_docker.ssl.dest_dir}/key.pem"
       es_docker.graphite ?= @config.metrics_sinks.graphite = {}
-      # console.log @contexts('ryba/esdocker')[0]?.config.host is @config.host
+
+      es_docker.sysctl ?= {}
+      es_docker.sysctl["vm.max_map_count"] = 262144
+
       for es_name,es of es_docker.clusters 
         delete es_docker.clusters[es_name] unless es.only
-      # console.log es_docker.clusters
       for es_name,es of es_docker.clusters
         es.normalized_name="#{es_name.replace(/_/g,"")}"
         #Docker:
-        es.es_version ?= "2.3.3"
-        es.docker_es_image = "dc-registry-bigdata.noe.edf.fr/elasticsearch:#{es.es_version}b"
-        es.docker_kibana_image ?= "kibana:4.5"
+        es.es_version ?= "5.3.1"
+        es.docker_es_image = "dc-registry-bigdata.noe.edf.fr/elasticsearch:#{es.es_version}"
+        es.docker_kibana_image ?= "dc-registry-bigdata.noe.edf.fr/kibana:4.5"
         es.docker_logstash_image ?= "logstash"
         #Cluster
         es.number_of_containers ?= @contexts('ryba/docker-es').length
@@ -76,8 +101,9 @@
         es.data_path ?= ["/data/1","/data/2","/data/3","/data/4","/data/5","/data/6","/data/7","/data/8"]
         es.logs_path ?= "/var/hadoop_log/docker/es"
         es.plugins_path ?= "/etc/elasticsearch/plugins"
-        es.scripts_path ?= "/etc/elasticsearch/plugins"
-        es.plugins ?= ["royrusso/elasticsearch-HQ","delete-by-query","mobz/elasticsearch-head","karmi/elasticsearch-paramedic/2.0"]
+        # es.scripts_path ?= "/etc/elasticsearch/plugins"
+        # es.plugins ?= ["royrusso/elasticsearch-HQ","mobz/elasticsearch-head","karmi/elasticsearch-paramedic/2.0"]
+        es.plugins ?= []
         es.volumes ?= []
         es.downloaded_urls = {}
         es.default_mem = '2g'
@@ -85,11 +111,16 @@
         es.default_cpu_quota = 100000
 
         nofile = {}
-        nofile.soft=65536
-        nofile.hard=65536
+        nofile.soft = 65536
+        nofile.hard = 65536
+
+        memlock = {}
+        memlock.soft = 9999999999
+        memlock.hard = 9999999999
 
         es.ulimits ?= {}
         es.ulimits.nofile = nofile
+        es.ulimits.memlock = memlock
 
         es.cap_add ?= ["IPC_LOCK"]
 
@@ -130,37 +161,30 @@
         es.total_nodes = es.master_nodes + es.data_nodes + es.master_data_nodes
         #ES Config file
         es.config = {}
-        es.config["bootstrap.mlockall"] = true
         es.config["network.host"] = "0.0.0.0"
         es.config["cluster.name"] = "#{es_name}"
-        es.config["cluster.number_of_shards"] = es.number_of_shards
-        es.config["cluster.number_of_replicas"] = es.number_of_replicas
         es.config["path.data"] = "#{es.data_path}"
         es.config["path.logs"] = "/var/log/elasticsearch"
-        # reload scirpts every 12h
-        es.config["resource.reload.interval"] = "43200s" 
-        es.config["discovery.zen.minimum_master_nodes"] = Math.floor(es.total_nodes / 2) + 1
+        es.config["script.engine.painless.inline"] = true
+        es.config["discovery.zen.minimum_master_nodes"] = Math.floor((es.master_data_nodes+es.master_nodes) / 2) + 1
+        es.config["discovery.zen.master_election.ignore_non_master_pings"] = true
         es.config["gateway.expected_nodes"] = es.total_nodes
         es.config["gateway.recover_after_nodes"] = es.total_nodes - 1
-        if es.graphite?
-          throw Error 'Required property "graphite.host"' unless docker_es.graphite.host?
-          throw Error 'Required property "graphite.port"' unless docker_es.graphite.port?
-          es.config["metrics.graphite.host"] = docker_es.graphite.host
-          es.config["metrics.graphite.port"] = docker_es.graphite.port
-          es.config["metrics.graphite.every"] = docker_es.graphite.every ?= "10s"
-          es.config["metrics.graphite.prefix"] = "es.#{es_name}.${HOSTNAME}"
-        # es plugins urls
+        es.config["xpack.security.enabled"] = false
+
+## Plugins
+
         es.plugins_urls = {}
         official_plugins = [
           "analysis-icu",
           "analysis-kuromoji",
+          "delete-by-query",
           "analysis-phonetic",
           "analysis-smartcn",
           "analysis-stempel",
           "cloud-aws",
           "cloud-azure",
           "cloud-gce",
-          "delete-by-query",
           "discovery-multicast",
           "lang-javascript",
           "lang-python",
