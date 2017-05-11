@@ -18,6 +18,7 @@
       yarn.ats.conf_dir ?= '/etc/hadoop-yarn-timelineserver/conf'
       yarn.ats.opts ?= ''
       yarn.ats.heapsize ?= '1024'
+      yarn.site ?= {}
       # The hostname of the Timeline service web application.
       yarn.site['yarn.timeline-service.hostname'] ?= @config.host
       hostname = yarn.site['yarn.timeline-service.hostname']

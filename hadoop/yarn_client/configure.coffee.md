@@ -18,6 +18,7 @@
       ryba.yarn.opts ?= ''
       ryba.yarn.heapsize ?= '1024'
       ryba.yarn.home ?= '/usr/hdp/current/hadoop-yarn-client'
+      ryba.yarn.site ?= {}
       ryba.yarn.site['yarn.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # Configure yarn
       # Fix yarn application classpath, some application like the distributed shell

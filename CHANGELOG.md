@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* yarn: config normalisation when site not defined
 * hdfs: krb5 password now required
 * ambari server: re-ordonnate ambari-server init and security
 * src: factor multi string indentation
