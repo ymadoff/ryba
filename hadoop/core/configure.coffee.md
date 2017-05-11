@@ -192,7 +192,7 @@ Kerberos user for HDFS
 
       ryba.hdfs.krb5_user ?= {}
       ryba.hdfs.krb5_user.principal ?= "#{ryba.hdfs.user.name}@#{realm}"
-      ryba.hdfs.krb5_user.password ?= 'password'
+      throw Error "Required Property: ryba.hdfs.krb5_user.password" unless ryba.hdfs.krb5_user.password
 
 Configuration for HTTP
 
