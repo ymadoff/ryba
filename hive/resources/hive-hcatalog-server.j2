@@ -37,7 +37,7 @@ GROUP='{{hive.group.name}}'
 RUN_DIR='{{hive.hcatalog.pid_dir}}'
 PID_FILE="${RUN_DIR}/hive-hcatalog.pid"
 CONF_DIR={{hive.hcatalog.conf_dir}}
-CMD="su -l $USER -c \"nohup hive --config ${CONF_DIR} --service metastore >{{hive.hcatalog.log_dir}}/hcatalog.out 2>{{hive.hcatalog.log_dir}}/hcatalog.err & echo \\\$! >$PID_FILE\""
+CMD="su -l $USER -c \"nohup /usr/hdp/current/hive-metastore/bin/hive --config ${CONF_DIR} --service metastore >{{hive.hcatalog.log_dir}}/hcatalog.out 2>{{hive.hcatalog.log_dir}}/hcatalog.err & echo \\\$! >$PID_FILE\""
 KILL_FORCE=0
 KILL_SLEEP=10
 
