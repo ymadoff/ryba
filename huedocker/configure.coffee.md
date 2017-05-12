@@ -70,7 +70,7 @@ Example:
       hue_docker.build.directory ?= "#{@config.nikita.cache_dir}/huedocker/cache/build" # was '/tmp/ryba/hue-build'
       hue_docker.prod ?= {}
       hue_docker.prod.directory ?= "#{@config.nikita.cache_dir}/huedocker/cache/prod"
-      hue_docker.prod.file ?= "#{hue_docker.prod.directory}/Dockerfile"
+      hue_docker.prod.dockerfile ?= "#{__dirname}/resources/prod/Dockerfile"
       hue_docker.prod.tar ?= 'hue_docker.tar'
       hue_docker.port ?= '8888'
       hue_docker.image_dir ?= '/tmp'

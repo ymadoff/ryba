@@ -1,6 +1,6 @@
 # RUN HUE
 
-FROM centos:6.6
+FROM centos:6.8
 
 # YUM #
 

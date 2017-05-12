@@ -1,4 +1,4 @@
-FROM centos:6.6
+FROM centos:6.8
 
 MAINTAINER Lucas Bakalian <https://github.com/lucasbak>
 
@@ -39,9 +39,9 @@ ENV JAVA_HOME /usr/java/default
 
 #  MAVEN INSTALL  #
 
-RUN wget http://apache.websitebeheerjd.nl/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.zip
-RUN unzip apache-maven-3.3.3-bin.zip
-RUN mv apache-maven-3.3.3/ /opt/maven
+RUN wget http://mirrors.ircam.fr/pub/apache/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.zip
+RUN unzip apache-maven-3.5.0-bin.zip
+RUN mv apache-maven-3.5.0/ /opt/maven
 ENV MAVEN_HOME /opt/maven
 ENV PATH $MAVEN_HOME/bin:$PATH
 RUN export PATH MAVEN_HOME
