@@ -41,6 +41,9 @@
         ,
           match: /^-Xmx.*$/m
           replace: "-Xmx#{druid.historical.jvm.xmx}"
+        ,
+          match: /^-XX:MaxDirectMemorySize=.*$/m
+          replace: "-XX:MaxDirectMemorySize=#{druid.historical.jvm.max_direct_memory_size}"
         ]
       @system.mkdir (
         target: "#{path.resolve druid.dir, location.path}"

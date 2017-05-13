@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* druid: default values for max direct memory size
 * ambari server: wait before check
 * oozie: improve and isolate checks
 * src: refactor wait to prepare options

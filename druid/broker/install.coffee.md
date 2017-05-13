@@ -39,4 +39,7 @@
         ,
           match: /^-Xmx.*$/m
           replace: "-Xmx#{druid.broker.jvm.xmx}"
+        ,
+          match: /^-XX:MaxDirectMemorySize=.*$/m
+          replace: "-XX:MaxDirectMemorySize=#{druid.broker.jvm.max_direct_memory_size}"
         ]

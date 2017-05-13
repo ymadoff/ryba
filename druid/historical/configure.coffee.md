@@ -47,3 +47,4 @@ your specific hardware. The most commonly adjusted configurations are:
       druid.historical.jvm ?= {}
       druid.historical.jvm.xms ?= '8g'
       druid.historical.jvm.xmx ?= '8g'
+      druid.historical.jvm.max_direct_memory_size ?= druid.historical.jvm.xmx # Default is 4G

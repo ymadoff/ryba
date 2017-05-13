@@ -45,3 +45,4 @@ your specific hardware. The most commonly adjusted configurations are:
       druid.broker.jvm ?= {}
       druid.broker.jvm.xms ?= '24g'
       druid.broker.jvm.xmx ?= '24g'
+      druid.broker.jvm.max_direct_memory_size ?= druid.broker.jvm.xmx # Default is 4G
