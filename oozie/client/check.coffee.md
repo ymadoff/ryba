@@ -3,6 +3,7 @@
 
     module.exports = header: 'Oozie Client Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check, user, core_site, yarn, oozie} = @config.ryba
+      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
       hs2_ctxs = @contexts 'ryba/hive/server2'
       [ranger_admin] = @contexts 'ryba/ranger/admin'
 
@@ -36,7 +37,6 @@
 ## Check HDFS Workflow
 
       @call header: 'Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
-        rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
           shortname = ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}"
@@ -98,7 +98,6 @@
 ## Check MapReduce Workflow
 
       @call header: 'Check MapReduce', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
-        rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
           # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
@@ -202,7 +201,6 @@
 ## Check Pig Workflow
 
       @call header: 'Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
-        rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
           # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
@@ -335,7 +333,6 @@
 # </workflow-app>
 
       @call skip: true, header: 'Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
-        rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
           # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
@@ -359,7 +356,7 @@
           oozie.wf.application.path=${basedir}
           oozie.use.system.libpath=true
           """
-          target: "#{user.home}/check_oozie_pig/job.properties"
+          target: "#{user.home}/check_oozie_hcat/job.properties"
           uid: user.name
           gid: user.group
           eof: true
@@ -406,7 +403,7 @@
             <end name='end' />
           </workflow-app>
           """
-          target: "#{user.home}/check_oozie_pig/workflow.xml"
+          target: "#{user.home}/check_oozie_hcat/workflow.xml"
           uid: user.name
           gid: user.group
           eof: true
@@ -418,7 +415,7 @@
           D = foreach C generate COUNT(B), group;
           store D into '$OUTPUT' USING PigStorage();
           """
-          target: "#{user.home}/check_oozie_pig/wordcount.pig"
+          target: "#{user.home}/check_oozie_hcat/wordcount.pig"
           uid: user.name
           gid: user.group
           eof: true
@@ -427,11 +424,11 @@
           hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-pig 2>/dev/null
           hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-pig/input
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{@config.shortname}-oozie-pig/input/data
-          hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{@config.shortname}-oozie-pig
-          hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{@config.shortname}-oozie-pig
+          hdfs dfs -put -f #{user.home}/check_oozie_hcat/workflow.xml check-#{@config.shortname}-oozie-pig
+          hdfs dfs -put -f #{user.home}/check_oozie_hcat/wordcount.pig check-#{@config.shortname}-oozie-pig
           export OOZIE_URL=#{oozie.site['oozie.base.url']}
-          oozie job -dryrun -config #{user.home}/check_oozie_pig/job.properties
-          jobid=`oozie job -run -config #{user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+          oozie job -dryrun -config #{user.home}/check_oozie_hcat/job.properties
+          jobid=`oozie job -run -config #{user.home}/check_oozie_hcat/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
           i=0
           echo $jobid
           while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
@@ -494,7 +491,6 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
           code_skippe: 22
 
       @call header: 'Check Hive2 Workflow (No ZK)', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
-        rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
           # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
@@ -510,7 +506,7 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
         # Constructs Hiveserver2 jdbc url
         for hs2_ctx in hs2_ctxs
           # {hive} = hs2_ctx.config.ryba
-          db = "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
+          db = "check_#{@config.shortname}_oozie_hs2_nozk_#{hs2_ctx.config.shortname}"
           port = if hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'http'
           then hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.http.port']
           else hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.port']
@@ -562,13 +558,13 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
                   <job-tracker>${jobTracker}</job-tracker>
                   <name-node>${nameNode}</name-node>
                   <prepare>
-                      <delete path="${nameNode}/user/${wf:user()}/#{workflow_dir}/second_table"/>
+                    <delete path="${nameNode}/user/${wf:user()}/#{workflow_dir}/second_table"/>
                   </prepare>
                   <configuration>
-                      <property>
-                          <name>mapred.job.queue.name</name>
-                          <value>${queueName}</value>
-                      </property>
+                    <property>
+                      <name>mapred.job.queue.name</name>
+                      <value>${queueName}</value>
+                    </property>
                   </configuration>
                   <jdbc-url>${jdbcURL}</jdbc-url>
                   <script>hive.q</script>
@@ -611,21 +607,24 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
             hdfs dfs -put -f #{user.home}/#{workflow_dir}/workflow.xml #{workflow_dir}
             hdfs dfs -put -f #{user.home}/#{workflow_dir}/hive.q #{workflow_dir}
             hdfs dfs -put -f /etc/hive/conf/truststore #{workflow_dir}
+            echo "Run job"
             export OOZIE_URL=#{oozie.site['oozie.base.url']}
             oozie job -dryrun -config #{user.home}/#{workflow_dir}/job.properties
             jobid=`oozie job -run -config #{user.home}/#{workflow_dir}/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
             i=0
-            echo $jobid
+            echo "Job ID: $jobid"
+            echo "Wait"
             while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
             do ((i++)); sleep 1; done
+            echo "Print Status"
             oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
             """
             trap: false # or while loop will exit on first run
-            unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d #{workflow_dir}/result"
+            unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d /user/#{user.name}/#{db}/first_table"
+
 ## Check Spark Workflow
 
       @call header: 'Check Spark', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
-        rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
           # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure

@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* oozie: improve and isolate checks
 * src: refactor wait to prepare options
 * huedocker: update docker files preparation
 * huedocker: password required
