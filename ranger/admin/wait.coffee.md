@@ -9,7 +9,7 @@ Wait for Ranger Admin Policy Manager to start.
       port = ranger.admin.site["ranger.service.#{protocol}.port"]
       @wait.execute
         cmd: """
-          curl --fail -H \"Content-Type: application/json\"  -k -X GET \ 
+        curl --fail -H \"Content-Type: application/json\"  -k -X GET \ 
           -u admin:#{ranger.admin.password} \"#{ranger.admin.install['policymgr_external_url']}/service/users/1\"
         """
         code_skipped: [1,7,22]

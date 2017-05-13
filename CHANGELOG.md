@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* src: refactor wait to prepare options
 * huedocker: update docker files preparation
 * huedocker: password required
 * huedocker: refactor ssl usage

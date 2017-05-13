@@ -2,12 +2,13 @@
 # Druid Coordinator Wait
 
     module.exports = header: 'Druid Coordinator Wait', label_true: 'STOPPED', handler: ->
-      coordinators = @contexts 'ryba/druid/coordinator'
+      options = {}
+      options.wait_tcp = for coordinator in @contexts 'ryba/druid/coordinator'
+        host: coordinator.config.host
+        port: coordinator.config.ryba.druid.coordinator.runtime['druid.port']
+
+## TCP Port
+
       @connection.wait
-        servers: for coordinator in coordinators
-          host: coordinator.config.host
-          port: coordinator.config.ryba.druid.coordinator.runtime['druid.port']
-
-## Dependencies
-
-    url = require 'url'
+        header: 'TCP'
+        servers: options.wait_tcp

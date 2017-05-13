@@ -4,10 +4,15 @@
 Wait for Atlas Metadata Server to start.
 
     module.exports = header: 'Atlas Wait', label_true: 'READY', handler: ->
-      atlas_servers = @contexts 'ryba/atlas'
+      options = {}
+      options.wait_http = for atlas_ctx in @contexts 'ryba/atlas'
+        host: atlas_ctx.config.host
+        port: if atlas_ctx.config.ryba.atlas.application.properties['atlas.enableTLS'] is 'true'
+        then atlas_ctx.config.ryba.atlas.application.properties["atlas.server.https.port"]
+        else atlas_ctx.config.ryba.atlas.application.properties["atlas.server.http.port"]
+
+## HTTP Port
+
       @connection.wait
-        servers: for atlas_ in atlas_servers
-          host: atlas_.config.host
-          port: if atlas_.config.ryba.atlas.application.properties['atlas.enableTLS'] is 'true'
-          then atlas_.config.ryba.atlas.application.properties["atlas.server.https.port"]
-          else atlas_.config.ryba.atlas.application.properties["atlas.server.http.port"]
+        header: 'HTTP'
+        servers: options.wait_http

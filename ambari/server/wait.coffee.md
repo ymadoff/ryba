@@ -4,7 +4,9 @@
     module.exports = header: 'Ambari Server Wait', timeout: -1, handler: ->
       [ambari_ctx] = @contexts 'ryba/ambari/server'
       {ambari_server} = ambari_ctx.config.ryba
-      
+
+## REST Access
+
       clusters_url = url.format
         protocol: unless ambari_server.config['api.ssl'] is 'true'
         then 'http'
@@ -16,6 +18,7 @@
         pathname: '/api/v1/clusters'
       cred = "admin:#{ambari_server.admin_password}"
       @wait.execute
+        header: 'REST'
         cmd: """
         curl -k -u #{cred} #{clusters_url}
         """

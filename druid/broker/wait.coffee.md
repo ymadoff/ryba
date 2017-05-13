@@ -2,12 +2,13 @@
 # Druid Broker Wait
 
     module.exports = header: 'Druid Broker Wait', label_true: 'STOPPED', handler: ->
-      brokers = @contexts 'ryba/druid/broker'
+      options = {}
+      options.wait_tcp = for broker in @contexts 'ryba/druid/broker'
+        host: broker.config.host
+        port: broker.config.ryba.druid.broker.runtime['druid.port']
+
+## TCP Port
+
       @connection.wait
-        servers: for broker in brokers
-          host: broker.config.host
-          port: broker.config.ryba.druid.broker.runtime['druid.port']
-
-## Dependencies
-
-    url = require 'url'
+        header: 'TCP'
+        servers: options.wait_tcp

@@ -19,12 +19,12 @@ Job History Server.
 
 ## IPTables
 
-| Service          | Port  | Proto | Parameter                     |
-|------------------|-------|-------|-------------------------------|
-| jobhistory | 10020 | http  | mapreduce.jobhistory.address        | x
-| jobhistory | 19888 | tcp   | mapreduce.jobhistory.webapp.address | x
-| jobhistory | 19889 | tcp   | mapreduce.jobhistory.webapp.https.address | x
-| jobhistory | 13562 | tcp   | mapreduce.shuffle.port              | x
+| Service    | Port  | Proto | Parameter                           |
+|------------|-------|-------|-------------------------------------|
+| jobhistory | 10020 | tcp   | mapreduce.jobhistory.address        |
+| jobhistory | 19888 | http  | mapreduce.jobhistory.webapp.address |
+| jobhistory | 19889 | https | mapreduce.jobhistory.webapp.https.address |
+| jobhistory | 13562 | tcp   | mapreduce.shuffle.port              |
 | jobhistory | 10033 | tcp   | mapreduce.jobhistory.admin.address  |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to

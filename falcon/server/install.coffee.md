@@ -19,10 +19,10 @@ each HDFS cluster.
 
 ## IPTables
 
-| Service   | Port       | Proto     | Parameter                   |
-|-----------|------------|-----------|-----------------------------|
-| Falcon Serveur    | 15443      | tcp/http  | prism.falcon.local.endpoint |
-| falcon Prism    | 16443      | tcp/http  | prism.falcon.local.endpoint |
+| Service        | Port       | Proto     | Parameter                   |
+|----------------|------------|-----------|-----------------------------|
+| Falcon Serveur | 15443      | tcp/http  | prism.falcon.local.endpoint |
+| falcon Prism   | 16443      | tcp/http  | prism.falcon.local.endpoint |
 
 Note, this hasnt been verified.
 
