@@ -6,6 +6,10 @@ Ambari server is started with the service's syntax command.
     module.exports = header: 'Ambari Server Check', label_true: 'STARTED', handler: ->
       {ambari_server} = @config.ryba
 
+Wait for the Ambari Server to be ready.
+
+      @call once: true, 'ryba/ambari/server/wait'
+
 ## Check HTTP Server
 
       clusters_url = url.format
