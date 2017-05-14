@@ -16,6 +16,7 @@
 ## Identities
 
       ambari_agent.group ?= ambari_server.group
+      ambari_agent.hadoop_group ?= ambari_server.hadoop_group
       ambari_agent.user ?= ambari_server.user
 
 ## Configuration

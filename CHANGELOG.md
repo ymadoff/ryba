@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* ambari server: create hadoop group
 * druid: default values for max direct memory size
 * ambari server: wait before check
 * oozie: improve and isolate checks

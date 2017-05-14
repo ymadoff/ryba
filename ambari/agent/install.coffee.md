@@ -3,14 +3,16 @@
 The ambari server must be set in the configuration file.
 
     module.exports = header: 'Ambari Agent Install', timeout: -1, handler: ->
-      {ambari_agent} = @config.ryba
+      options = @config.ryba.ambari_agent
+      options.host = @config.host
 
 ## Identities
 
 By default, the "ambari-agent" package does not create any identities.
 
-      @system.group header: 'Group', ambari_agent.group
-      @system.user header: 'User', ambari_agent.user
+      @system.group header: 'Group', options.group
+      @system.group header: 'Group Hadoop', options.hadoop_group
+      @system.user header: 'User', options.user
 
 ## Package & Repository
 
@@ -19,8 +21,8 @@ Install Ambari Agent package.
 
       @file.download
         header: 'Repo'
-        if: ambari_agent.repo
-        source: ambari_agent.repo
+        if: options.repo
+        source: options.repo
         target: '/etc/yum.repos.d/ambari.repo'
       @system.execute
         cmd: "yum clean metadata; yum update -y"
@@ -34,8 +36,8 @@ Install Ambari Agent package.
 
       @file.ini
         header: 'Configure'
-        target: "#{ambari_agent.conf_dir}/ambari-agent.ini"
-        content: ambari_agent.config
+        target: "#{options.conf_dir}/ambari-agent.ini"
+        content: options.config
         parse: misc.ini.parse_multi_brackets_multi_lines
         stringify: misc.ini.stringify_multi_brackets
         indent: ''
@@ -44,10 +46,10 @@ Install Ambari Agent package.
         backup: true
       @file
         header: 'Hostname Script'
-        target: ambari_agent.config.agent['hostname_script']
+        target: options.config.agent['hostname_script']
         content: """
         #!/bin/sh
-        echo #{@config.host}
+        echo #{options.host}
         """
         mode: 0o751
 
@@ -55,7 +57,7 @@ Install Ambari Agent package.
 ## Non-Root
 
       @file
-        if: ambari_agent.sudo
+        if: options.sudo
         target: '/etc/sudoers.d/ambari_agent'
         content: """
         # Ambari Customizable Users

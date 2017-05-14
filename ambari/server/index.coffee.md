@@ -9,6 +9,7 @@ manage and monitor a Hadoop cluster.
       use:
         java: module: 'masson/commons/java', recommanded: true
         db_admin: implicit: true, module: 'ryba/commons/db_admin'
+        hadoop: 'ryba/hadoop/core'
       configure: 'ryba/ambari/server/configure'
       commands:
         'ambari_blueprint': 'ryba/ambari/server/blueprint'

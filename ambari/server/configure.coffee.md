@@ -44,6 +44,7 @@
       [pg_ctx] = @contexts 'masson/commons/postgres/server'
       [my_ctx] = @contexts 'masson/commons/mysql/server'
       [maria_ctx] = @contexts 'masson/commons/mariadb/server'
+      [hadoop_ctx] = @contexts 'ryba/hadoop/core'
       @config.ryba ?= {}
       {db_admin} = @config.ryba
       # Init
@@ -79,6 +80,12 @@ Hadoop group. The default group name is "hadoop".
       ambari_server.group ?= {}
       ambari_server.group.name ?= 'ambari'
       ambari_server.group.system ?= true
+      ambari_server.hadoop_group ?= hadoop_ctx?.config.ryba.hadoop_group
+      ambari_server.hadoop_group = name: ambari_server.group if typeof ambari_server.group is 'string'
+      ambari_server.hadoop_group ?= {}
+      ambari_server.hadoop_group.name ?= 'hadoop'
+      ambari_server.hadoop_group.system ?= true
+      ambari_server.hadoop_group.comment ?= 'Hadoop Group'
       # User
       ambari_server.user = name: ambari_server.user if typeof ambari_server.user is 'string'
       ambari_server.user ?= {}
