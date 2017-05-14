@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* ambari agent: dont wait for ambari server
 * ambari server: create hadoop group
 * druid: default values for max direct memory size
 * ambari server: wait before check
