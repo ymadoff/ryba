@@ -9,7 +9,7 @@
         krb5_client: implicit: true, module: 'masson/core/krb5_client'
         krb5_user: implicit: true, module: 'ryba/commons/krb5_user'
         hadoop_core: 'ryba/hadoop/core'
-        hive_client: 'ryba/hive/client'
+        hive_client: implicit: true, module: 'ryba/hive/client'
         hive_hcatalog: 'ryba/hive/hcatalog'
         sqoop: 'ryba/sqoop'
         db_admin: 'ryba/commons/db_admin'
