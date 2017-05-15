@@ -219,7 +219,6 @@ Example:
       webhcat_ctxs = @contexts 'ryba/hive/webhcat'
       if webhcat_ctxs.length
         for webhcat_ctx in webhcat_ctxs
-          webhcat_ctx.config.ryba.webhcat.site['webhcat_ctxs'] ?= '*'
           webhcat_ctx.config.ryba.webhcat.site["webhcat.proxyuser.#{hue_docker.user.name}.users"] ?= '*'
           webhcat_ctx.config.ryba.webhcat.site["webhcat.proxyuser.#{hue_docker.user.name}.groups"] ?= '*'
       else
