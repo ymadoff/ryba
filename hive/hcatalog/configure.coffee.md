@@ -31,6 +31,7 @@ Example:
     module.exports = ->
       [pg_ctx] = @contexts 'masson/commons/postgres/server'
       [my_ctx] = @contexts 'masson/commons/mysql/server'
+      [ma_ctx] = @contexts 'masson/commons/mariadb/server'
       zk_ctxs = @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'participant')
       hive_hcatalog = @contexts 'ryba/hive/hcatalog'
       hadoop_ctxs = @contexts ['ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
@@ -168,6 +169,7 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
       else
         if pg_ctx then hive.hcatalog.db.engine ?= 'postgres'
         else if my_ctx then hive.hcatalog.db.engine ?= 'mysql'
+        else if ma_ctx then hive.hcatalog.db.engine ?= 'mysql'
         else hive.hcatalog.db.engine ?= 'derby'
         hive.hcatalog.db[k] ?= v for k, v of db_admin[hive.hcatalog.db.engine]
         hive.hcatalog.db.database ?= 'hive'
