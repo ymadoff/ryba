@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* shinken: add tests for Phoenix QS, Atlas, Ranger, WebHCat
 * ambari agent: dont wait for ambari server
 * ambari server: create hadoop group
 * druid: default values for max direct memory size

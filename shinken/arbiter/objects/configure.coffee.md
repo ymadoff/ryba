@@ -789,6 +789,16 @@ Theses functions are used to generate business rules
             services['OpenTSDB - WebService'].use ?= 'process-service'
             services['OpenTSDB - WebService']['_process_name'] ?= 'opentsdb'
             services['OpenTSDB - WebService'].check_command ?= "check_tcp!#{ryba.opentsdb.config['tsd.network.port']}"
+          if 'ryba/phoenix/queryserver' in ctx.services
+            w.modules.push 'phoenix_qs' if 'phoenix_qs' not in w.modules
+            h.hostgroups.push 'phoenix_qs' if 'phoenix_qs' not in h.hostgroups
+            services['Phoenix QueryServer - TCP'] ?= {}
+            services['Phoenix QueryServer - TCP'].hosts ?= []
+            services['Phoenix QueryServer - TCP'].hosts.push host
+            services['Phoenix QueryServer - TCP'].servicegroups ?= ['phoenix_qs']
+            services['Phoenix QueryServer - TCP'].use ?= 'process-service'
+            services['Phoenix QueryServer - TCP']['_process_name'] ?= 'phoenix-queryserver'
+            services['Phoenix QueryServer - TCP'].check_command ?= "check_tcp!#{ryba.phoenix.queryserver.site['phoenix.queryserver.http.port']}"
           if 'ryba/elasticsearch' in ctx.services
             w.modules.push 'elasticsearch' if 'elasticsearch' not in w.modules
             h.hostgroups.push 'elasticsearch' if 'elasticsearch' not in h.hostgroups
@@ -815,6 +825,26 @@ Theses functions are used to generate business rules
             services['Rexster - WebUI'].use ?= 'process-service'
             services['Rexster - WebUI']['_process_name'] ?= 'rexster'
             services['Rexster - WebUI'].check_command ?= "check_tcp!#{ryba.rexster.config.http['server-port']}"
+          if 'ryba/atlas' in ctx.services
+            w.modules.push 'atlas' if 'atlas' not in w.modules
+            h.hostgroups.push 'atlas' if 'atlas' not in h.hostgroups
+            services['Atlas - WebUI'] ?= {}
+            services['Atlas - WebUI'].hosts ?= []
+            services['Atlas - WebUI'].hosts.push host
+            services['Atlas - WebUI'].servicegroups ?= ['atlas']
+            services['Atlas - WebUI'].use ?= 'process-service'
+            services['Atlas - WebUI']['_process_name'] ?= 'atlas-metadata-server'
+            if ryba.atlas.application.properties['atlas.enableTLS'] is 'true'
+              services['Atlas - WebUI'].check_command ?= "check_tcp!#{ryba.atlas.application.properties['atlas.server.https.port']}"
+              services['Atlas - Certificate'] ?= {}
+              services['Atlas - Certificate'].hosts ?= []
+              services['Atlas - Certificate'].hosts.push host
+              services['Atlas - Certificate'].servicegroups ?= ['atlas']
+              services['Atlas - Certificate'].use ?= 'cert-service'
+              services['Atlas - Certificate'].check_command ?= "check_cert!#{ryba.atlas.application.properties['atlas.server.https.port']}!120!60"
+              create_dependency 'Atlas - Certificate', 'Atlas - WebUI', host
+            else
+              services['Atlas - WebUI'].check_command ?= "check_tcp!#{ryba.atlas.application.properties['atlas.server.http.port']}"
           if 'ryba/huedocker' in ctx.services
             w.modules.push 'hue' if 'hue' not in w.modules
             h.hostgroups.push 'hue' if 'hue' not in h.hostgroups
@@ -1048,6 +1078,13 @@ Theses functions are used to generate business rules
           services['Hiveserver2 - Available'].servicegroups ?= ['hiveserver2']
           services['Hiveserver2 - Available'].use ?= 'bp-service'
           services['Hiveserver2 - Available'].check_command ?= bp_has_one 'Hiveserver2 - TCP SSL', '$HOSTNAME$'
+        if 'webhcat' in w.modules
+          services['WebHCat - Available'] ?= {}
+          services['WebHCat - Available'].hosts ?= []
+          services['WebHCat - Available'].hosts.push clustername
+          services['WebHCat - Available'].servicegroups ?= ['webhcat']
+          services['WebHCat - Available'].use ?= 'bp-service'
+          services['WebHCat - Available'].check_command ?= bp_has_one 'WebHCat - WebService', '$HOSTNAME$'
         if 'oozie_server' in w.modules
           services['Oozie Server - Available'] ?= {}
           services['Oozie Server - Available'].hosts ?= []
@@ -1071,6 +1108,14 @@ Theses functions are used to generate business rules
           services['OpenTSDB - Available'].use ?= 'bp-service'
           services['OpenTSDB - Available'].check_command ?= bp_has_one 'OpenTSDB - WebService', '$HOSTNAME$'
           create_dependency 'OpenTSDB - Available', 'HBase - Available', clustername
+        if 'phoenix_qs' in w.modules
+          services['Phoenix QueryServer - Available'] ?= {}
+          services['Phoenix QueryServer - Available'].hosts ?= []
+          services['Phoenix QueryServer - Available'].hosts.push clustername
+          services['Phoenix QueryServer - Available'].servicegroups ?= ['phoenix_qs']
+          services['Phoenix QueryServer - Available'].use ?= 'bp-service'
+          services['Phoenix QueryServer - Available'].check_command ?= bp_has_one 'Phoenix QueryServer - TCP', '$HOSTNAME$'
+          create_dependency 'Phoenix QueryServer - Available', 'HBase - Available', clustername
         if 'elasticsearch' in w.modules
           services['ElasticSearch - Available'] ?= {}
           services['ElasticSearch - Available'].hosts ?= []
@@ -1078,6 +1123,20 @@ Theses functions are used to generate business rules
           services['ElasticSearch - Available'].servicegroups ?= ['elasticsearch']
           services['ElasticSearch - Available'].use ?= 'bp-service'
           services['ElasticSearch - Available'].check_command ?= bp_has_quorum 'ElasticSearch - TCP', '$HOSTNAME$'
+        if 'atlas' in w.modules
+          services['Atlas - Available'] ?= {}
+          services['Atlas - Available'].hosts ?= []
+          services['Atlas - Available'].hosts.push clustername
+          services['Atlas - Available'].servicegroups ?= ['atlas']
+          services['Atlas - Available'].use ?= 'bp-service'
+          services['Atlas - Available'].check_command ?= bp_has_one 'Atlas - WebUI', '$HOSTNAME$'
+        if 'ranger' in w.modules
+          services['Ranger - Available'] ?= {}
+          services['Ranger - Available'].hosts ?= []
+          services['Ranger - Available'].hosts.push clustername
+          services['Ranger - Available'].servicegroups ?= ['ranger']
+          services['Ranger - Available'].use ?= 'bp-service'
+          services['Ranger - Available'].check_command ?= bp_has_one 'Ranger - WebUI', '$HOSTNAME$'
         if 'knox' in w.modules
           services['Knox - Available'] ?= {}
           services['Knox - Available'].hosts ?= []
