@@ -95,7 +95,13 @@
 ## Content Configuration
 
       properties['nifi.content.repository.implementation'] ?= 'org.apache.nifi.controller.repository.FileSystemRepository'
-      properties['nifi.content.repository.directory.default'] ?= "#{nifi.user.home}/content_repository"
+      # the content repository should be in dedicated folders.
+      # if some content repositories are already configured, ryba considers that the default is disabled
+      # administrator can still enable it using 'nifi.content.repository.directory.default' property
+      nifi.use_content_default ?= true
+      for k in Object.keys properties
+        nifi.use_content_default = false if k.indexOf 'nifi.content.repository.directory.' isnt -1
+      properties['nifi.content.repository.directory.default'] ?= "#{nifi.user.home}/content_repository" if nifi.use_content_default
       properties['nifi.content.claim.max.appendable.size'] ?= '10 MB'
       properties['nifi.content.claim.max.flow.files'] ?= '100'
       properties['nifi.content.repository.archive.max.retention.period'] ?= '12 hours'
@@ -107,7 +113,13 @@
 ## Provenance Configuration
 
       properties['nifi.provenance.repository.implementation'] ?= 'org.apache.nifi.provenance.PersistentProvenanceRepository'
-      properties['nifi.provenance.repository.directory.default'] ?= "#{nifi.user.home}/provenance_repository"
+      # the content repository should be in dedicated folders.
+      # if some content repositories are already configured, ryba considers that the default is disabled
+      # administrator can still enable it using 'nifi.content.repository.directory.default' property
+      nifi.use_provenance_default ?= true
+      for k in Object.keys properties
+        nifi.use_provenance_default = false if k.indexOf 'nifi.provenance.repository.directory.' isnt -1
+      properties['nifi.provenance.repository.directory.default'] ?= "#{nifi.user.home}/provenance_repository" if nifi.use_provenance_default
       properties['nifi.provenance.repository.max.storage.time'] ?= '24 hours'
       properties['nifi.provenance.repository.max.storage.size'] ?= '1 GB'
       properties['nifi.provenance.repository.rollover.time'] ?= '30 secs'

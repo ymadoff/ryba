@@ -10,7 +10,7 @@ Once installed you can type hive in a prompt and the hive client shell wil launc
         hdfs_client: 'ryba/hadoop/hdfs_client'
         yarn_client: 'ryba/hadoop/yarn_client'
         mapred_client: 'ryba/hadoop/mapred_client'
-        tez: implicity: true, module: 'ryba/tez/configure'
+        tez: implicit: true, module: 'ryba/tez'
         hcat: 'ryba/hive/hcatalog'
         ranger_admin: 'ryba/ranger/admin'
       configure:
