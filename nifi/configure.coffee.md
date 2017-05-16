@@ -320,12 +320,17 @@
       nifi.log4j ?= {}
       nifi.log4j[k] ?= v for k, v of @config.log4j
 
+      nifi.logback ?= {}
       nifi.logback.version ?= "1.1.7"
+      nifi.logback.socketappender ?= {}
       nifi.logback.socketappender.version ?= "4.8"
-      nifi.logback.core.source ?= "http://central.maven.org/maven2/ch/qos/logback/logback-core/#{nifi.logback.version}/logback-core-#{nifi.logback.version}.jar"
-      nifi.logback.classic.source ?= "http://central.maven.org/maven2/ch/qos/logback/logback-core/#{nifi.logback.version}/logback-classic-#{nifi.logback.version}.jar"
-      nifi.logback.access.source ?= "http://central.maven.org/maven2/ch/qos/logback/logback-core/#{nifi.logback.version}/logback-access-#{nifi.logback.version}.jar"
       nifi.logback.socketappender.source ?= "http://central.maven.org/maven2/net/logstash/logback/logstash-logback-encoder/#{nifi.logback.socketappender.version}/logstash-logback-encoder-#{nifi.logback.socketappender.version}.jar"
+      nifi.logback.core ?= {}
+      nifi.logback.core.source ?= "http://central.maven.org/maven2/ch/qos/logback/logback-core/#{nifi.logback.version}/logback-core-#{nifi.logback.version}.jar"
+      nifi.logback.classic ?= {}
+      nifi.logback.classic.source ?= "http://central.maven.org/maven2/ch/qos/logback/logback-core/#{nifi.logback.version}/logback-classic-#{nifi.logback.version}.jar"
+      nifi.logback.access ?= {}
+      nifi.logback.access.source ?= "http://central.maven.org/maven2/ch/qos/logback/logback-core/#{nifi.logback.version}/logback-access-#{nifi.logback.version}.jar"
 
 ## Additional Libs
 
