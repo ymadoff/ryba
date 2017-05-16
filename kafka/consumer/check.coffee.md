@@ -269,7 +269,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
         header: 'Check SASL_PLAINTEXT'
         label_true: 'CHECKED'
         retry: 3
-        if: SASL_PLAINTEXT in ks_ctxs[0].config.ryba.kafka.broker.protocols
+        if: 'SASL_PLAINTEXT' in ks_ctxs[0].config.ryba.kafka.broker.protocols
       , ->
         brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
           "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.ports['SASL_PLAINTEXT']}"
