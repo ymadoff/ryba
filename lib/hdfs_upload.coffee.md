@@ -61,7 +61,7 @@
             echo 'lock exist, check if valid'
             timeout=240 # 4 minutes
             now=`date '+%s'`
-            crdate=$(hdfs dfs -stat $lock_file | xargs -0 date '+%s' -d)
+            crdate=$((`hdfs dfs -stat "%Y" $lock_file`/1000))
             if [ $(($now - $crdate)) -le $timeout ]; then
               sleep_time=$((240 - $crdate + $now + 5))
               echo crdate $crdate
