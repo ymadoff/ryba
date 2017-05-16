@@ -19,11 +19,11 @@
         <resetJUL>true</resetJUL>
     </contextListener>
 
-    <appender name="SOCKET" class="ch.qos.logback.classic.net.SocketAppender">
-      <remoteHost>{{log4j.remote_host}}</remoteHost>
-      <port>{{log4j.remote_port}}</port>
-      <reconnectionDelay>10000</reconnectionDelay>
-      <eventDelayLimit>100</eventDelayLimit>
+    <appender name="SOCKET" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>{{log4j.remote_host}}:{{log4j.remote_port}}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+           <customFields>{"application":"nifi"}</customFields>
+        </encoder>
     </appender>
 
     <appender name="APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
