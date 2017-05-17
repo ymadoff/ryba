@@ -52,8 +52,8 @@ Environment passed to Hadoop.
         eof: true
       # .write
       #   target: "#{hadoop_conf_dir}/hadoop-env.sh"
-      #   match: /^export HADOOP_CLASSPATH="(.*):\$\{HADOOP_CLASSPATH\}" # RYBA TEZ CLASSPATH, DONT OVEWRITE/mg
-      #   replace: "export HADOOP_CLASSPATH=\"#{classpath}:${HADOOP_CLASSPATH}\" # RYBA TEZ CLASSPATH, DONT OVEWRITE"
+      #   match: /^export HADOOP_CLASSPATH="(.*):\$\{HADOOP_CLASSPATH\}" # RYBA TEZ CLASSPATH, DONT OVERWRITE/mg
+      #   replace: "export HADOOP_CLASSPATH=\"#{classpath}:${HADOOP_CLASSPATH}\" # RYBA TEZ CLASSPATH, DONT OVERWRITE"
       #   place_before: /^export HADOOP_CLASSPATH=.*$/mg
       #   backup: true
 

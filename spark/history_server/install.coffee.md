@@ -84,7 +84,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         # additionnal environmental variables.
         write: [
           match :/^export SPARK_PID_DIR=.*$/mg
-          replace:"export SPARK_PID_DIR=#{spark.history.pid_dir} # RYBA CONF \"ryba.spark.history.pid_dir\", DONT OVEWRITE"
+          replace:"export SPARK_PID_DIR=#{spark.history.pid_dir} # RYBA CONF \"ryba.spark.history.pid_dir\", DONT OVERWRITE"
           append: true
         ,
           match :/^export SPARK_CONF_DIR=.*$/mg

@@ -116,7 +116,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           # additionnal environmental variables.
           write: [
             match :/^export SPARK_PID_DIR=.*$/mg
-            replace:"export SPARK_PID_DIR=#{spark.thrift.pid_dir} # RYBA CONF \"ryba.spark.pid_dir\", DONT OVEWRITE"
+            replace:"export SPARK_PID_DIR=#{spark.thrift.pid_dir} # RYBA CONF \"ryba.spark.pid_dir\", DONT OVERWRITE"
             append: true
           ,
             match :/^export SPARK_CONF_DIR=.*$/mg
