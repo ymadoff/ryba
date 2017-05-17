@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* knox: add HBase WebUI service
 * hcatalog: autoconfig when mariadb is installed
 * shinken: add tests for Phoenix QS, Atlas, Ranger, WebHCat
 * ambari agent: dont wait for ambari server

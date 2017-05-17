@@ -294,6 +294,19 @@ This mechanism can be used to configure a specific gateway without having to dec
               topology.providers['ha'].config['webhbase'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
           else throw Error 'Cannot autoconfigure KNOX webhbase service, no webhbase declared'
 
+        # HBase UI
+        if topology.services['hbaseui'] is true
+          ctxs = @contexts 'ryba/hbase/master'
+          if ctxs.length >= 1
+            topology.services['hbaseui'] = []
+            for ctx in ctxs
+              protocol = if ctx.config.ryba.hbase.master.site['hbase.ssl.enabled'] is 'true' then 'https' else 'http'
+              host = ctx.config.host
+              port = ctx.config.ryba.hbase.master.site['hbase.master.info.port']
+              topology.services['hbaseui'].push "#{protocol}://#{host}:#{port}" 
+
+          else throw Error 'Cannot autoconfigure KNOX hbaseui service, no hbaseui declared'
+
 ## Configuration for Log4J
 
       knox.log4j ?= {}
