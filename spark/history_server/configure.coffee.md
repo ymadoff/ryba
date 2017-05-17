@@ -10,6 +10,8 @@
       spark.history.pid_dir ?= '/var/run/spark'
       spark.history.conf_dir ?= '/etc/spark-history-server/conf'
       spark.history.log_dir ?= '/var/log/spark'
+      # spark-config
+      spark.history.heapsize ?= '2g'
       # User
       spark.user ?= {}
       spark.user = name: spark.user if typeof spark.user is 'string'

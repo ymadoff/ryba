@@ -101,6 +101,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           append: true
         ]
       @file
+        header: 'Spark-config'
+        target: "/usr/hdp/current/spark-historyserver/sbin/spark-config.sh"
+        write: [
+          match :/^export SPARK_DAEMON_MEMORY=.*$/mg
+          replace:"export SPARK_DAEMON_MEMORY=#{spark.history.heapsize} # RYBA CONF \"ryba.spark.history.heapsize\", DONT OVERWRITE"
+          append: true
+        ]
+      @file
         header: 'Spark Defaults'
         target: "#{spark.history.conf_dir}/spark-defaults.conf"
         write: for k, v of spark.history.conf
