@@ -62,11 +62,8 @@ In this mode the driver is the yarn application master (running inside yarn).
 Validate Spark installation with Pi-example in yarn-client mode.
 
 The yarn client mode makes the driver part of program to run on the local machine.
-The local machine is the one from which the job has been submitted ( called the client ).
+The local machine is the one from which the job has been submitted (called the client).
 In this mode the driver is the spark master running outside yarn.
-
-For current version 1.4.1 of spark (HDP-2.3.2.0), when running in yarn-client mode, the spark
-driver does not copy metrics.properties file as it should. This is fixed in version 1.5.2. at least.
 
       @call header: 'Check Yarn Client', timeout: -1, label_true: 'CHECKED', ->
         file_check = "check-#{@config.shortname}-spark-client"
