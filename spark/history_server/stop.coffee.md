@@ -1,4 +1,5 @@
-# Spark History Web UI Stop
+
+# Spark History Server Stop
 
 Stop the History server. You can also stop the server manually with the
 following command:

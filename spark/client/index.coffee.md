@@ -1,4 +1,5 @@
-# Spark Client
+
+# Apache Spark
 
 Altiscale describes Spark usage in its [Tips and Tricks for Running Spark][tips]
 article. Here's an extract from the original article.

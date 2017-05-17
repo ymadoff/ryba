@@ -1,5 +1,5 @@
 
-# Spark History Server
+# Spark History Server Configure
 
     module.exports = ->
       spark_ctxs = @contexts 'ryba/spark/client'
@@ -28,8 +28,8 @@
       spark.user.gid ?= spark.group.name
 
 ### Spark Defaults
-Inherits some of the basic spark yarn-cluster based installation
 
+Inherits some of the basic spark yarn-cluster based installation
 
       spark.history.conf ?= {}
       spark.history.conf['spark.history.provider'] ?= 'org.apache.spark.deploy.history.FsHistoryProvider'
@@ -107,6 +107,7 @@ Inherits some of the basic spark yarn-cluster based installation
       spark.history.conf['spark.ssl.trustStorePassword'] ?= ssl_client['ssl.client.truststore.password']
 
 ### Kerberos
+
 Spark History Server server is runned as the spark user
 
       spark.history.conf['spark.history.kerberos.enabled'] ?= if core_site['hadoop.http.authentication.type'] is 'kerberos' then 'true' else 'false'

@@ -1,11 +1,12 @@
-# Apache Spark Install Check
 
-## Run twice "[Spark Pi][Spark-Pi]" example for validating installation . The configuration is a 10 stages run.
-[Spark on Yarn][Spark-yarn] cluster can turn into two different mode :  yarn-client mode and yarn-cluster mode.
+# Apache Spark Check
+
+Run twice "[Spark Pi][Spark-Pi]" example for validating installation . The configuration is a 10 stages run.
+[Spark on YARN][Spark-yarn] cluster can turn into two different mode :  yarn-client mode and yarn-cluster mode.
 Spark programs are divided into a driver part and executors part.
 The driver program manages the executors task.
 
-    module.exports = header: 'Spark Client Check', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports = header: 'Spark Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {spark, force_check,  user, core_site} = @config.ryba
       hive_server2 = @contexts 'ryba/hive/server2'
 
@@ -17,10 +18,10 @@ The driver program manages the executors task.
 
 Validate Spark installation with Pi-example in yarn-cluster mode.
 
-The yarn cluster mode makes the driver part of the spark submitted program to run inside yarn.
-In this mode the driver is the yarn application master (running inside yarn).
+The YARN cluster mode makes the driver part of the spark submitted program to run inside YARN.
+In this mode the driver is the YARN application master (running inside YARN).
 
-      @call header: 'Check Yarn Cluster', timeout: -1, label_true: 'CHECKED', ->
+      @call header: 'YARN Cluster', timeout: -1, label_true: 'CHECKED', ->
         file_check = "check-#{@config.shortname}-spark-cluster"
         applicationId = null
         @system.execute
@@ -61,11 +62,11 @@ In this mode the driver is the yarn application master (running inside yarn).
 
 Validate Spark installation with Pi-example in yarn-client mode.
 
-The yarn client mode makes the driver part of program to run on the local machine.
+The YARN client mode makes the driver part of program to run on the local machine.
 The local machine is the one from which the job has been submitted (called the client).
 In this mode the driver is the spark master running outside yarn.
 
-      @call header: 'Check Yarn Client', timeout: -1, label_true: 'CHECKED', ->
+      @call header: 'YARN Client', timeout: -1, label_true: 'CHECKED', ->
         file_check = "check-#{@config.shortname}-spark-client"
         applicationId = null
         @system.execute
@@ -91,12 +92,12 @@ In this mode the driver is the spark master running outside yarn.
           """
           if: -> @status -1
 
-## Spark Shell Scala (no hive)
+## Spark Shell (no hive)
 
 Test spark-shell, in yarn-client mode. Spark-shell supports onyl local[*] mode and
 yarn-client mode, not yarn-cluster.
 
-      @call header: 'Check Shell (No SQL)', timeout: -1, label_true: 'CHECKED', ->
+      @call header: 'Shell (No SQL)', timeout: -1, label_true: 'CHECKED', ->
         file_check = "check-#{@config.shortname}-spark-shell-scala"
         directory = "check-#{@config.shortname}-spark_shell_scala"
         db = "check_#{@config.shortname}_spark_shell_scala"
@@ -115,12 +116,12 @@ yarn-client mode, not yarn-cluster.
           """
           if: -> @status -1
 
-## Spark Shell Scala (no hive)
+## Spark Shell (no hive)
 
 Executes hive queries to check communication with Hive.
 Creating database from SparkSql is not supported for now.
 
-      @call header: 'Check Shell (Hive SQL)', timeout: -1,label_true: 'CHECKED', ->
+      @call header: 'Shell (Hive SQL)', timeout: -1,label_true: 'CHECKED', ->
         return unless @contexts('ryba/hive/server2').length
         dir_check = "check-#{@config.shortname}-spark-shell-scala-sql"
         directory = "check-#{@config.shortname}-spark_shell_scala-sql"
@@ -171,7 +172,7 @@ Creating database from SparkSql is not supported for now.
 
 ## Spark Shell Python
 
-      @call header: 'Check Shell Python', timeout: -1, label_true: 'CHECKED', ->
+      @call header: 'Shell (PySpark)', timeout: -1, label_true: 'CHECKED', ->
         file_check = "check-#{@config.shortname}-spark-shell-python"
         directory = "check-#{@config.shortname}-spark_shell_python"
         db = "check_#{@config.shortname}_spark_shell_python"
@@ -189,10 +190,6 @@ Creating database from SparkSql is not supported for now.
           hdfs dfs -touchz #{file_check}
           """
           if: -> @status -1
-
-## Check Python
-
-TODO
 
 ## Running Streaming Example
 

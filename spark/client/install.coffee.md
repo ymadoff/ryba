@@ -1,4 +1,5 @@
-# Apache Spark Install Cluster Mode
+
+# Apache Spark Install
 
 [Spark Installation][Spark-install] following hortonworks guidelines to install
 Spark requires HDFS and Yarn. Install spark in Yarn cluster mode.
@@ -7,7 +8,7 @@ Resources:
 
 [Tips and Tricks from Altic Scale][https://www.altiscale.com/blog/tips-and-tricks-for-running-spark-on-hadoop-part-2-2/)   
 
-    module.exports = header: 'Spark Client Install', handler: ->
+    module.exports = header: 'Spark Install', handler: ->
       {ssl, ssl_server, ssl_client, spark, hadoop_group, hadoop_conf_dir, hive} = @config.ryba
       fs_log_dir = spark.conf['spark.eventLog.dir']
 
@@ -71,7 +72,7 @@ Install the spark and python packages.
         hdfs dfs -chmod -R 1777 #{fs_log_dir}
         """
 
-## Spark SSL
+## SSL
 
 Installs SSL certificates for spark. At the moment of this writing, Spark
 supports SSL Only in akka mode and fs mode ( file sharing and date streaming).
@@ -129,7 +130,7 @@ in communication using the particular protocol.
           target: "#{tmp_location}_key"
           shy: true
 
-## Spark Configuration files
+## Configuration files
 
 Configure en environment file /etc/spark/conf/spark-env.sh and /etc/spark/conf/spark-defaults.conf
 Set the version of the hadoop cluster to the latest one. Yarn cluster mode supports starting to 2.2.2-4

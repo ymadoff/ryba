@@ -1,7 +1,5 @@
 
-# Hadoop Yarn ResourceManager Wait
-
-Wait for the ResourceManager RPC and HTTP ports. It supports HTTPS and HA.
+# Spark History Server Wait
 
     module.exports = header: 'Spark History Server Wait', timeout: -1, label_true: 'READY', handler: ->
       options = {}

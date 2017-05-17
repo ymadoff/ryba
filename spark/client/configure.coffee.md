@@ -1,5 +1,5 @@
 
-# Configuration
+# Apache Spark Configure
 
     module.exports = ->
       {core_site, hadoop_conf_dir} = @config.ryba
@@ -115,7 +115,7 @@ the hive-site.xml is set inside /etc/spark/conf/ dir.
 
 [secu]: http://spark.apache.org/docs/latest/security.html
 
-## Spark Client Metrics
+## Metrics
 
 Configure the "metrics.properties" to connect Spark to a metrics collector like Ganglia or Graphite.
 The metrics.properties file needs to be sent to every executor, 
@@ -149,6 +149,7 @@ and spark.metrics.conf=metrics.properties will tell all executors to load that f
       spark.conf['spark.yarn.dist.files'] ?= spark.dist_files.join(',') if spark.dist_files.length > 0
 
 ## Dynamic Resource Allocation
+
 Spark mecanism to set up resources based on cluster availability
 
       #http://spark.apache.org/docs/1.6.0/job-scheduling.html#dynamic-resource-allocation

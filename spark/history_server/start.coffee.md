@@ -1,4 +1,5 @@
-# Spark History Web UI Start
+
+# Spark History Server Start
 
 Start the History server. You can also start the server manually with the
 following command:

@@ -1,5 +1,7 @@
 
-# ATS implementation for the Spark History Server
+# Apache Spark History Server
+
+## ATS implementation for the Spark History Server
 
 The SHS doent seems to server webpage. The log shows:
 

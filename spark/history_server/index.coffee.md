@@ -1,11 +1,12 @@
+
 # Spark History Server
 
     module.exports =
       use:
-        'java': implicit: true, module: 'masson/commons/java'
-        'hdfs': 'ryba/hadoop/hdfs_client'
-        'hive': 'ryba/hive/client'
-        'spark': 'ryba/spark/client'
+        java: implicit: true, module: 'masson/commons/java'
+        hdfs: 'ryba/hadoop/hdfs_client'
+        hive: 'ryba/hive/client'
+        spark: 'ryba/spark/client'
       configure:
         'ryba/spark/history_server/configure'
       commands:

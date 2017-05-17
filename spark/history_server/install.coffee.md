@@ -1,3 +1,4 @@
+
 # Apache Spark History Server
 
 The history servers comes with the spark-client package. The single difference 
