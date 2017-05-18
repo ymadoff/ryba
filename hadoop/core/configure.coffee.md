@@ -75,6 +75,18 @@ Default configuration:
       ryba.yarn ?= {}
       ryba.mapred ?= {}
 
+## Validation
+
+HDFS does not accept underscore "_" inside the hostname or it fails on startup 
+with the log message:
+
+```
+17/05/15 00:31:54 WARN hdfs.DFSUtil: Exception in creating socket address master_01.ambari.ryba:8020
+java.lang.IllegalArgumentException: Does not contain a valid host:port authority: master_01.ambari.ryba:8020
+```
+
+      throw Error "Invalid Hostname: #{@config.host} should not contain \"_\"" if /_/.test @config.host
+
 ## Identities
 
       # Group for hadoop
