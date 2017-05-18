@@ -7,6 +7,7 @@
 * knox: add HBase WebUI service
 * hcatalog: autoconfig when mariadb is installed
 * shinken: add tests for Phoenix QS, Atlas, Ranger, WebHCat
+* package: latest dependencies
 * ambari server: ssl, trustore and jaas
 * hdfs: validate hostnames
 * ambari agent: dont wait for ambari server
