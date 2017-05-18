@@ -4,6 +4,7 @@
 ## Trunk
 
 * spark historyserver: configure heapsize
+* hadoop: add systemd scripts
 * knox: add HBase WebUI service
 * hcatalog: autoconfig when mariadb is installed
 * shinken: add tests for Phoenix QS, Atlas, Ranger, WebHCat

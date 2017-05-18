@@ -65,11 +65,21 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-datanode'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
           target: '/etc/init.d/hadoop-hdfs-datanode'
           source: "#{__dirname}/../resources/hadoop-hdfs-datanode.j2"
           local: true
           context: @config
           mode: 0o0755
+        @call
+          if_os: name: ['redhat','centos'], version: '7'
+        , ->
+          @service.init
+            target: '/usr/lib/systemd/system/hadoop-hdfs-datanode.service'
+            source: "#{__dirname}/../resources/hadoop-hdfs-datanode-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
 
       @call header: 'Compression', timeout: -1, retry: 2, (options) ->
         @service.remove 'snappy', if: options.attempt is 1

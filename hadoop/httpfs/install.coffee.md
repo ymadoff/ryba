@@ -54,17 +54,29 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @hdp_select
           name: 'hadoop-httpfs'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
+          header: 'Initd Script'
           target: "/etc/init.d/hadoop-httpfs"
           source: "#{__dirname}/../resources/hadoop-httpfs.j2"
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: "#{httpfs.pid_dir}"
-          uid: httpfs.user.name
-          gid: httpfs.group.name
-          perm: '0755'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hadoop-httpfs.service'
+            source: "#{__dirname}/../resources/hadoop-httpfs-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            header: 'Run dir'
+            mount: "#{httpfs.pid_dir}"
+            uid: httpfs.user.name
+            gid: httpfs.group.name
+            perm: '0755'
 
 ## Kerberos
 

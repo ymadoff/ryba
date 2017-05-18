@@ -1,0 +1,14 @@
+[Unit]
+Description=HDFS JournalNode
+
+[Service]
+Type=forking
+User={{hdfs.user.name}}
+Group={{hdfs.group.name}}
+PIDFile={{hdfs.pid_dir}}/hadoop-hdfs-journalnode.pid
+ExecStart=/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-daemon.sh --config {{hdfs.jn.conf_dir}} --script hdfs start journalnode
+ExecReload=/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-daemon.sh --config {{hdfs.jn.conf_dir}} --script hdfs restart journalnode
+ExecStop=/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-daemon.sh --config {{hdfs.jn.conf_dir}} --script hdfs stop journalnode
+
+[Install]
+WantedBy=multi-user.target

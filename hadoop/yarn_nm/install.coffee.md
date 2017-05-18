@@ -55,6 +55,8 @@ inside "/etc/init.d" and activate it on startup.
           # name: 'hadoop-yarn-client' # Not checked
           name: 'hadoop-yarn-nodemanager'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
+          header: 'Initd Script'
           target: '/etc/init.d/hadoop-yarn-nodemanager'
           source: "#{__dirname}/../resources/hadoop-yarn-nodemanager.j2"
           local: true
@@ -64,12 +66,22 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-mapreduce'
         @hdp_select
           name: 'hadoop-client'
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: "#{yarn.nm.pid_dir}"
-          uid: yarn.user.name
-          gid: hadoop_group.name
-          perm: '0755'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hadoop-yarn-nodemanager.service'
+            source: "#{__dirname}/../resources/hadoop-yarn-nodemanager-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0755
+          @system.tmpfs
+            if_os: name: ['redhat','centos'], version: '7'
+            mount: "#{yarn.nm.pid_dir}"
+            uid: yarn.user.name
+            gid: hadoop_group.name
+            perm: '0755'
         @call
           if: yarn.site['spark.shuffle.service.enabled'] is 'true'
           header: 'Spark Worker Shuffle Package'
@@ -197,6 +209,20 @@ SSH connection to the node to gather the memory and CPU informations.
           gid: hadoop_group.name
           mode: 0o0755
           backup: true
+      @file.render
+        header: 'Env'
+        target: "#{yarn.nm.conf_dir}/hadoop-env.sh"
+        source: "#{__dirname}/../resources/hadoop-env.sh.j2"
+        local: true
+        context:
+          HADOOP_LOG_DIR: yarn.nm.log_dir
+          HADOOP_PID_DIR: yarn.nm.pid_dir
+          java_home: @config.java.java_home
+        uid: yarn.user.name
+        gid: hadoop_group.name
+        mode: 0o750
+        backup: true
+        eof: true
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 

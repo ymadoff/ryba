@@ -1,0 +1,12 @@
+[Unit]
+Description=HDFS Datanode
+
+[Service]
+Type=forking
+PIDFile={{hdfs.pid_dir}}/hadoop-hdfs-datanode.pid
+ExecStart=/usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config {{hdfs.dn.conf_dir}} --script hdfs start datanode
+ExecReload=/usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config {{hdfs.dn.conf_dir}} --script hdfs restart datanode
+ExecStop=/usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config {{hdfs.dn.conf_dir}} --script hdfs stop datanode
+
+[Install]
+WantedBy=multi-user.target

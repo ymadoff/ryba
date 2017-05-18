@@ -54,17 +54,29 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           name: 'hadoop-yarn-client' # Not checked
           name: 'hadoop-yarn-timelineserver'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
+          header: 'Initd Script'
           target: '/etc/init.d/hadoop-yarn-timelineserver'
           source: "#{__dirname}/../resources/hadoop-yarn-timelineserver.j2"
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: "#{yarn.ats.pid_dir}"
-          uid: yarn.user.name
-          gid: hadoop_group.name
-          perm: '0755'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hadoop-yarn-timelineserver.service'
+            source: "#{__dirname}/../resources/hadoop-yarn-timelineserver-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            header: 'Run dir'
+            mount: "#{yarn.ats.pid_dir}"
+            uid: yarn.user.name
+            gid: hadoop_group.name
+            perm: '0755'
 
 # Layout
 
@@ -132,7 +144,21 @@ Update the "yarn-site.xml" configuration file.
         gid: hadoop_group.name
         mode: 0o0755
         backup: true
-
+      @file.render
+        header: 'Env'
+        target: "#{yarn.ats.conf_dir}/hadoop-env.sh"
+        source: "#{__dirname}/../resources/hadoop-env.sh.j2"
+        local: true
+        context:
+          HADOOP_LOG_DIR: yarn.ats.log_dir
+          HADOOP_PID_DIR: yarn.ats.pid_dir
+          java_home: @config.java.java_home
+        uid: yarn.user.name
+        gid: hadoop_group.name
+        mode: 0o750
+        backup: true
+        eof: true
+        
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
       @file.properties

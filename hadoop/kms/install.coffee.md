@@ -36,17 +36,28 @@
           trap: true
           code_skipped: 3
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
+          header: 'Initd Script'
           target: "/etc/init.d/hadoop-kms"
           source: "#{__dirname}/../resources/hadoop-kms.j2"
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: "#{kms.pid_dir}"
-          uid: kms.user.name
-          gid: kms.group.name
-          perm: '0755'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hadoop-httpfs.service'
+            source: "#{__dirname}/../resources/hadoop-httpfs-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0755
+          @system.tmpfs
+            mount: "#{kms.pid_dir}"
+            uid: kms.user.name
+            gid: kms.group.name
+            perm: '0755'
         
 
 ## Layout

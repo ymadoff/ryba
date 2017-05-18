@@ -41,14 +41,29 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           # name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-namenode'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
+          header: 'Initd Script'
           target: '/etc/init.d/hadoop-hdfs-zkfc'
           source: "#{__dirname}/../resources/hadoop-hdfs-zkfc.j2"
           local: true
           context: @config
           mode: 0o0755
-        @system.execute
-          cmd: "service hadoop-hdfs-zkfc restart"
-          if: -> @status -3
+        @call
+          if_os: name: ['redhat','centos'], version: '7'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hadoop-hdfs-zkfc.service'
+            source: "#{__dirname}/../resources/hadoop-hdfs-zkfc-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            header: 'Run dir'
+            mount: hdfs.pid_dir
+            uid: hdfs.user.name
+            gid: hadoop_group.name
+            perm: '0750'
 
 ## Configure
 

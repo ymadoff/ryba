@@ -1,0 +1,14 @@
+[Unit]
+Description=HDFS Httpfs
+
+[Service]
+Type=forking
+User={{httpfs.user.name}}
+Group={{httpfs.group.name}}
+PIDFile={{httpfs.pid_dir}}/httpfs.pid
+ExecStart=/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh start
+ExecReload=/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh restart
+ExecStop=/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh stop
+
+[Install]
+WantedBy=multi-user.target

@@ -45,20 +45,28 @@ script inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-secondarynamenode'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
+          header: 'Initd script'
           target: '/etc/init.d/hadoop-hdfs-secondarynamenode'
           source: "#{__dirname}/../resources/secondarynamenode.j2"
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: "#{hdfs.pid_dir}"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          perm: '0755'
-        @system.execute
-          cmd: "service hadoop-hdfs-secondarynamenode restart"
-          if: -> @status -4
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hadoop-hdfs-secondarynamenode.service'
+            source: "#{__dirname}/../resources/hadoop-hdfs-secondarynamenode-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0755
+          @system.tmpfs
+            mount: "#{hdfs.pid_dir}"
+            uid: hdfs.user.name
+            gid: hadoop_group.name
+            perm: '0755'
 
       @call header: 'Layout', timeout: -1, ->
         @system.mkdir

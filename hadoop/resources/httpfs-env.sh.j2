@@ -51,7 +51,7 @@ export HTTPFS_SSL_KEYSTORE_FILE={{ryba.httpfs.env.HTTPFS_SSL_KEYSTORE_FILE}}
 # The password of the SSL keystore if using SSL
 #
 export HTTPFS_SSL_KEYSTORE_PASS={{ryba.httpfs.env.HTTPFS_SSL_KEYSTORE_PASS}}
-
+export JAVA_HOME=${JAVA_HOME:-"{{java.java_home}}"}
 export CATALINA_OPTS="{{ryba.httpfs.catalina_opts}}"
 export CATALINA_HOME={{ryba.httpfs.catalina_home}}
 export CATALINA_PID="{{ryba.httpfs.pid_dir}}/httpfs.pid"

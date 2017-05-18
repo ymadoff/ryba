@@ -58,17 +58,29 @@ script inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-mapreduce-client' # Not checked
           name: 'hadoop-mapreduce-historyserver'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
+          header: 'Initd Script'
           target: '/etc/init.d/hadoop-mapreduce-historyserver'
           source: "#{__dirname}/../resources/hadoop-mapreduce-historyserver.j2"
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: "#{mapred.pid_dir}"
-          uid: mapred.user.name
-          gid: hadoop_group.name
-          perm: '0755'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hadoop-mapreduce-historyserver.service'
+            source: "#{__dirname}/../resources/hadoop-mapreduce-historyserver-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            header: 'Run dir'
+            mount: "#{mapred.pid_dir}"
+            uid: mapred.user.name
+            gid: hadoop_group.name
+            perm: '0755'
 
 ## Layout
 

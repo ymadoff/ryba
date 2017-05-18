@@ -63,17 +63,29 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-namenode'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
+          header: 'Initd Script'
           target: '/etc/init.d/hadoop-hdfs-namenode'
           source: "#{__dirname}/../resources/hadoop-hdfs-namenode.j2"
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: hdfs.pid_dir
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          perm: '0750'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hadoop-hdfs-namenode.service'
+            source: "#{__dirname}/../resources/hadoop-hdfs-namenode-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            header: 'Run dir'
+            mount: hdfs.pid_dir
+            uid: hdfs.user.name
+            gid: hadoop_group.name
+            perm: '0750'
 
 ## Layout
 
