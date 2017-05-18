@@ -1,0 +1,13 @@
+[Unit]
+Description=HBase Thrift server
+
+[Service]
+User={{hbase.user.name}}
+Group={{hbase.group.name}}
+PIDFile={{hbase.thrift.pid_dir}}/hbase-hbase-thrift.pid
+ExecStart=/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config {{hbase.thrift.conf_dir}} start thrift
+ExecReload=/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config {{hbase.thrift.conf_dir}} restart thrift
+ExecStop=/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config {{hbase.thrift.conf_dir}} stop thrift
+
+[Install]
+WantedBy=multi-user.target

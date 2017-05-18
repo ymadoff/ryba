@@ -74,6 +74,7 @@ hbase:x:492:
         @hdp_select
           name: 'hbase-client'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
           header: 'Init Script'
           source: "#{__dirname}/../resources/hbase-rest.j2"
           local: true
@@ -81,12 +82,22 @@ hbase:x:492:
           target: '/etc/init.d/hbase-rest'
           mode: 0o0755
           unlink: true
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: hbase.rest.pid_dir
-          uid: hbase.user.name
-          gid: hbase.group.name
-          perm: '0755'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hbase-rest.service'
+            source: "#{__dirname}/../resources/hbase-rest-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            header: 'Run dir'
+            mount: hbase.rest.pid_dir
+            uid: hbase.user.name
+            gid: hbase.group.name
+            perm: '0755'
 
 ## Configure
 
@@ -120,7 +131,7 @@ Environment passed to the HBase Rest Server before it starts.
         unlink: true
         write: for k, v of hbase.rest.env
           match: RegExp "export #{k}=.*", 'm'
-          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"          
+          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
 
 ## Kerberos
 

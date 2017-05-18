@@ -78,18 +78,29 @@ inside "/etc/init.d" and activate it on startup.
         @hdp_select
           name: 'hbase-regionserver'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
           header: 'Init Script'
           source: "#{__dirname}/../resources/hbase-regionserver.j2"
           local: true
           context: @config
           target: '/etc/init.d/hbase-regionserver'
           mode: 0o0755
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: hbase.rs.pid_dir
-          uid: hbase.user.name
-          gid: hbase.group.name
-          perm: '0755'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hbase-regionserver.service'
+            source: "#{__dirname}/../resources/hbase-regionserver-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            header: 'Run dir'
+            mount: hbase.rs.pid_dir
+            uid: hbase.user.name
+            gid: hbase.group.name
+            perm: '0755'
 
 ## Zookeeper JAAS
 

@@ -1,0 +1,13 @@
+[Unit]
+Description=HBase Master
+
+[Service]
+User={{hbase.user.name}}
+Group={{hbase.group.name}}
+PIDFile={{hbase.master.pid_dir}}/hbase-hbase-master.pid
+ExecStart=/usr/hdp/current/hbase-master/bin/hbase-daemon.sh --config {{hbase.master.conf_dir}} start master
+ExecReload=/usr/hdp/current/hbase-master/bin/hbase-daemon.sh --config {{hbase.master.conf_dir}} restart master
+ExecStop=/usr/hdp/current/hbase-master/bin/hbase-daemon.sh --config {{hbase.master.conf_dir}} stop master
+
+[Install]
+WantedBy=multi-user.target

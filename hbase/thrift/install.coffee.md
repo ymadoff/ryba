@@ -125,18 +125,29 @@ Environment passed to the HBase Rest Server before it starts.
         @hdp_select
           name: 'hbase-client'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
           header: 'Init Script'
           target: '/etc/init.d/hbase-thrift'
           source: "#{__dirname}/../resources/hbase-thrift.j2"
           local: true
           context: @config
           mode: 0o0755
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: hbase.thrift.pid_dir
-          uid: hbase.user.name
-          gid: hbase.group.name
-          perm: '0755'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hbase-thrift.service'
+            source: "#{__dirname}/../resources/hbase-thrift-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            header: 'Run dir'
+            mount: hbase.thrift.pid_dir
+            uid: hbase.user.name
+            gid: hbase.group.name
+            perm: '0755'
 
 ## Logging
 

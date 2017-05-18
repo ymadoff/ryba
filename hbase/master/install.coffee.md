@@ -79,18 +79,29 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
         @hdp_select
           name: 'hbase-master'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
           header: 'Init Script'
           source: "#{__dirname}/../resources/hbase-master.j2"
           local: true
           context: @config
           target: '/etc/init.d/hbase-master'
           mode: 0o0755
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: hbase.master.pid_dir
-          uid: hbase.user.name
-          gid: hbase.group.name
-          perm: '0755'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/hbase-master.service'
+            source: "#{__dirname}/../resources/hbase-master-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            header: 'Run dir'
+            mount: hbase.master.pid_dir
+            uid: hbase.user.name
+            gid: hbase.group.name
+            perm: '0755'
 
 ## Configure
 
