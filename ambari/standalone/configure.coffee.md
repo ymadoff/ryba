@@ -1,5 +1,5 @@
 
-# Ambari Server Configuration
+# Ambari Standalone Configuration
 
 ## Minimal Example
 
@@ -47,8 +47,7 @@
       {host, ssl} = @config
       {db_admin} = @config.ryba
       # Init
-      options = @config.ryba.ambari_server ?= {}
-      # throw Error "Required Option: cluster_name" unless options.cluster_name
+      options = @config.ryba.ambari_standalone ?= {}
       throw Error "Required Option: db.password" unless options.db?.password
 
 ## Environnment
@@ -154,38 +153,3 @@ Ambari DB password is stash into "/etc/ambari-server/conf/password.dat".
       options.db[k] ?= v for k, v of db_admin[options.db.engine]
       options.db.database ?= 'ambari'
       options.db.username ?= 'ambari'
-
-## Hive provisionning
-
-      options.db_hive ?= false
-      options.db_hive = password: options.db_hive if typeof options.db_hive is 'string'
-      if options.db_hive
-        options.db_hive.engine ?= options.db.engine
-        options.db_hive[k] ?= v for k, v of db_admin[options.db_hive.engine]
-        options.db_hive.database ?= 'hive'
-        options.db_hive.username ?= 'hive'
-        throw Error "Required Option: db_hive.password" unless options.db_hive.password
-
-## Oozie provisionning
-
-      options.db_oozie ?= false
-      options.db_oozie = password: options.db_oozie if typeof options.db_oozie is 'string'
-      if options.db_oozie
-        options.db_oozie.engine ?= options.db.engine
-        options.db_oozie[k] ?= v for k, v of db_admin[options.db_oozie.engine]
-        options.db_oozie.database ?= 'oozie'
-        options.db_oozie.username ?= 'oozie'
-        throw Error "Required Option: db_oozie.password" unless options.db_oozie.password
-
-## Ranger provisionning
-
-      options.db_ranger ?= false
-      options.db_ranger = password: options.db_ranger if typeof options.db_ranger is 'string'
-      if options.db_ranger
-        options.db_ranger.engine ?= options.db.engine
-        options.db_ranger[k] ?= v for k, v of db_admin[options.db_ranger.engine]
-        options.db_ranger.database ?= 'ranger'
-        options.db_ranger.username ?= 'ranger'
-        throw Error "Required Option: db_ranger.password" unless options.db_ranger.password
-        
-        
