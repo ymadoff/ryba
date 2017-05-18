@@ -257,7 +257,7 @@ This mechanism can be used to configure a specific gateway without having to dec
             if ctxs.length > 1
               topology.providers['ha'] ?= name: 'HaProvider'
               topology.providers['ha'].config ?= {}
-              topology.providers['ha'].config['webhcat'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
+              topology.providers['ha'].config['WEBHCAT'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
           else throw Error 'Cannot autoconfigure KNOX webhcat service, no webhcat declared'
         # Oozie
         if topology.services['oozie'] is true
@@ -291,7 +291,7 @@ This mechanism can be used to configure a specific gateway without having to dec
             if ctxs.length > 1
               topology.providers['ha'] ?= name: 'HaProvider'
               topology.providers['ha'].config ?= {}
-              topology.providers['ha'].config['webhbase'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
+              topology.providers['ha'].config['WEBHBASE'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
           else throw Error 'Cannot autoconfigure KNOX webhbase service, no webhbase declared'
 
         # HBase UI
