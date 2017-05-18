@@ -1,0 +1,14 @@
+[Unit]
+Description=Zookeeper Server
+
+[Service]
+User={{zookeeper.user.name}}
+Group={{zookeeper.group.name}}
+PIDFile={{zookeeper.pid_dir}}/zookeeper_server.pid
+Environment=ZOOCFG=zoo.cfg
+ExecStart=/usr/hdp/current/zookeeper-server/bin/zkServer.sh start
+ExecReload=/usr/hdp/current/zookeeper-server/bin/zkServer.sh restart
+ExecStop=/usr/hdp/current/zookeeper-server/bin/zkServer.sh stop
+
+[Install]
+WantedBy=multi-user.target

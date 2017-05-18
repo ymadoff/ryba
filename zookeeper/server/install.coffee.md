@@ -73,16 +73,24 @@ which has no dependency.
         @hdp_select
           name: 'zookeeper-client'
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
           source: "#{__dirname}/resources/zookeeper"
           local: true
           target: '/etc/init.d/zookeeper-server'
         #TODO: Move pid creation dir to systemd startup scripts
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: zookeeper.pid_dir
-          uid: zookeeper.user.name
-          gid: zookeeper.group.name
-          perm: '0750'
+        , ->
+          @service.init
+            source: "#{__dirname}/resources/zookeeper-systemd.j2"
+            local: true
+            context: @config.ryba
+            target: '/usr/lib/systemd/system/zookeeper-server.service'
+          @system.tmpfs
+            mount: zookeeper.pid_dir
+            uid: zookeeper.user.name
+            gid: zookeeper.group.name
+            perm: '0750'
 
 ## Kerberos
 
@@ -166,6 +174,9 @@ Note, environment is enriched at runtime if a super user is generated
         content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
         backup: true
         eof: true
+        mode: 0o750
+        uid: zookeeper.user.name
+        gid: zookeeper.group.name
 
 ## Configure
 
