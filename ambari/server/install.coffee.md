@@ -6,7 +6,6 @@ executing this module.
 
     module.exports = header: 'Ambari Server Install', timeout: -1, handler: ->
       options = @config.ryba.ambari_server
-      options.host = @config.host
 
 ## Identities
 
@@ -58,9 +57,13 @@ Install Ambari server package.
 
 ## Database
 
-Prepare the Ambari Database
+Prepare the Ambari Database.
 
-      @call header: 'Database', ->
+      @call header: 'DB', ->
+
+Wait for database to listen
+
+        @call 'masson/commons/mysql/server/wait', if: options.db.engine in ['mysql', 'mariadb']
 
 Password is stored inside a file which location is referenced by the property
 "server.jdbc.user.passwd" in the configuration file. The permissione "660" match
@@ -111,6 +114,108 @@ Load the database with initial data
           cmd: load
           unless_exec: created
 
+## Hive DB
+
+      @call header: 'Hive DB', if: !!options.db_hive, ->
+        @db.user options.db_hive, database: null,
+          header: 'User'
+          if: options.db_hive.engine in ['mysql', 'postgres']
+        @db.database options.db_hive,
+          header: 'Database'
+          user: options.db_hive.username
+          if: options.db_hive.engine in ['mysql', 'mariadb', 'postgres']
+        @db.schema options.db_hive,
+          header: 'Schema'
+          if: options.db_hive.engine is 'postgres'
+          schema: options.db_hive.schema or options.db_hive.database
+          database: options.db_hive.database
+          owner: options.db_hive.username
+
+## Oozie DB
+
+      @call header: 'Oozie DB', if: !!options.db_oozie, ->
+        @db.user options.db_oozie, database: null,
+          header: 'User'
+          if: options.db_oozie.engine in ['mysql', 'postgres']
+        @db.database options.db_oozie,
+          header: 'Database'
+          user: options.db_oozie.username
+          if: options.db_oozie.engine in ['mysql', 'mariadb', 'postgres']
+        @db.schema options.db_oozie,
+          header: 'Schema'
+          if: options.db_oozie.engine is 'postgres'
+          schema: options.db_oozie.schema or options.db_oozie.database
+          database: options.db_oozie.database
+          owner: options.db_oozie.username
+
+## Ranger DB
+
+      @call header: 'Ranger DB', if: !!options.db_ranger, ->
+        @db.user options.db_ranger, database: null,
+          header: 'User'
+          if: options.db_ranger.engine in ['mysql', 'postgres']
+        @db.database options.db_ranger,
+          header: 'Database'
+          user: options.db_ranger.username
+          if: options.db_ranger.engine in ['mysql', 'mariadb', 'postgres']
+        @db.schema options.db_ranger,
+          header: 'Schema'
+          if: options.db_ranger.engine is 'postgres'
+          schema: options.db_ranger.schema or options.db_ranger.database
+          database: options.db_ranger.database
+          owner: options.db_ranger.username
+
+## Hive DB
+
+      @call header: 'Hive DB', if: !!options.db_hive, ->
+        @db.user options.db_hive, database: null,
+          header: 'User'
+          if: options.db_hive.engine in ['mysql', 'postgres']
+        @db.database options.db_hive,
+          header: 'Database'
+          user: options.db_hive.username
+          if: options.db_hive.engine in ['mysql', 'mariadb', 'postgres']
+        @db.schema options.db_hive,
+          header: 'Schema'
+          if: options.db_hive.engine is 'postgres'
+          schema: options.db_hive.schema or options.db_hive.database
+          database: options.db_hive.database
+          owner: options.db_hive.username
+
+## Oozie DB
+
+      @call header: 'Oozie DB', if: !!options.db_oozie, ->
+        @db.user options.db_oozie, database: null,
+          header: 'User'
+          if: options.db_oozie.engine in ['mysql', 'postgres']
+        @db.database options.db_oozie,
+          header: 'Database'
+          user: options.db_oozie.username
+          if: options.db_oozie.engine in ['mysql', 'mariadb', 'postgres']
+        @db.schema options.db_oozie,
+          header: 'Schema'
+          if: options.db_oozie.engine is 'postgres'
+          schema: options.db_oozie.schema or options.db_oozie.database
+          database: options.db_oozie.database
+          owner: options.db_oozie.username
+
+## Ranger DB
+
+      @call header: 'Ranger DB', if: !!options.db_ranger, ->
+        @db.user options.db_ranger, database: null,
+          header: 'User'
+          if: options.db_ranger.engine in ['mysql', 'postgres']
+        @db.database options.db_ranger,
+          header: 'Database'
+          user: options.db_ranger.username
+          if: options.db_ranger.engine in ['mysql', 'mariadb', 'postgres']
+        @db.schema options.db_ranger,
+          header: 'Schema'
+          if: options.db_ranger.engine is 'postgres'
+          schema: options.db_ranger.schema or options.db_ranger.database
+          database: options.db_ranger.database
+          owner: options.db_ranger.username
+
 ## Configuration
 
 Merge used defined configuration. This could be used to set up 
@@ -125,7 +230,58 @@ generated by the "ambari-server setup" command.
         comment: true
         backup: true
         mode: 0o0644
+
+## Upload SSL Cert & Key
+
+Upload and register the SSL certificate and private key respectively defined
+by the "ssl.cert" and "ssl.key".
+
+The public certificate is generated with the same permission and ownership as 
+with the `ambari-server setup-security` command: user "root", group "ambari" 
+and mode "644".
+
+Restrictive ownership and permission are enforced on the private key. We might
+want to move it into a different location (eg "/etc/security/certs") as
+Ambari will store and work on a copy.
+
+      @call header: 'SSL', ->
+        @file.download
+          header: 'Cert'
+          source: options.ssl.cert.source
+          local: options.ssl.cert.local
+          target: "#{options.conf_dir}/cert.pem"
+          uid: 'root'
+          gid: options.group.name
+          mode: 0o0644
+        @file.download
+          header: 'Key'
+          source: options.ssl.key.source
+          local: options.ssl.key.local
+          target: "#{options.conf_dir}/key.pem"
+          mode: 0o0600
+        @file.download
+          header: 'CACert'
+          source: options.ssl.cacert.source
+          local: options.ssl.cacert.local
+          target: "#{options.conf_dir}/cacert.pem"
+          mode: 0o0644
+        @java.keystore_add
+          keystore: "#{options.truststore.target}"
+          storepass: "#{options.truststore.password}"
+          caname: "#{options.truststore.caname}"
+          cacert: "#{options.conf_dir}/cacert.pem"
     
+## JAAS
+
+Note, Ambari will change ownership to root.
+
+      @krb5.addprinc options.jaas,
+        header: 'JAAS'
+        randkey: true
+        uid: 'root'
+        gid: options.group.name
+        mode: 0o660
+
 ## Setup
 
 Password encryption is activated if the property "master_key" is configured. By 
@@ -159,13 +315,45 @@ Be carefull, notes from Ambari 2.4.2:
             --databasename=#{options.db.database} \
             --databaseusername=#{options.db.username} \
             --databasepassword=#{options.db.password}
-            # --jdbc-db=mysql \
-            # --jdbc-driver=/usr/share/java/mysql-connector-java.jar \
-            # --cluster-name=#{options.cluster_name} \
+          ambari-server setup \
+            --jdbc-db=mysql \
+            --jdbc-driver=/usr/share/java/mysql-connector-java.jar
           [ -n "#{options.master_key}" ] && ambari-server setup-security \
             --security-option=encrypt-passwords \
             --master-key=#{options.master_key} \
             --master-key-persist=true
+          # --cluster-name=#{options.cluster_name}
+          """
+        @system.execute
+          # if: options.config['api.ssl'] is 'true'
+          shy: true
+          cmd: """
+          ambari-server setup-security \
+            --security-option=setup-https \
+            --api-ssl=#{options.config['api.ssl']} \
+            --api-ssl-port=#{options.config['client.api.ssl.port']} \
+            --pem-password= \
+            --import-cert-path="#{options.conf_dir}/cert.pem" \
+            --import-key-path="#{options.conf_dir}/key.pem"
+          """
+        @system.execute
+          shy: true
+          cmd: """
+          ambari-server setup-security \
+            --security-option=setup-truststore \
+            --truststore-path=#{options.truststore.target} \
+            --truststore-type=#{options.truststore.type} \ 
+            --truststore-password=#{options.truststore.password} \
+            --truststore-reconfigure
+          """
+        @system.execute
+          shy: true
+          if: options.jaas.enable
+          cmd: """
+          ambari-server setup-security \
+            --security-option=setup-kerberos-jaas \
+            --jaas-principal="#{options.jaas.principal}" \
+            --jaas-keytab="#{options.jaas.keytab}"
           """
         @call (options, callback) ->
           properties '/etc/ambari-server/conf/ambari.properties', ssh: options.ssh, (err, data) ->
@@ -191,18 +379,20 @@ Start the service or restart it if there were any changes.
         name: 'ambari-server'
         action: ['start', 'restart']
         if: -> @status()
+      @call 'ryba/ambari/server/wait',
+        if: -> @status()
 
 ## Admin Credentials
 
       checkurl = url.format
-        protocol: 'http'
+        protocol: unless options.config['api.ssl'] then 'http' else 'https'
         hostname: options.host
-        port: options.config['client.api.port']
+        port: options.config[unless options.config['api.ssl'] then 'client.api.port' else 'client.api.ssl.port']
         pathname: '/api/v1/clusters'
       changeurl = url.format
-        protocol: 'http'
+        protocol: unless options.config['api.ssl'] then 'http' else 'https'
         hostname: options.host
-        port: options.config['client.api.port']
+        port: options.config[unless options.config['api.ssl'] then 'client.api.port' else 'client.api.ssl.port']
         pathname: '/api/v1/users/admin'
       cred = "admin:#{options.current_admin_password}"
       json = JSON.stringify "Users":
@@ -212,10 +402,10 @@ Start the service or restart it if there were any changes.
       @system.execute
         header: 'Admin Credentials'
         if_exec: """
-        curl -f -u #{cred} #{checkurl}
+        curl -f -k -u #{cred} #{checkurl}
         """
         cmd: """
-        curl -f -i -u #{cred} -H "X-Requested-By: ambari" -X PUT -d '#{json}' #{changeurl}
+        curl -f -k -i -u #{cred} -H "X-Requested-By: ambari" -X PUT -d '#{json}' #{changeurl}
         """
 
 ## Dependencies

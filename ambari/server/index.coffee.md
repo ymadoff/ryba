@@ -7,7 +7,9 @@ manage and monitor a Hadoop cluster.
 
     module.exports =
       use:
+        ssl: implicit: true, module: 'masson/core/ssl'
         java: module: 'masson/commons/java', recommanded: true
+        krb5_server: module: 'masson/core/krb5_server'
         db_admin: implicit: true, module: 'ryba/commons/db_admin'
         hadoop: 'ryba/hadoop/core'
       configure: 'ryba/ambari/server/configure'

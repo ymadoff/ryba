@@ -25,7 +25,7 @@ Wait for the Ambari Server to be ready.
       @system.execute
         header: "Web"
         cmd: """
-        curl -k -u #{cred} #{clusters_url}
+        curl -f -k -u #{cred} #{clusters_url}
         """
 
 ## Check Internal Port
