@@ -124,9 +124,9 @@ to allow user to create none-determisitic functions.
       @system.execute
         header: 'Fix Setup Execution'
         cmd: "chown -R #{ranger.user.name}:#{ranger.user.name} #{ranger.admin.conf_dir}"
-      @remove
+      @system.remove
         target: "#{ranger.admin.conf_dir}/core-site.xml"
-      @link
+      @system.link
         source: '/etc/hadoop/conf/core-site.xml'
         target: "#{ranger.admin.conf_dir}/core-site.xml"
       # the setup scripts already render an init.d script but it does not respect 
