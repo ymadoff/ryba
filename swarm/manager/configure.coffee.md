@@ -9,6 +9,7 @@ This host will be used when rendering default DOCKER_HOST ENV variable on swarm 
         ctx.config.ryba.zookeeper.config['peerType'] is 'participant'
       docker = @config.docker ?= {}
       ryba = @config.ryba ?= {}
+      
       ryba.swarm_primary ?= @contexts('ryba/swarm/manager')[0].config.host is @config.host
       swarm = ryba.swarm ?= {}
       swarm.image ?= 'swarm'
@@ -62,7 +63,7 @@ This starting options should be injected to @config.docker variable. For now
       swarm.other_args ?= []
       swarm.other_args['cluster-store'] ?= swarm.cluster.zk_store
       swarm.other_args['cluster-advertise'] ?= "#{swarm.manager.advertise_host}:#{swarm.manager.advertise_port}"
-      swarm.other_args = merge  swarm.other_args, @config.docker.other_args
+      @config.docker.other_args = merge @config.docker.other_args, swarm.other_args
 
 ## Dependencies
 

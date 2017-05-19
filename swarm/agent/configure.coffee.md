@@ -31,6 +31,8 @@ in the start option of the local daemon engine to enable it.
       tcp_socket = "#{@config.host}:#{swarm.agent.advertise_port}"
       if @config.docker.sockets.tcp.indexOf(tcp_socket) is -1
       then @config.docker.sockets.tcp.push tcp_socket
+other_args      @config.docker.
+      
       
 ### Swarm Cluster
 This starting options should be injected to @config.docker variable. For now 
@@ -41,7 +43,7 @@ This starting options should be injected to @config.docker variable. For now
       swarm.other_args ?= []
       swarm.other_args['cluster-store'] ?= swarm.cluster.zk_store
       swarm.other_args['cluster-advertise'] ?= "#{@config.ip}:#{swarm.agent.advertise_port}"
-      swarm.other_args = merge swarm.other_args, @config.docker.other_args
+      @config.docker.other_args = merge @config.docker.other_args, swarm.other_args
 
 ## Dependencies
 
