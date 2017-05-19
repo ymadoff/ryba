@@ -15,6 +15,7 @@ and objectives of NiFi includes:
           hadoop_core: 'ryba/hadoop/core'
           openldap_server: 'masson/core/openldap_server'
           zoo_server: 'ryba/zookeeper/server'
+          hdf: 'ryba/hdf'
         configure:
           'ryba/nifi/configure'
         commands:

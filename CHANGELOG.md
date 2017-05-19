@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* refactor hdp and initial commit for hdf
 * spark historyserver: configure heapsize
 * hadoop: add systemd scripts
 * knox: add HBase WebUI service
