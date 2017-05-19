@@ -169,13 +169,6 @@ Ambari will store and work on a copy.
 
 Note, Ambari will change ownership to root.
 
-      console.log 'ok'
-      console.log options.jaas,
-        header: 'JAAS'
-        randkey: true
-        uid: 'root'
-        gid: options.group.name
-        mode: 0o660
       @krb5.addprinc options.jaas,
         header: 'JAAS'
         randkey: true

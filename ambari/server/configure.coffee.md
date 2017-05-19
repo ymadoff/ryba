@@ -112,6 +112,8 @@ Hadoop group. The default group name is "hadoop".
 
 ## JAAS
 
+Multiple ambari instance on a same server involve a different principal or the principal must point to the same keytab.
+
 `auth=KERBEROS;proxyuser=ambari`
 
       options.jaas ?= {}
@@ -129,7 +131,8 @@ Hadoop group. The default group name is "hadoop".
         options.jaas.admin_server ?= krb5.admin_server
         throw Error "Require Property: jaas.admin_server" unless options.jaas.admin_server
         options.jaas.keytab ?= '/etc/ambari-server/conf/ambari.service.keytab'
-        options.jaas.principal ?= "ambari@#{hadoop_ctx?.config.ryba.realm}" if hadoop_ctx?.config.ryba.realm
+        options.jaas.principal ?= "ambari/_HOST@#{hadoop_ctx?.config.ryba.realm}" if hadoop_ctx?.config.ryba.realm
+        options.jaas.principal = options.jaas.principal.replace '_HOST', @config.host
 
 ## Configuration
 
