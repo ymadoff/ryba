@@ -155,8 +155,8 @@ Note: Compatible with every version of docker available at this time.
               container: container
               cmd: """
                 /usr/solr-cloud/current/bin/solr create_collection -c ranger_audits \
-                  -shards #{@contexts('ryba/solr/cloud_docker').length}  \
-                  -replicationFactor #{@contexts('ryba/solr/cloud_docker').length-1} \
+                  -shards #{cluster_config.hosts.length}  \
+                  -replicationFactor #{cluster_config.hosts.length-1} \
                   -d /ranger_audits
                 """
           @call

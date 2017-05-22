@@ -41,6 +41,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
         {solr} = context.config.ryba
         # Cluster config 
         # Docker-compose config
+        config.hosts = config.hosts.slice(0,config.containers) if config.containers?
         config.docker_compose_version ?= solr.cloud_docker.docker_compose_version ?= '1'
         config.mem_limit ?= '1g'
         config.port ?= '8983'
