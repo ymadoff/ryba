@@ -601,7 +601,7 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
             eof: true
           @system.execute
             cmd: mkcmd.test @, """
-            hdfs dfs -rm -r -skipTrash #{workflow_dir}>/dev/null
+            hdfs dfs -rm -r -skipTrash #{workflow_dir} 2>/dev/null
             hdfs dfs -mkdir -p #{workflow_dir}/first_table
             echo -e '1\\n2\\n3' | hdfs dfs -put - #{db}/first_table/data
             hdfs dfs -put -f #{user.home}/#{workflow_dir}/workflow.xml #{workflow_dir}
