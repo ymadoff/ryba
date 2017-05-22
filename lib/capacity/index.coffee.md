@@ -444,7 +444,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         {disks, kafka_broker} = ctx.config.capacity
         {kafka_data_dir} = ctx.params
         if /^\//.test kafka_data_dir
-          kafka_broker['log.dirs'] ?= kafka_data_dir.split ','
+          kafka_broker['log.dirs'] ?= kafka_data_dir.split(',').map((target) -> path.resolve target, 'kafka' )
         else
           kafka_broker['log.dirs'] ?= disks.map (disk) ->
             path.resolve disk, kafka_data_dir or './kafka'
