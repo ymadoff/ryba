@@ -28,18 +28,28 @@
 
 # Layout
 
-      @system.mkdir
-        target: ranger.kafka_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
-        uid: kafka.user.name
-        gid: hadoop_group.name
-        mode: 0o0750
+      @call
         if: ranger.kafka_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
+      , ->
+        @system.mkdir
+          target: ranger.kafka_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
+          uid: kafka.user.name
+          gid: hadoop_group.name
+          mode: 0o0750
+        @system.execute
+          header: 'Ranger Audit HDFS Layout'
+          cmd: mkcmd.hdfs @, """
+          hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
+          hdfs dfs -chown -R #{kafka.user.name}:#{kafka.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
+          hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
+          """
       @system.mkdir
         target: ranger.kafka_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: kafka.user.name
         gid: hadoop_group.name
         mode: 0o0750
         if: ranger.kafka_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] is 'true'
+        
 
 # HDFS Service Repository creation
 Matchs step 1 in [hdfs plugin configuration][hdfs-plugin]. Instead of using the web ui
@@ -64,13 +74,6 @@ we execute this task using the rest api.
           principal: ranger.kafka_plugin.principal
           randkey: true
           password: ranger.kafka_plugin.password
-        @system.execute
-          header: 'Ranger Audit HDFS Layout'
-          cmd: mkcmd.hdfs @, """
-          hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
-          hdfs dfs -chown -R #{kafka.user.name}:#{kafka.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
-          hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
-          """
 
 # Plugin Scripts 
 
