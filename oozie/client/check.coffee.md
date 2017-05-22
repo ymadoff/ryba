@@ -450,10 +450,10 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
         dbs = []
         for hs2_ctx in hs2_ctxs
           dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
-        dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
+          dbs.push "check_#{@config.shortname}_oozie_hs2_nozk_#{hs2_ctx.config.shortname}"
         # use v1 policy api (old style) from ranger to have an example
         hive_policy =
-          "policyName": "Ranger-Ryba-HIVE-Policy-#{@config.host}"
+          "policyName": "Ranger-Ryba-HIVE-OOZIE-Policy-#{@config.host}"
           "repositoryName": "#{install['REPOSITORY_NAME']}"
           "repositoryType":"hive"
           "description": 'Ryba check hive policy'
@@ -486,9 +486,9 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
           unless_exec: """
           curl --fail -H \"Content-Type: application/json\" -k -X GET  \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy-#{@config.host}\"
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-OOZIE-Policy-#{@config.host}\"
           """
-          code_skippe: 22
+          code_skipped: 22
 
       @call header: 'Check Hive2 Workflow (No ZK)', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', ->
         if rm_ctxs.length > 1
@@ -601,7 +601,7 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
             eof: true
           @system.execute
             cmd: mkcmd.test @, """
-            hdfs dfs -rm -r -skipTrash #{workflow_dir}2>/dev/null
+            hdfs dfs -rm -r -skipTrash #{workflow_dir} 2>/dev/null
             hdfs dfs -mkdir -p #{workflow_dir}/first_table
             echo -e '1\\n2\\n3' | hdfs dfs -put - #{db}/first_table/data
             hdfs dfs -put -f #{user.home}/#{workflow_dir}/workflow.xml #{workflow_dir}
