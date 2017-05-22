@@ -56,38 +56,6 @@ Try to pull the image first, or upload from cache if not pull possible.
           if_exists: "#{tmp_dir}/swarm.tar"
           source: "#{tmp_dir}/swarm.tar"
 
-## Docker Engine starting options
-Same logic that `masson/commons/docker`, but add the swarm starting options.
-
-      @call header: 'Daemon Option', (options) ->
-        other_opts = @config.docker.other_opts
-        other_args = swarm.other_args
-        opts = []
-        opts.push "--#{k}=#{v}" for k,v of other_args
-        opts.push '--tlsverify' if @config.docker.ssl.tlsverify
-        for type, socketPaths of @config.docker.sockets
-          opts.push "-H #{type}://#{path}" for path in socketPaths
-        other_opts += opts.join ' '
-        @file
-          if_os: name: ['redhat','centos'], version: '6'
-          target: '/etc/sysconfig/docker'
-          write: [
-            match: /^other_args=.*$/mg
-            replace: "other_args=\"#{other_opts}\"" 
-          ]
-          backup: true
-        @file
-          if_os: name: ['redhat','centos'], version: '7'
-          target: '/etc/sysconfig/docker'
-          write: [
-            match: /^OPTIONS=.*$/mg
-            replace: "OPTIONS=\"#{other_opts}\"" 
-          ]
-          backup: true
-        @service.restart
-          name: 'docker'
-          if: -> @status -1
-
 ## Run Container
 Run the swarm manager container. Pass host option to null to run the container
 on the local engine daemon (before configuring swarm).

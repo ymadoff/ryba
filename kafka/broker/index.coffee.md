@@ -11,6 +11,7 @@ log. It is fast, scalable, durable and distributed by design.
         krb5_client: implicit: true, module: 'masson/core/krb5_client'
         krb5_user: implicit: true, module: 'ryba/commons/krb5_user'
         hdp: 'ryba/hdp'
+        hdf: 'ryba/hdf'
         zookeeper: 'ryba/zookeeper/server'
         hadoop_core: 'ryba/hadoop/core'
         zoo_server: 'ryba/zookeeper/server'

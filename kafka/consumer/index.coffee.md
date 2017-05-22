@@ -8,6 +8,8 @@ log. It is fast, scalable, durable and distributed by design.
       use:
         kafka_broker: 'ryba/kafka/broker'
         kafka_producer: 'ryba/kafka/producer'
+        hdf: 'ryba/hdf'
+        hdp: 'ryba/hdp'
       configure: 'ryba/kafka/consumer/configure'
       commands:
         install: [
