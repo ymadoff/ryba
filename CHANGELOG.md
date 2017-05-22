@@ -4,6 +4,8 @@
 ## Trunk
 
 * refactor hdp and initial commit for hdf
+* ambari: reliable wait and check
+* ambari: prevent ambari principal collision
 * spark historyserver: configure heapsize
 * hadoop: add systemd scripts
 * knox: add HBase WebUI service

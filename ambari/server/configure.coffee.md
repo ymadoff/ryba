@@ -117,8 +117,8 @@ Multiple ambari instance on a same server involve a different principal or the p
 `auth=KERBEROS;proxyuser=ambari`
 
       options.jaas ?= {}
-      options.jaas.enable ?= !!krb5_ctx
-      if options.jaas.enable
+      options.jaas.enabled ?= false
+      if options.jaas.enabled
         options.jaas.realm ?= hadoop_ctx?.config.ryba.realm
         options.jaas.realm ?= options.jaas.principal.split('@')[1] if options.jaas.principal
         throw Error "Require Property: jaas.realm or jaas.principal" unless options.jaas.realm

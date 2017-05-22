@@ -16,11 +16,12 @@
         then ambari_standalone.config['client.api.port']
         else ambari_standalone.config['client.api.ssl.port']
         pathname: '/api/v1/clusters'
-      cred = "admin:#{ambari_standalone.admin_password}"
+      oldcred = "admin:#{ambari_standalone.current_admin_password}"
+      newcred = "admin:#{ambari_standalone.admin_password}"
       @wait.execute
         header: 'REST'
         cmd: """
-        curl -k -u #{cred} #{clusters_url}
+        curl -k -u #{newcred} #{clusters_url} || curl -k -u #{oldcred} #{clusters_url}
         """
 
 ## Dependencies
