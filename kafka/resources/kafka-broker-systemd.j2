@@ -1,0 +1,13 @@
+[Unit]
+Description=Kafka Broker
+
+[Service]
+User={{kafka.user.name}}
+Group={{kafka.group.name}}
+PIDFile=/var/run/kafka/kafka.pid
+ExecStart=/usr/hdp/current/kafka-broker/bin/kafka start
+ExecReload=/usr/hdp/current/kafka-broker/bin/kafka restart
+ExecStop=/usr/hdp/current/kafka-broker/bin/kafka stop
+
+[Install]
+WantedBy=multi-user.target

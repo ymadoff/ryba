@@ -62,18 +62,28 @@ directories.
           uid: kafka.user.name
           gid: kafka.user.name
         @service.init
+          if_os: name: ['redhat','centos'], version: '6'
           header: 'Init Script'
           target: '/etc/init.d/kafka-broker'
           source: "#{__dirname}/../resources/kafka-broker.j2"
           local: true
           mode: 0o0755
           context: @config
-        @system.tmpfs
+        @call
           if_os: name: ['redhat','centos'], version: '7'
-          mount: kafka.broker.run_dir
-          uid: kafka.user.name
-          gid: kafka.group.name
-          perm: '0750'
+        , ->
+          @service.init
+            header: 'Systemd Script'
+            target: '/usr/lib/systemd/system/kafka-broker.service'
+            source: "#{__dirname}/../resources/kafka-broker-systemd.j2"
+            local: true
+            context: @config.ryba
+            mode: 0o0640
+          @system.tmpfs
+            mount: kafka.broker.run_dir
+            uid: kafka.user.name
+            gid: kafka.group.name
+            perm: '0750'
 
 ## Configure
 
@@ -127,15 +137,18 @@ Upload *.properties files in /etc/kafka-broker/conf directory.
 ## Env
 
 Update the kafka-env.sh file (/etc/kafka-broker/conf/kafka-enh.sh)
+Note: With systemd environment, JAVA_HOME needs to be defined.
 
       @file
         header: 'Environment'
+        source: "#{__dirname}/../resources/kafka-env.sh"
         target: "#{kafka.broker.conf_dir}/kafka-env.sh"
         write: for k, v of kafka.broker.env
           match: RegExp "export #{k}=.*", 'm'
           replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
           append: true
         backup: true
+        local: true
         eof: true
         mode: 0o0750
         uid: kafka.user.name
