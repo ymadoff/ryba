@@ -450,7 +450,7 @@ with hiveserver2. It enables Ranger policies to be applied same way whatever the
         dbs = []
         for hs2_ctx in hs2_ctxs
           dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
-        dbs.push "check_#{@config.shortname}_oozie_hs2_nozk_#{hs2_ctx.config.shortname}"
+          dbs.push "check_#{@config.shortname}_oozie_hs2_nozk_#{hs2_ctx.config.shortname}"
         # use v1 policy api (old style) from ranger to have an example
         hive_policy =
           "policyName": "Ranger-Ryba-HIVE-OOZIE-Policy-#{@config.host}"
