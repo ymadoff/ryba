@@ -23,6 +23,7 @@
         cmd: """
         curl -k -u #{newcred} #{clusters_url} || curl -k -u #{oldcred} #{clusters_url}
         """
+        code_skipped: 7
 
 ## Dependencies
 

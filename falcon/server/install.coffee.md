@@ -35,7 +35,7 @@ Note, this hasnt been verified.
 
 ## Identities
 
-By default, the "zookeeper" package create the following entries:
+By default, the "falcon" package create the following entries:
 
 ```bash
 cat /etc/passwd | grep falcon
