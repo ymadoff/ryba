@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* hdf & hdp: target and replace from config
 * ambari server: handle exit code 7 in wait
 * refactor hdp and initial commit for hdf
 * ambari: reliable wait and check

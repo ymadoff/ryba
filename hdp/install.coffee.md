@@ -7,6 +7,6 @@
         if: options.repo?
         header: 'Repository'
         source: options.repo
-        target: '/etc/yum.repos.d/hdp.repo'
-        replace: 'hdp*'
+        target: options.target
+        replace: options.replace
         update: true
