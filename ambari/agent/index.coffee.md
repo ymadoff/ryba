@@ -12,10 +12,10 @@ installed before the agent registration.
       configure:
         'ryba/ambari/agent/configure'
       commands:
-        'install': [
-          'ryba/ambari/agent/install'
-          'ryba/ambari/agent/start'
-          ]
+        'install': ->
+          options = @config.ryba.ambari_agent
+          @call 'ryba/ambari/agent/install', options
+          @call 'ryba/ambari/agent/start', options
         'start': 'ryba/ambari/agent/start'
         'stop': 'ryba/ambari/agent/stop'
 
