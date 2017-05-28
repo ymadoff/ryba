@@ -308,12 +308,13 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
           keypass: nifi.config.properties['nifi.security.keyPasswd']
           name: @config.shortname
           local: true
-        @java.keystore_add
-          keystore: nifi.config.properties['nifi.security.keystore']
-          storepass: nifi.config.properties['nifi.security.keystorePasswd']
-          caname: "hadoop_root_ca"
-          cacert: "#{ssl.cacert}"
-          local: true
+        # CA is commented as it is already handled in previous action above
+        # @java.keystore_add
+        #   keystore: nifi.config.properties['nifi.security.keystore']
+        #   storepass: nifi.config.properties['nifi.security.keystorePasswd']
+        #   caname: "hadoop_root_ca"
+        #   cacert: "#{ssl.cacert}"
+        #   local: true
 
 # Notifications
 
