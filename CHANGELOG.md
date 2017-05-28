@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* nifi: new ambari pre-configuration
 * ambari server: fix certificate registration when remote
 * ambari server: mpack registration
 * ambari agent: use options
