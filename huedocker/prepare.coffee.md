@@ -1,7 +1,7 @@
 
 #  Hue Prepare
 
-Follows Cloudera   [build-instruction][cloudera-hue] for Hue 3.7 and later version.
+Follows Cloudera [build-instruction][cloudera-hue] for Hue 3.7 and later version.
 An internet Connection is needed to be able to download.
 Becareful when used with docker-machine nikita might exit before finishing
 the execution. you can resume build by executing again prepare
@@ -80,8 +80,6 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
 This production container running as hue service
 
       @call header: 'Production Container', timeout: -1, ->
-        console.log hue_docker
-        process.exit()
         @file.render
           source: hue_docker.prod.dockerfile
           target: "#{hue_docker.prod.directory}/Dockerfile"
