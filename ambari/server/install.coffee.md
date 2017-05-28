@@ -245,7 +245,7 @@ want to move it into a different location (eg "/etc/security/certs") as
 Ambari will store and work on a copy.
 
       @call header: 'SSL', ->
-        @file.download
+        @file
           header: 'Cert'
           source: options.ssl.cert.source
           local: options.ssl.cert.local
@@ -253,13 +253,13 @@ Ambari will store and work on a copy.
           uid: 'root'
           gid: options.group.name
           mode: 0o0644
-        @file.download
+        @file
           header: 'Key'
           source: options.ssl.key.source
           local: options.ssl.key.local
           target: "#{options.conf_dir}/key.pem"
           mode: 0o0600
-        @file.download
+        @file
           header: 'CACert'
           source: options.ssl.cacert.source
           local: options.ssl.cacert.local
@@ -270,7 +270,7 @@ Ambari will store and work on a copy.
           storepass: "#{options.truststore.password}"
           caname: "#{options.truststore.caname}"
           cacert: "#{options.conf_dir}/cacert.pem"
-    
+
 ## JAAS
 
 Note, Ambari will change ownership to root.
