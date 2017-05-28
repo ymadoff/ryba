@@ -4,8 +4,8 @@
 See the Ambari documentation relative to [Software Requirements][sr] before
 executing this module.
 
-    module.exports = header: 'Ambari Server Install', timeout: -1, handler: ->
-      options = @config.ryba.ambari_server
+    module.exports = header: 'Ambari Server Install', timeout: -1, handler: (options) ->
+      # options = @config.ryba.ambari_server
 
 ## Identities
 
@@ -283,6 +283,26 @@ Note, Ambari will change ownership to root.
         gid: options.group.name
         mode: 0o660
 
+## MPack
+
+      for name, mpack of options.mpacks
+        mpack.target ?= "/var/tmp/#{path.basename mpack.source}"
+        @file.download
+          header: "Download #{name}"
+          if: mpack.enabled
+          source: mpack.source
+          target: mpack.target
+        @system.execute
+          header: "Register #{name}"
+          if: mpack.enabled
+          unless_exists: "/var/lib/ambari-server/resources/mpacks/#{path.basename mpack.source, '.tar.gz'}"
+          cmd: """
+          yes | ambari-server install-mpack \
+            --mpack=#{mpack.target} \
+            --purge \
+            --verbose
+          """
+
 ## Setup
 
 Password encryption is activated if the property "master_key" is configured. By 
@@ -411,6 +431,7 @@ Start the service or restart it if there were any changes.
 
 ## Dependencies
 
+    path = require 'path'
     url = require 'url'
     misc = require 'nikita/lib/misc'
     db = require 'nikita/lib/misc/db'

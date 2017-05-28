@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* ambari server: mpack registration
 * ambari agent: use options
 * nifi: comment redundant CA registration
 * hdf & hdp: target and replace from config

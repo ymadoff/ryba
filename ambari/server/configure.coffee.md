@@ -144,6 +144,22 @@ Multiple ambari instance on a same server involve a different principal or the p
       # Be Carefull, collision in HDP 2.5.3 on port 8443 between Ambari and Knox
       options.config['client.api.ssl.port'] ?= "8442"
 
+## MPack
+
+A management pack (MPack) bundles service definitions, stack definitions, and stack add-
+on service definitions so they do not need to be included with the Ambari core functionality
+and can be updated in between major releases.
+
+The only MPack file to be registered in the configuration is the one for HDF. It is desactivated by default.
+
+      options.mpacks ?= {}
+      options.mpacks.hdf = merge
+        enabled: false
+        arch: 'centos'
+        version: '7'
+        source: 'https://public-repo-1.hortonworks.com/HDF/centos7/2.x/updates/2.1.3.0/tars/hdf_ambari_mp/hdf-ambari-mpack-2.1.3.0-6.tar.gz'
+      , options.mpacks.hdf or {}
+
 ## Database
 
 Ambari DB password is stash into "/etc/ambari-server/conf/password.dat".
@@ -190,5 +206,8 @@ Ambari DB password is stash into "/etc/ambari-server/conf/password.dat".
         options.db_ranger.database ?= 'ranger'
         options.db_ranger.username ?= 'ranger'
         throw Error "Required Option: db_ranger.password" unless options.db_ranger.password
-        
+
+## Dependencies
+
+    {merge} = require 'nikita/lib/misc'
         

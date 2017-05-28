@@ -14,13 +14,14 @@ manage and monitor a Hadoop cluster.
         hadoop: 'ryba/hadoop/core'
       configure: 'ryba/ambari/server/configure'
       commands:
+        'prepare': 'ryba/ambari/server/prepare'
         'ambari_blueprint': 'ryba/ambari/server/blueprint'
         'check': 'ryba/ambari/server/check'
-        'install': [
-          'ryba/ambari/server/install'
-          'ryba/ambari/server/start'
-          'ryba/ambari/server/check'
-        ]
+        'install': ->
+          options = @config.ryba.ambari_server
+          @call 'ryba/ambari/server/install', options
+          @call 'ryba/ambari/server/start', options
+          @call 'ryba/ambari/server/check', options
         'start': 'ryba/ambari/server/start'
         'stop': 'ryba/ambari/server/stop'
 
