@@ -12,17 +12,16 @@ manage and monitor a Hadoop cluster.
         krb5_server: module: 'masson/core/krb5_server'
         db_admin: implicit: true, module: 'ryba/commons/db_admin'
         hadoop: 'ryba/hadoop/core'
-      configure: 'ryba/ambari/server/configure'
+      configure: 'ryba/ambari/hdfserver/configure'
       commands:
         'prepare': ->
-          options = @config.ryba.ambari_server
+          options = @config.ryba.ambari_hdfserver
           @call 'ryba/ambari/server/prepare', options
-        'ambari_blueprint': 'ryba/ambari/server/blueprint'
         'check': ->
-          options = @config.ryba.ambari_server
+          options = @config.ryba.ambari_hdfserver
           @call 'ryba/ambari/server/check', options
         'install': ->
-          options = @config.ryba.ambari_server
+          options = @config.ryba.ambari_hdfserver
           @call 'ryba/ambari/server/install', options
           @call 'ryba/ambari/server/start', options
           @call 'ryba/ambari/server/check', options

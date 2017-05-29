@@ -4,7 +4,7 @@
 See the Ambari documentation relative to [Software Requirements][sr] before
 executing this module.
 
-    module.exports = header: 'Ambari Server Install', timeout: -1, handler: (options) ->
+    module.exports = header: 'Ambari Server Install', handler: (options) ->
       # options = @config.ryba.ambari_server
 
 ## Identities
@@ -402,17 +402,21 @@ Start the service or restart it if there were any changes.
         if: -> @status()
       @call 'ryba/ambari/server/wait',
         if: -> @status()
+        fqdn: options.fqdn
+        current_admin_password: options.current_admin_password
+        admin_password: options.admin_password
+        config: options.config
 
 ## Admin Credentials
 
       checkurl = url.format
         protocol: unless options.config['api.ssl'] then 'http' else 'https'
-        hostname: options.host
+        hostname: options.fqdn
         port: options.config[unless options.config['api.ssl'] then 'client.api.port' else 'client.api.ssl.port']
         pathname: '/api/v1/clusters'
       changeurl = url.format
         protocol: unless options.config['api.ssl'] then 'http' else 'https'
-        hostname: options.host
+        hostname: options.fqdn
         port: options.config[unless options.config['api.ssl'] then 'client.api.port' else 'client.api.ssl.port']
         pathname: '/api/v1/users/admin'
       cred = "admin:#{options.current_admin_password}"

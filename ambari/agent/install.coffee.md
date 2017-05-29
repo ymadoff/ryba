@@ -3,8 +3,6 @@
 The ambari server must be set in the configuration file.
 
     module.exports = header: 'Ambari Agent Install', timeout: -1, handler: (options) ->
-      options = @config.ryba.ambari_agent
-      options.host = @config.host
 
 ## Identities
 
@@ -49,7 +47,7 @@ Install Ambari Agent package.
         target: options.config.agent['hostname_script']
         content: """
         #!/bin/sh
-        echo #{options.host}
+        echo #{options.fqdn}
         """
         mode: 0o751
 

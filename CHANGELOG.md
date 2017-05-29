@@ -3,6 +3,7 @@
 
 ## Trunk
 
+* ambari: new hdf server & agent
 * nifi: new ambari pre-configuration
 * ambari server: fix certificate registration when remote
 * ambari server: mpack registration

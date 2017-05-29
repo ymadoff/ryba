@@ -1,5 +1,5 @@
 
-# Ambari Standalone Configuration
+# Ambari Server Configuration
 
 ## Minimal Example
 
@@ -47,12 +47,14 @@
       {host, ssl} = @config
       {db_admin} = @config.ryba
       # Init
-      options = @config.ryba.ambari_standalone ?= {}
+      options = @config.ryba.ambari_hdfserver ?= {}
+      # throw Error "Required Option: cluster_name" unless options.cluster_name
       throw Error "Required Option: db.password" unless options.db?.password
 
 ## Environnment
 
       options.fqdn = @config.host
+      options.host = host
       options.http ?= '/var/www/html'
       options.repo ?= null
       options.conf_dir ?= '/etc/ambari-server/conf'
@@ -143,6 +145,22 @@ Multiple ambari instance on a same server involve a different principal or the p
       # Be Carefull, collision in HDP 2.5.3 on port 8443 between Ambari and Knox
       options.config['client.api.ssl.port'] ?= "8442"
 
+## MPack
+
+A management pack (MPack) bundles service definitions, stack definitions, and stack add-
+on service definitions so they do not need to be included with the Ambari core functionality
+and can be updated in between major releases.
+
+The only MPack file to be registered in the configuration is the one for HDF. It is desactivated by default.
+
+      options.mpacks ?= {}
+      options.mpacks.hdf = merge
+        enabled: false
+        arch: 'centos'
+        version: '7'
+        source: 'https://public-repo-1.hortonworks.com/HDF/centos7/2.x/updates/2.1.3.0/tars/hdf_ambari_mp/hdf-ambari-mpack-2.1.3.0-6.tar.gz'
+      , options.mpacks.hdf or {}
+
 ## Database
 
 Ambari DB password is stash into "/etc/ambari-server/conf/password.dat".
@@ -156,3 +174,41 @@ Ambari DB password is stash into "/etc/ambari-server/conf/password.dat".
       options.db[k] ?= v for k, v of db_admin[options.db.engine]
       options.db.database ?= 'ambari'
       options.db.username ?= 'ambari'
+
+## Hive provisionning
+
+      options.db_hive ?= false
+      options.db_hive = password: options.db_hive if typeof options.db_hive is 'string'
+      if options.db_hive
+        options.db_hive.engine ?= options.db.engine
+        options.db_hive[k] ?= v for k, v of db_admin[options.db_hive.engine]
+        options.db_hive.database ?= 'hive'
+        options.db_hive.username ?= 'hive'
+        throw Error "Required Option: db_hive.password" unless options.db_hive.password
+
+## Oozie provisionning
+
+      options.db_oozie ?= false
+      options.db_oozie = password: options.db_oozie if typeof options.db_oozie is 'string'
+      if options.db_oozie
+        options.db_oozie.engine ?= options.db.engine
+        options.db_oozie[k] ?= v for k, v of db_admin[options.db_oozie.engine]
+        options.db_oozie.database ?= 'oozie'
+        options.db_oozie.username ?= 'oozie'
+        throw Error "Required Option: db_oozie.password" unless options.db_oozie.password
+
+## Ranger provisionning
+
+      options.db_ranger ?= false
+      options.db_ranger = password: options.db_ranger if typeof options.db_ranger is 'string'
+      if options.db_ranger
+        options.db_ranger.engine ?= options.db.engine
+        options.db_ranger[k] ?= v for k, v of db_admin[options.db_ranger.engine]
+        options.db_ranger.database ?= 'ranger'
+        options.db_ranger.username ?= 'ranger'
+        throw Error "Required Option: db_ranger.password" unless options.db_ranger.password
+
+## Dependencies
+
+    {merge} = require 'nikita/lib/misc'
+        

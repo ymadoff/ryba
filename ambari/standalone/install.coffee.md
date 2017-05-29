@@ -139,7 +139,7 @@ want to move it into a different location (eg "/etc/security/certs") as
 Ambari will store and work on a copy.
 
       @call header: 'SSL', ->
-        @file.download
+        @file
           header: 'Cert'
           source: options.ssl.cert.source
           local: options.ssl.cert.local
@@ -147,13 +147,13 @@ Ambari will store and work on a copy.
           uid: 'root'
           gid: options.group.name
           mode: 0o0644
-        @file.download
+        @file
           header: 'Key'
           source: options.ssl.key.source
           local: options.ssl.key.local
           target: "#{options.conf_dir}/key.pem"
           mode: 0o0600
-        @file.download
+        @file
           header: 'CACert'
           source: options.ssl.cacert.source
           local: options.ssl.cacert.local
@@ -196,7 +196,7 @@ Be carefull, notes from Ambari 2.4.2:
             throw err if err
             for k, v of data
               props[k] ?= {}
-              props[k].org = v 
+              props[k].org = v
             callback()
         @system.execute
           shy: true
@@ -237,7 +237,7 @@ Be carefull, notes from Ambari 2.4.2:
           ambari-server setup-security \
             --security-option=setup-truststore \
             --truststore-path=#{options.truststore.target} \
-            --truststore-type=#{options.truststore.type} \ 
+            --truststore-type=#{options.truststore.type} \
             --truststore-password=#{options.truststore.password} \
             --truststore-reconfigure
           """
@@ -255,7 +255,7 @@ Be carefull, notes from Ambari 2.4.2:
             throw err if err
             for k, v of data
               props[k] ?= {}
-              props[k].new = v 
+              props[k].new = v
             callback()
         @call (options, callback) ->
           status = false
@@ -274,19 +274,19 @@ Start the service or restart it if there were any changes.
         name: 'ambari-server'
         action: ['start', 'restart']
         if: -> @status()
-      @call 'ryba/ambari/standalone/wait',
+      @call 'ryba/ambari/server/wait', options,
         if: -> @status()
 
 ## Admin Credentials
 
       checkurl = url.format
         protocol: unless options.config['api.ssl'] then 'http' else 'https'
-        hostname: options.host
+        hostname: options.fqdn
         port: options.config[unless options.config['api.ssl'] then 'client.api.port' else 'client.api.ssl.port']
         pathname: '/api/v1/clusters'
       changeurl = url.format
         protocol: unless options.config['api.ssl'] then 'http' else 'https'
-        hostname: options.host
+        hostname: options.fqdn
         port: options.config[unless options.config['api.ssl'] then 'client.api.port' else 'client.api.ssl.port']
         pathname: '/api/v1/users/admin'
       cred = "admin:#{options.current_admin_password}"

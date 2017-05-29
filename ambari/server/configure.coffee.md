@@ -53,7 +53,7 @@
 
 ## Environnment
 
-      options.host = host
+      options.fqdn = @config.host
       options.http ?= '/var/www/html'
       options.repo ?= null
       options.conf_dir ?= '/etc/ambari-server/conf'
