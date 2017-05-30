@@ -146,6 +146,10 @@ Example:
       hive.server2.site['hive.server2.use.SSL'] ?= 'true'
       hive.server2.site['hive.server2.keystore.path'] ?= "#{hive.server2.conf_dir}/keystore"
       hive.server2.site['hive.server2.keystore.password'] ?= "ryba123"
+      # Secure attribute of the HiveServer2 generated cookie, by default set to true.
+      # Needed for JDBC with SSL and Kerberos
+      # https://community.hortonworks.com/questions/38369/performance-issue-hive-kerberos.html
+      hive.server2.site['hive.server2.http.cookie.is.secure'] ?= true if hive.server2.site['hive.server2.use.SSL'] is 'true'
       hive.server2.truststore_location ?= "#{hive.server2.conf_dir}/truststore"
       hive.server2.truststore_password ?= "ryba123"
 
