@@ -243,7 +243,7 @@ Be carefull, notes from Ambari 2.4.2:
           """
         @system.execute
           shy: true
-          if: options.jaas.enable
+          if: options.jaas.enabled
           cmd: """
           ambari-server setup-security \
             --security-option=setup-kerberos-jaas \
